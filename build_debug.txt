@@ -1,0 +1,24 @@
+
+> dentalccentre@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 23.7s
+  Running TypeScript ...
+Failed to compile.
+
+./components/BookingForm.tsx:15:8
+Type error: Cannot find module '@/components/ui/form' or its corresponding type declarations.
+
+[0m [90m 13 |[39m     [33mFormLabel[39m[33m,[39m
+ [90m 14 |[39m     [33mFormMessage[39m[33m,[39m
+[31m[1m>[22m[39m[90m 15 |[39m } [36mfrom[39m [32m"@/components/ui/form"[39m[33m;[39m
+ [90m    |[39m        [31m[1m^[22m[39m
+ [90m 16 |[39m [36mimport[39m {
+ [90m 17 |[39m     [33mSelect[39m[33m,[39m
+ [90m 18 |[39m     [33mSelectContent[39m[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null

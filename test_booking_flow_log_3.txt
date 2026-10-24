@@ -1,0 +1,9 @@
+Starting Booking Flow Test...
+Found Patient: patient1@example.com
+Found Treatment: Korean Implant Kit (Implants)
+Found Staff: Dr. Admin (ADMIN)
+Attempting to book for 2026-02-17T09:00:00.000Z with duration 120m...
+✅ Appointment created successfully!
+Appointment ID: eafecc16-49c5-4170-aac4-19e9344466be
+✅ Verified: Appointment linked to Dr. Admin (ADMIN)
+Cleanup: Test appointment deleted.

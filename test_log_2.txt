@@ -1,0 +1,37 @@
+E:\dentalccentre\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:259
+        throw new PrismaClientInitializationError(
+              ^
+
+
+PrismaClientInitializationError: `PrismaClient` needs to be constructed with a non-empty, valid `PrismaClientOptions`:
+
+```
+new PrismaClient({
+  ...
+})
+```
+
+or
+
+```
+constructor() {
+  super({ ... });
+}
+```
+          
+    at new t (E:\dentalccentre\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:259:15)
+    at <anonymous> (E:\dentalccentre\test-double-booking.ts:3:16)
+    at Object.<anonymous> (E:\dentalccentre\test-double-booking.ts:79:40)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object.transformer (E:\dentalccentre\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at cjsLoader (node:internal/modules/esm/translators:266:5) {
+  clientVersion: '7.4.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+
+Node.js v22.16.0

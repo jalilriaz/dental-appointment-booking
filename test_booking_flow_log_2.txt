@@ -1,0 +1,35 @@
+🧪 Starting Booking Flow Verification...
+
+--- Checking Provider Availability ---
+✅ Found Admin Provider(s): Dr. Admin (ADMIN), Dental Centre Admin (ADMIN)
+
+--- Simulating Appointment Creation ---
+PrismaClientValidationError: 
+Invalid `prisma.appointment.create()` invocation in
+E:\dentalccentre\scripts\test-booking-flow.ts:37:50
+
+  34 tomorrow.setDate(tomorrow.getDate() + 1);
+  35 tomorrow.setHours(10, 0, 0, 0);
+  36 
+→ 37 const appointment = await prisma.appointment.create({
+       data: {
+         patientId: "e128f0ee-cc0d-4ab9-a52f-1e45e887b7ac",
+         staffId: "c40a8d04-3490-4b7a-b16a-40a87632bb0f",
+         treatmentId: "8d9ef45a-c6d8-409c-97b4-c30026c4d911",
+         startTime: new Date("2026-02-17T05:00:00.000Z"),
+         status: "SCHEDULED",
+         notes: "Test appointment via script",
+         paymentStatus: "PENDING",
+     +   endTime: DateTime
+       }
+     })
+
+Argument `endTime` is missing.
+    at throwValidationException (E:\dentalccentre\node_modules\@prisma\client\src\runtime\core\errorRendering\throwValidationException.ts:45:9)
+    at ei.handleRequestError (E:\dentalccentre\node_modules\@prisma\client\src\runtime\RequestHandler.ts:202:7)
+    at ei.handleAndLogRequestError (E:\dentalccentre\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (E:\dentalccentre\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (E:\dentalccentre\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async main (E:\dentalccentre\scripts\test-booking-flow.ts:37:25) {
+  clientVersion: '6.19.2'
+}

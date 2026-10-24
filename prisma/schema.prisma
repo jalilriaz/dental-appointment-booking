@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  STAFF
+  PATIENT
+}
+
+enum ApptStatus {
+  SCHEDULED
+  RESCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum BookingSource {
+  WEBSITE
+  WALK_IN
+  WHATSAPP_BOT
+}
+
+// ─── Models ──────────────────────────────────────────────
+
+model User {
+  id          String   @id @default(uuid())
+  email       String?  @unique
+  phone       String?  @unique // Primary ID for n8n bot
+  password    String?
+  name        String
+  role        Role     @default(PATIENT)
+  patientCode Int?     @unique // Short memorable ID (1000, 1001...)
+  noShowCount Int      @default(0) // Track how many times they didn't show up
+  createdAt   DateTime @default(now())
+
+  // Patient Details
+  dateOfBirth   DateTime?
+  gender        String?
+  address       String?
+  medicalAlerts String?   // Critical health info e.g. "Diabetic, Allergic to Penicillin"
+
+  // Staff Details
+  // specialized fields removed for single-doctor model
+
+  // Google Calendar integration (Admin only)
+  googleCalendarToken        String?
+  googleCalendarRefreshToken String?
+  googleCalendarConnected    Boolean @default(false)
+
+  // Password reset
+  resetToken       String?
+  resetTokenExpiry DateTime?
+
+  appointments Appointment[]
+  patientTreatments PatientTreatment[]
+}
+
+model Appointment {
+  id        String     @id @default(uuid())
+  startTime DateTime
+  endTime   DateTime
+  status    ApptStatus @default(SCHEDULED)
+  notes     String?    // Booking notes from patient/receptionist
+
+  patientId String
+  patient   User   @relation(fields: [patientId], references: [id])
+
+  treatmentId String
+  treatment   Treatment @relation(fields: [treatmentId], references: [id])
+
+  googleEventId String?       @unique
+  bookedBy      BookingSource @default(WEBSITE)
+
+  clinicalNotes ClinicalNote[]
+
+  amountPaid Int? @default(0)
+  price      Int  @default(0)
+  discount   Int  @default(0)  // Discretionary discount in PKR
+  createdAt  DateTime @default(now())
+  checkoutTime DateTime?
+
+  // Guest Booking Details
+  guestName     String?
+  guestPhone    String?
+  guestEmail    String?
+  guestDob      DateTime?
+
+  // Treatment Plan Relation
+  patientTreatmentId String?
+  patientTreatment   PatientTreatment? @relation(fields: [patientTreatmentId], references: [id])
+  payments           Payment[]
+}
+
+model ClinicalNote {
+  id            String      @id @default(uuid())
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+
+  diagnosis      String?  // What the doctor found
+  treatmentDone  String   // What procedure was performed
+  prescription   String?  // Medications prescribed
+  remarks        String?  // Follow-up instructions, observations
+  odontogramData Json?    // 32-tooth dental chart state
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Treatment {
+  id              String  @id @default(uuid())
+  name            String
+  durationMin     Int
+  price           Int
+  discountedPrice Int?
+  description     String?
+  instructions    String? // For n8n WhatsApp messages
+  isActive        Boolean @default(true)
+  imageUrl        String?
+  category        String  @default("General") // Cosmetic, Restorative, General, Consultations
+
+  appointments Appointment[]
+  patientTreatments PatientTreatment[]
+}
+
+model SystemSettings {
+  id              String @id @default("settings")
+  clinicName      String @default("Elite Dental Centre")
+  workDayStart    String @default("09:00")
+  workDayEnd      String @default("17:00")
+  slotDurationMin Int    @default(30)
+}
+
+// ─── Billing & Treatment Plans ───────────────────────────
+
+enum PaymentMethod {
+  CASH
+  CARD
+  ONLINE
+}
+
+enum TreatmentStatus {
+  ONGOING
+  COMPLETED
+  FULLY_PAID
+}
+
+model PatientTreatment {
+  id          String          @id @default(uuid())
+  patientId   String
+  patient     User            @relation(fields: [patientId], references: [id])
+  treatmentId String
+  treatment   Treatment       @relation(fields: [treatmentId], references: [id])
+  
+  totalCost   Int             // Total agreed price (e.g., 110,000 for braces)
+  status      TreatmentStatus @default(ONGOING)
+  startDate   DateTime        @default(now())
+  
+  appointments Appointment[]
+  payments     Payment[]
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  amount    Int
+  method    PaymentMethod @default(CASH)
+  date      DateTime @default(now())
+  notes     String?
+  
+  patientTreatmentId String
+  patientTreatment   PatientTreatment @relation(fields: [patientTreatmentId], references: [id])
+  
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+}
+
+// ─── Inventory ───────────────────────────────────────────
+
+model Inventory {
+  id           String   @id @default(uuid())
+  itemName     String
+  quantity     Int      @default(0)
+  minThreshold Int      @default(5)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ─── Walk-In Patient Registration ────────────────────────
+
+model WalkInPatient {
+  id        Int      @id @default(autoincrement())
+  phone     String   @unique
+  cnic      String?  @unique
+  fullName  String
+  age       Int
+  createdAt DateTime @default(now())
+
+  appointments WalkInAppointment[]
+}
+
+model WalkInAppointment {
+  id          String   @id @default(cuid())
+  date        DateTime
+  time        String
+  serviceType String
+  status      String   @default("Scheduled")
+  createdAt   DateTime @default(now())
+
+  patientId Int
+  patient   WalkInPatient @relation(fields: [patientId], references: [id])
+}

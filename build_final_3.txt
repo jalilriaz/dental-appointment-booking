@@ -1,0 +1,42 @@
+
+> dentalccentre@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 24.1s
+  Running TypeScript ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/10) ...
+  Generating static pages using 3 workers (2/10) 
+Error occurred prerendering page "/admin". Read more: https://nextjs.org/docs/messages/prerender-error
+Error [PrismaClientInitializationError]: 
+Invalid `prisma.user.count()` invocation:
+
+
+error: Error validating datasource `db`: the URL must start with the protocol `postgresql://` or `postgres://`.
+
+To use a URL with protocol `prisma://`, you need to either enable Accelerate or the Data Proxy.
+Enable Accelerate via `prisma generate --accelerate` or the Data Proxy via `prisma generate --data-proxy.`
+
+More information about Data Proxy: https://pris.ly/d/data-proxy
+
+  -->  schema.prisma:7
+   | 
+ 6 |   provider = "postgresql"
+ 7 |   url      = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at <unknown> (-->  schema.prisma:7)
+    at async n (E:\dentalccentre\.next\server\chunks\ssr\[root-of-the-server]__120b0834._.js:1:6350)
+    at async o (E:\dentalccentre\.next\server\chunks\ssr\[root-of-the-server]__120b0834._.js:1:7190) {
+  clientVersion: '5.10.0',
+  errorCode: undefined,
+  digest: '1117448511'
+}
+Export encountered an error on /admin/page: /admin, exiting the build.
+⨯ Next.js build worker exited with code: 1 and signal: null

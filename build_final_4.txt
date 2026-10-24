@@ -1,0 +1,30 @@
+
+> dentalccentre@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 26.5s
+  Running TypeScript ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/10) ...
+  Generating static pages using 3 workers (2/10) 
+Error occurred prerendering page "/admin". Read more: https://nextjs.org/docs/messages/prerender-error
+Error [PrismaClientInitializationError]: 
+Invalid `prisma.user.count()` invocation:
+
+
+Authentication failed against database server at `localhost`, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at async n (E:\dentalccentre\.next\server\chunks\ssr\[root-of-the-server]__120b0834._.js:1:6350)
+    at async o (E:\dentalccentre\.next\server\chunks\ssr\[root-of-the-server]__120b0834._.js:1:7190) {
+  clientVersion: '5.10.0',
+  errorCode: undefined,
+  digest: '1444274271'
+}
+Export encountered an error on /admin/page: /admin, exiting the build.
+⨯ Next.js build worker exited with code: 1 and signal: null

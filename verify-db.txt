@@ -1,0 +1,24 @@
+--- Database Content Verification ---
+
+Users (13):
+ - [ADMIN] Dr. Admin (admin@elitedental.com)
+ - [STAFF] Dr. Sarah Smith (staff1@elitedental.com)
+ - [STAFF] Dr. Ahmed Khan (staff2@elitedental.com)
+ - [PATIENT] Ali Khan (patient1@example.com)
+ - [PATIENT] Sara Ahmed (patient2@example.com)
+ - [PATIENT] Fatima Khan (patient3@example.com)
+ - [PATIENT] Hassan Ali (patient4@example.com)
+ - [PATIENT] Ayesha Malik (patient5@example.com)
+ - [PATIENT] Asad (asad@test.com)
+ - [ADMIN] Dental Centre Admin (real.admin@elitedental.com)
+ - [STAFF] Dr. Ayesha Khan (dr.ayesha@elitedental.com)
+ - [PATIENT] Mr. Ali Raza (ali.raza@example.com)
+ - [PATIENT] Ms. Sara Ahmed (sara.ahmed@example.com)
+
+Appointments: 18
+treatmentOptions: 21
+serviceCategories: 7
+
+Clinic Settings Present: true
+ - Name: Elite Dental Centre
+ - Email: info@elitedental.com

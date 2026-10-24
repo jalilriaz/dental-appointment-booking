@@ -1,0 +1,24 @@
+
+> dentalccentre@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 24.7s
+  Running TypeScript ...
+Failed to compile.
+
+./components/BookingForm.tsx:27:26
+Type error: Cannot find module '@/components/ui/textarea' or its corresponding type declarations.
+
+[0m [90m 25 |[39m [36mimport[39m { [33mCalendarIcon[39m[33m,[39m [33mLoader2[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+ [90m 26 |[39m [36mimport[39m { [33mInput[39m } [36mfrom[39m [32m"@/components/ui/input"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 27 |[39m [36mimport[39m { [33mTextarea[39m } [36mfrom[39m [32m"@/components/ui/textarea"[39m[33m;[39m
+ [90m    |[39m                          [31m[1m^[22m[39m
+ [90m 28 |[39m
+ [90m 29 |[39m [36minterface[39m [33mBookingFormProps[39m {
+ [90m 30 |[39m     staffList[33m:[39m { id[33m:[39m string[33m;[39m name[33m:[39m string }[][33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

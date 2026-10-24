@@ -1,0 +1,62 @@
+﻿# npm audit report
+
+ajv  <=6.12.6
+Severity: moderate
+Prototype Pollution in Ajv - https://github.com/advisories/GHSA-v88g-cgmw-v5xw
+ajv has ReDoS when using `$data` option - https://github.com/advisories/GHSA-2g4f-4pwh-qvx6
+fix available via `npm audit fix`
+node_modules/ajv
+  ajv-keywords  2.1.1
+  Depends on vulnerable versions of ajv
+  node_modules/ajv-keywords
+  eslint  2.5.0 - 2.5.2 || 4.0.0-alpha.0 - 7.2.0
+  Depends on vulnerable versions of ajv
+  Depends on vulnerable versions of cross-spawn
+  Depends on vulnerable versions of inquirer
+  Depends on vulnerable versions of table
+  node_modules/eslint
+  table  3.7.10 - 4.0.2
+  Depends on vulnerable versions of ajv
+  node_modules/table
+
+brace-expansion  <1.1.13
+Severity: moderate
+brace-expansion: Zero-step sequence causes process hang and memory exhaustion - https://github.com/advisories/GHSA-f886-m6hf-6m8v
+fix available via `npm audit fix`
+node_modules/brace-expansion
+
+cross-spawn  <6.0.6
+Severity: high
+Regular Expression Denial of Service (ReDoS) in cross-spawn - https://github.com/advisories/GHSA-3xgq-45jj-v275
+fix available via `npm audit fix`
+node_modules/eslint/node_modules/cross-spawn
+
+next  16.0.0-beta.0 - 16.1.6
+Severity: moderate
+Next.js: HTTP request smuggling in rewrites - https://github.com/advisories/GHSA-ggv3-7p47-pfv8
+Next.js: Unbounded next/image disk cache growth can exhaust storage - https://github.com/advisories/GHSA-3x4c-7xq6-9pq8
+Next.js: Unbounded postponed resume buffering can lead to DoS - https://github.com/advisories/GHSA-h27x-g6w4-24gq
+Next.js: null origin can bypass Server Actions CSRF checks - https://github.com/advisories/GHSA-mq59-m269-xvcx
+Next.js: null origin can bypass dev HMR websocket CSRF checks - https://github.com/advisories/GHSA-jcc7-9wpm-mj36
+fix available via `npm audit fix --force`
+Will install next@16.2.2, which is outside the stated dependency range
+node_modules/next
+
+tmp  <=0.2.3
+tmp allows arbitrary temporary file / directory write via symbolic link `dir` parameter - https://github.com/advisories/GHSA-52f5-9888-hmc6
+fix available via `npm audit fix`
+node_modules/tmp
+  external-editor  >=1.1.1
+  Depends on vulnerable versions of tmp
+  node_modules/external-editor
+    inquirer  3.0.0 - 8.2.6 || 9.0.0 - 9.3.7
+    Depends on vulnerable versions of external-editor
+    node_modules/inquirer
+
+10 vulnerabilities (3 low, 5 moderate, 2 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues, run:
+  npm audit fix --force
