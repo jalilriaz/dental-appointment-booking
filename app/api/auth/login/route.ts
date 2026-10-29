@@ -33,6 +33,14 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
         }
 
+        // Restrict login to ADMIN and STAFF only — Patients are handled strictly via WhatsApp
+        if (user.role === "PATIENT") {
+            return NextResponse.json({
+                error: "Patient web portal has moved to WhatsApp. Please message us on WhatsApp at +92 314 5475528 to manage your appointments.",
+                code: "PATIENT_PORTAL_DEPRECATED"
+            }, { status: 403 });
+        }
+
         const cookieStore = await cookies();
 
         // 1-Hour Access Token

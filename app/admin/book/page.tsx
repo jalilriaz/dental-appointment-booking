@@ -12,7 +12,7 @@ export default async function AdminBookPage() {
     try {
         session = await decrypt(cookie);
         if (session.role !== "ADMIN") {
-            redirect("/portal");
+            redirect("/login");
         }
     } catch {
         redirect("/login");

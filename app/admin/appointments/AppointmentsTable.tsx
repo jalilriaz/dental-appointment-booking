@@ -7,13 +7,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Filter, ChevronLeft, ChevronRight, Eye, RefreshCw, Trash2, Loader2, Calendar, Clock, X, CheckCircle2, UserX, AlertTriangle, CalendarX, Receipt, History } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, Eye, RefreshCw, Trash2, Loader2, Calendar, Clock, X, CheckCircle2, UserX, AlertTriangle, CalendarX, Receipt, History, MessageSquareShare } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import ClinicalNoteDialog from "@/components/admin/ClinicalNoteDialog";
 import ReceiptDialog from "@/components/admin/ReceiptDialog";
 import PatientHistoryDialog from "@/components/shared/PatientHistoryDialog";
 import CheckoutDialog from "@/components/shared/CheckoutDialog";
+import SendPrecautionsModal from "@/components/shared/SendPrecautionsModal";
 import StatusBadge from "@/components/shared/StatusBadge";
 import AppointmentsCalendar from "@/components/admin/AppointmentsCalendar";
 import {
@@ -80,7 +81,7 @@ function RescheduleDialog({
         try {
             const params = new URLSearchParams({
                 date: selectedDate,
-                treatmentId: appointment.treatment.id,
+                treatmentId: appointment.treatment?.id || "",
                 excludeAppointmentId: appointment.id,
             });
             const res = await fetch(`/api/appointments/availability?${params}`);
@@ -318,6 +319,7 @@ export default function AppointmentsTable({
     const [discountValue, setDiscountValue] = useState<string>("0");
     const [receiptApt, setReceiptApt] = useState<Appointment | null>(null);
     const [historyPatientId, setHistoryPatientId] = useState<string | null>(null);
+    const [precautionsApt, setPrecautionsApt] = useState<Appointment | null>(null);
     const [adminConfirmPastApt, setAdminConfirmPastApt] = useState<Appointment | null>(null);
     const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
@@ -497,7 +499,7 @@ export default function AppointmentsTable({
                                 : "bg-white/[0.06] text-slate-400 hover:bg-white/[0.1]"
                                 }`}
                         >
-                            {s.replace("_", " ")}
+                            {s === "NO_SHOW" ? "Missed" : s.replace("_", " ")}
                         </button>
                     ))}
                 </div>
@@ -533,13 +535,7 @@ export default function AppointmentsTable({
                             <tbody className="divide-y divide-white/[0.04]">
                                 {paged.map((apt) => {
                                     const start = new Date(apt.startTime);
-                                    const today = new Date();
-
-                                    // Reset time parts to securely check if the appointment is strictly in the past
-                                    const startDateStr = start.toDateString();
-                                    const todayStr = today.toDateString();
-
-                                    const isPastDate = start.setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0);
+                                    const isPastDate = new Date(apt.startTime).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
 
                                     return (
                                         <tr key={apt.id} className="hover:bg-white/[0.03] transition-premium cursor-pointer">
@@ -634,13 +630,22 @@ export default function AppointmentsTable({
                                                         readOnly={userRole !== "ADMIN"}
                                                     />
                                                     {apt.status === "COMPLETED" && (
-                                                        <button
-                                                            onClick={() => setReceiptApt(apt)}
-                                                            className="p-1.5 rounded-lg hover:bg-teal-500/10 text-teal-400 cursor-pointer transition-premium"
-                                                            title="Download Receipt"
-                                                        >
-                                                            <Receipt className="size-4" />
-                                                        </button>
+                                                        <>
+                                                            <button
+                                                                onClick={() => setPrecautionsApt(apt)}
+                                                                className="p-1.5 rounded-lg hover:bg-emerald-500/10 text-emerald-400 cursor-pointer transition-premium"
+                                                                title="Send WhatsApp Precautions"
+                                                            >
+                                                                <MessageSquareShare className="size-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setReceiptApt(apt)}
+                                                                className="p-1.5 rounded-lg hover:bg-teal-500/10 text-teal-400 cursor-pointer transition-premium"
+                                                                title="Download Receipt"
+                                                            >
+                                                                <Receipt className="size-4" />
+                                                            </button>
+                                                        </>
                                                     )}
                                                 </div>
                                             </td>
@@ -788,18 +793,20 @@ export default function AppointmentsTable({
                 onClose={() => setCheckoutApt(null)}
                 onConfirm={async (amount, price, discount) => {
                     if (checkoutApt) {
-                        setCheckingOutId(checkoutApt.id);
+                        const targetApt = checkoutApt;
+                        setCheckingOutId(targetApt.id);
                         setCheckoutApt(null);
                         try {
-                            const result = await checkoutAppointment(checkoutApt.id, amount, undefined, price, discount);
+                            const result = await checkoutAppointment(targetApt.id, amount, undefined, price, discount);
                             if (!result.success) {
                                 toast.error("Checkout Failed", { description: result.error });
                             } else {
                                 setAppointments((prev) =>
-                                    prev.map((a) => a.id === checkoutApt.id ? { ...a, status: "COMPLETED", amountPaid: amount } : a)
+                                    prev.map((a) => a.id === targetApt.id ? { ...a, status: "COMPLETED", amountPaid: amount } : a)
                                 );
                                 toast.success("Checked Out", { description: `Rs. ${amount.toLocaleString()} recorded for visit.` });
                                 router.refresh();
+                                setPrecautionsApt(targetApt);
                             }
                         } catch {
                             toast.error("Checkout Failed", { description: "Something went wrong. Please try again." });
@@ -830,6 +837,16 @@ export default function AppointmentsTable({
                 patientId={historyPatientId}
                 open={!!historyPatientId}
                 onOpenChange={(open) => { if (!open) setHistoryPatientId(null); }}
+            />
+
+            {/* Send Precautions Modal */}
+            <SendPrecautionsModal
+                appointmentId={precautionsApt?.id || null}
+                patientName={precautionsApt?.patient?.name || undefined}
+                patientPhone={precautionsApt?.patient?.phone}
+                treatmentName={precautionsApt?.treatment?.name}
+                isOpen={!!precautionsApt}
+                onClose={() => setPrecautionsApt(null)}
             />
         </div>
     );

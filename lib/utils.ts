@@ -49,7 +49,7 @@ export const statusConfig: Record<string, StatusConfig> = {
   SCHEDULED: { label: "Scheduled", color: "text-blue-300", bg: "badge-scheduled" },
   COMPLETED: { label: "Checked Out", color: "text-emerald-300", bg: "badge-completed" },
   CANCELLED: { label: "Cancelled", color: "text-red-300", bg: "badge-cancelled" },
-  NO_SHOW: { label: "No Show", color: "text-amber-300", bg: "badge-no-show" },
+  NO_SHOW: { label: "Missed (No-Show)", color: "text-amber-300", bg: "badge-no-show" },
   RESCHEDULED: { label: "Rescheduled", color: "text-purple-300", bg: "badge-rescheduled" },
 };
 

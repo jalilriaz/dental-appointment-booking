@@ -11,7 +11,7 @@ export default async function StaffBookingPage() {
     try {
         const session = await decrypt(cookie);
         if (session.role !== "STAFF" && session.role !== "ADMIN") {
-            redirect("/portal");
+            redirect("/login");
         }
     } catch {
         redirect("/login");

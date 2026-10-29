@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,17 +55,17 @@ export default function CheckoutDialog({
     // Internal price state for editable-price mode
     const [priceValue, setPriceValue] = useState<string>("");
 
-    // Initialize price when dialog opens
-    if (apt && priceValue === "") {
-        const initialPrice = apt.price !== undefined && apt.price !== null ? apt.price : apt.treatment.price;
-        setPriceValue(String(initialPrice));
-    }
-
-    // Reset when closed
-    if (!apt && priceValue !== "") {
-        setPriceValue("");
-        setInternalDiscount("0");
-    }
+    // Initialize price & amount safely in useEffect when dialog opens
+    useEffect(() => {
+        if (apt) {
+            const initialPrice = (apt.price && apt.price > 0) ? apt.price : (apt.treatment?.price || 0);
+            setPriceValue(String(initialPrice));
+            setAmountValue(String(initialPrice));
+        } else {
+            setPriceValue("");
+            setInternalDiscount("0");
+        }
+    }, [apt]);
 
     const billedPrice = editablePrice ? (Number(priceValue) || 0) : (apt?.treatment.price || 0);
     const discount = Math.max(0, Number(discountValue) || 0);
@@ -175,7 +175,7 @@ export default function CheckoutDialog({
                         Cancel
                     </Button>
                     <Button
-                        onClick={() => onConfirm(Number(amountValue || 0), billedPrice, discount)}
+                        onClick={() => onConfirm(Number(amountValue !== "" ? amountValue : netTotal), billedPrice, discount)}
                         className="btn-brand border-0 px-8 shadow-lg shadow-teal-500/20"
                     >
                         {editablePrice ? "Confirm" : "Save & Check Out"}

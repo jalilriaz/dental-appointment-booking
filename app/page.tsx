@@ -49,22 +49,21 @@ export default async function LandingPage() {
                 compassionate care, and affordable pricing all under one roof.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-4">
-                <Link
-                  href="/book"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 gradient-primary-h text-white text-lg font-semibold rounded-full hover:shadow-xl hover:shadow-teal-500/25 transition-premium active:scale-95"
-                >
-                  <Calendar className="size-5" />
-                  Book Online
-                </Link>
                 <a
-                  href={`https://wa.me/${clinicInfo.whatsapp}`}
+                  href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent("Hi, I would like to book an appointment")}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 gradient-primary-h text-white text-lg font-semibold rounded-full hover:shadow-xl hover:shadow-teal-500/25 transition-premium active:scale-95"
+                >
+                  <Phone className="size-5" />
+                  Book via WhatsApp
+                </a>
+                <Link
+                  href="/services"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 border border-white/10 text-slate-300 text-lg font-semibold rounded-full hover:bg-white/[0.04] hover:border-teal-500/30 transition-premium"
                 >
-                  <Phone className="size-5 text-teal-400" />
-                  WhatsApp Us
-                </a>
+                  Explore Services
+                </Link>
               </div>
               <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-sm text-slate-500">
                 <div className="flex items-center gap-2">

@@ -8,6 +8,7 @@ import StatusBadge from "@/components/shared/StatusBadge";
 import PatientBillingHistory from "@/components/admin/patients/PatientBillingHistory";
 import MedicalAlertEditor from "@/components/admin/patients/MedicalAlertEditor";
 import CreateTreatmentPlan from "@/components/admin/patients/CreateTreatmentPlan";
+import SendPrecautionsButton from "@/components/admin/SendPrecautionsButton";
 
 
 
@@ -37,7 +38,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
 
     const treatments = await prisma.treatment.findMany({
         where: { isActive: true },
-        select: { id: true, name: true, price: true },
+        select: { id: true, name: true, price: true, durationMin: true },
         orderBy: { name: "asc" }
     });
 
@@ -166,6 +167,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                             <th className="px-6 py-3">Treatment</th>
                             <th className="px-6 py-3">Status</th>
                             <th className="px-6 py-3 text-right">Amount</th>
+                            <th className="px-6 py-3 text-right">Care Precautions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.04]">
@@ -240,11 +242,19 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                                             );
                                         })()}
                                     </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <SendPrecautionsButton
+                                            appointmentId={apt.id}
+                                            patientName={patient.name}
+                                            patientPhone={patient.phone}
+                                            treatmentName={apt.treatment.name}
+                                        />
+                                    </td>
                                 </tr>
                                 {/* Clinical Notes Row */}
                                 {apt.clinicalNotes.length > 0 && (
                                     <tr className="bg-teal-500/[0.03]">
-                                        <td colSpan={4} className="px-6 py-3">
+                                        <td colSpan={5} className="px-6 py-3">
                                             {apt.clinicalNotes.map((note) => (
                                                 <div key={note.id} className="grid sm:grid-cols-2 gap-3 text-xs">
                                                     {note.diagnosis && (

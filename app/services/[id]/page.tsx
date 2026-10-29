@@ -205,22 +205,21 @@ export default async function ServiceDetailPage({
                   Contact our clinic to book your appointment for {treatment.name} today.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Link
-                    href={`/book?treatment=${treatment.id}`}
-                    className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 sm:px-10 py-3 sm:py-4 gradient-primary-h text-white text-base sm:text-lg font-semibold rounded-full shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
-                  >
-                    <Calendar className="size-4 sm:size-5" />
-                    Book Online Now
-                  </Link>
                   <a
-                    href={`https://wa.me/${clinicInfo.whatsapp}?text=Hi, I would like to book an appointment for: ${treatment.name}`}
+                    href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent(`Hi, I would like to book an appointment for ${treatment.name}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border border-white/10 text-slate-300 hover:bg-white/[0.05] hover:text-white text-base sm:text-lg font-semibold rounded-full transition-all duration-300"
+                    className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 sm:px-12 py-3 sm:py-4 gradient-primary-h text-white text-base sm:text-lg font-semibold rounded-full shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
                   >
-                    <Phone className="size-4 sm:size-5 text-teal-400" />
+                    <Phone className="size-4 sm:size-5" />
                     Book via WhatsApp
                   </a>
+                  <Link
+                    href="/services"
+                    className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border border-white/10 text-slate-300 hover:bg-white/[0.05] hover:text-white text-base sm:text-lg font-semibold rounded-full transition-all duration-300"
+                  >
+                    View All Services
+                  </Link>
                 </div>
               </div>
             </div>

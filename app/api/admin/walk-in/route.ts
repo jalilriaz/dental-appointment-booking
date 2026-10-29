@@ -99,18 +99,7 @@ export async function POST(request: Request) {
                     await tx.user.update({ where: { id: userId }, data: { patientCode } });
                 }
             } else {
-                // ── New patient path ──
-                // WalkInPatient (legacy MRN tracking)
-                let walkInPatient = await tx.walkInPatient.findFirst({
-                    where: { OR: [{ phone: phone! }, ...(cnic ? [{ cnic }] : [])] },
-                });
-                if (!walkInPatient) {
-                    walkInPatient = await tx.walkInPatient.create({
-                        data: { phone: phone!, cnic: cnic || null, fullName: fullName!, age: age! },
-                    });
-                }
-
-                // Main User record
+                // ── New patient path: Main User record ──
                 let user = await tx.user.findFirst({ where: { phone: phone! } });
                 if (!user) {
                     patientCode = await generatePatientCode();

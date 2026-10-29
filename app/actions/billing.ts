@@ -5,6 +5,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 
+import {
+    getPrecautionsForTreatment,
+    formatPrecautionsMessage,
+    dispatchN8nPrecautionsWebhook
+} from "@/lib/precautions";
+
 const checkoutSchema = z.object({
     appointmentId: z.string().min(1, "Appointment ID is required"),
     amountCollected: z.number().min(0, "Amount cannot be negative"),
@@ -37,7 +43,7 @@ export async function checkoutAppointment(appointmentId: string, amountCollected
         // 1. Fetch the appointment to get treatment details
         const appointment = await prisma.appointment.findUnique({
             where: { id: validData.appointmentId },
-            include: { treatment: true, patientTreatment: true },
+            include: { treatment: true, patientTreatment: true, patient: true },
         });
 
         if (!appointment) {
@@ -161,11 +167,35 @@ export async function checkoutAppointment(appointmentId: string, amountCollected
             }
         }
 
-        revalidatePath("/admin/appointments");
-        revalidatePath("/staff/appointments");
-        revalidatePath(`/admin/patients/${appointment.patientId}`);
-        revalidatePath(`/staff/patients/${appointment.patientId}`);
-        revalidatePath("/admin/revenue");
+        // 6. Automatically dispatch WhatsApp Care Precautions to the patient in background
+        const patientPhone = appointment.guestPhone || appointment.patient?.phone;
+        const patientName = appointment.guestName || appointment.patient?.name || "Valued Patient";
+        if (patientPhone) {
+            (async () => {
+                try {
+                    const precautions = getPrecautionsForTreatment(
+                        appointment.treatment.name,
+                        appointment.treatment.instructions
+                    );
+                    const message = formatPrecautionsMessage({
+                        patientName,
+                        treatmentName: appointment.treatment.name,
+                        precautions,
+                        doctorName: "Dr. Sheriyaar",
+                    });
+                    await dispatchN8nPrecautionsWebhook({
+                        phone: patientPhone,
+                        patientName,
+                        treatmentName: appointment.treatment.name,
+                        precautions,
+                        message,
+                        appointmentId: appointment.id,
+                    });
+                } catch (dispatchErr) {
+                    console.error("Auto precaution dispatch failed:", dispatchErr);
+                }
+            })();
+        }
 
         return { success: true };
     } catch (error) {

@@ -6,8 +6,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Phone } from "lucide-react";
 import SimpleNavbar from "@/components/SimpleNavbar";
+import { clinicInfo } from "@/app/constants/mockData";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -50,10 +51,10 @@ export default function LoginPage() {
                     router.push("/admin");
                 } else if (data.user.role === "STAFF") {
                     router.push("/reception");
-                } else if (data.user.role === "PATIENT") {
-                    router.push("/portal");
                 } else {
-                    router.push("/");
+                    setError("Patient web portal has moved to WhatsApp. Please message us on WhatsApp to manage your visits.");
+                    setLoading(false);
+                    return;
                 }
                 router.refresh();
             } else {
@@ -86,8 +87,24 @@ export default function LoginPage() {
 
                 <div className="glass-card rounded-2xl p-8">
                     <div className="text-center mb-6">
-                        <h1 className="text-2xl font-bold text-white">Welcome Back</h1>
-                        <p className="text-sm text-slate-400 mt-1">Sign in to your account to continue</p>
+                        <h1 className="text-2xl font-bold text-white">Staff & Admin Portal</h1>
+                        <p className="text-sm text-slate-400 mt-1">Sign in with your staff or administrator credentials</p>
+                    </div>
+
+                    {/* Patient Notice Banner */}
+                    <div className="mb-6 p-4 rounded-xl bg-teal-500/10 border border-teal-500/20 text-center">
+                        <p className="text-xs font-semibold text-teal-300">Are you a patient?</p>
+                        <p className="text-xs text-slate-300 mt-1">
+                            The patient portal has moved to WhatsApp. Book, reschedule, or view appointments directly in chat!
+                        </p>
+                        <a
+                            href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent("Hi, I am a patient and would like to manage my appointments")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 text-xs font-medium transition-all"
+                        >
+                            <Phone className="size-3.5" /> Chat on WhatsApp
+                        </a>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-4">
@@ -145,15 +162,15 @@ export default function LoginPage() {
                             disabled={loading}
                         >
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {loading ? "Signing in..." : "Sign In"}
+                            {loading ? "Signing in..." : "Sign In to Portal"}
                         </Button>
                     </form>
 
                     <div className="mt-5 p-3.5 bg-white/[0.03] rounded-xl border border-white/[0.06]">
                         <p className="text-xs font-medium text-slate-400 mb-2.5 text-center">
-                            Quick-Fill Test Credentials & Target Routes:
+                            Staff Quick-Fill Credentials:
                         </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <button
                                 type="button"
                                 onClick={() => {
@@ -175,17 +192,6 @@ export default function LoginPage() {
                             >
                                 <div className="font-semibold text-white group-hover:text-teal-400">📋 Receptionist</div>
                                 <div className="text-[11px] text-slate-400 font-mono">/reception</div>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setEmail("patient1@example.com");
-                                    setPassword("patient123");
-                                }}
-                                className="p-2 text-left rounded-lg bg-white/[0.03] hover:bg-teal-500/10 border border-white/5 hover:border-teal-500/30 transition-all text-xs group"
-                            >
-                                <div className="font-semibold text-white group-hover:text-teal-400">👤 Patient History</div>
-                                <div className="text-[11px] text-slate-400 font-mono">/portal</div>
                             </button>
                         </div>
                     </div>

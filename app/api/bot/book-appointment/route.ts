@@ -77,8 +77,25 @@ export async function POST(req: Request) {
             );
         }
 
+        // Helper to normalize "04:00 PM", "4pm", "16:00" to "HH:mm"
+        const normalizeTime = (rawTime: string) => {
+            const trimmed = rawTime.trim();
+            const ampmMatch = trimmed.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i);
+            if (ampmMatch) {
+                let hour = parseInt(ampmMatch[1], 10);
+                const minute = ampmMatch[2] || "00";
+                const modifier = ampmMatch[3].toLowerCase();
+                if (modifier === "pm" && hour < 12) hour += 12;
+                if (modifier === "am" && hour === 12) hour = 0;
+                return `${String(hour).padStart(2, "0")}:${minute}`;
+            }
+            return trimmed;
+        };
+
+        const normalizedTime = normalizeTime(time);
+
         // 5. Calculate Appointment Times (Z removed for correct local time)
-        const startTimeStamp = new Date(`${date}T${time}:00`);
+        const startTimeStamp = new Date(`${date}T${normalizedTime}:00`);
         const endTimeStamp = new Date(startTimeStamp.getTime() + treatment.durationMin * 60000);
 
         // Check if the appointment is on Sunday (0 = Sunday in JavaScript Date)
@@ -121,7 +138,9 @@ export async function POST(req: Request) {
                 treatmentId: treatment.id,
                 bookedBy: "WHATSAPP_BOT",
                 status: "SCHEDULED",
-                notes: `Booked via WhatsApp. Age provided: ${age || "N/A"}. Service requested: ${serviceType || "N/A"}`,
+                guestName: patientName,
+                guestPhone: phone,
+                notes: `Booked via WhatsApp for ${patientName}. Age provided: ${age || "N/A"}. Service requested: ${serviceType || "N/A"}`,
             },
         });
 
@@ -129,11 +148,11 @@ export async function POST(req: Request) {
         (async () => {
             try {
                 const googleEventId = await createCalendarEvent({
-                    summary: `${treatment!.name} — ${patient.name}`,
-                    description: `Treatment: ${treatment!.name}\nDuration: ${treatment!.durationMin} min${age ? `\nAge: ${age}` : ""}`,
+                    summary: `${treatment!.name} — ${patientName}`,
+                    description: `Patient: ${patientName}\nTreatment: ${treatment!.name}\nDuration: ${treatment!.durationMin} min${age ? `\nAge: ${age}` : ""}`,
                     startTime: startTimeStamp,
                     endTime: endTimeStamp,
-                    patientName: patient.name || "Patient",
+                    patientName: patientName,
                     patientPhone: phone,
                 });
 

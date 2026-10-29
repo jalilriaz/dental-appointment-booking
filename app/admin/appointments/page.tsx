@@ -6,12 +6,16 @@ import Link from "next/link"
 import { CalendarPlus } from "lucide-react"
 
 import { startOfDay, endOfDay } from "date-fns"
+import { expirePastAppointments } from "@/lib/appointment-status"
 
 export default async function AdminAppointmentsPage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string; filter?: string }>
 }) {
+  // Auto catch-up: expire any past unattended appointments before rendering table
+  await expirePastAppointments()
+
   const { status, filter } = await searchParams
   const where: any = {}
 

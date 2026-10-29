@@ -9,8 +9,6 @@ import { usePathname } from "next/navigation";
 const navLinks = [
     { label: "About", href: "/about" },
     { label: "Services", href: "/services" },
-    { label: "Patient Portal", href: "/portal" },
-    { label: "Book Online", href: "/book" },
     { label: "Contact", href: "/contact" },
 ];
 
@@ -74,19 +72,21 @@ export default function Navbar() {
                                     {link.label}
                                 </Link>
                             ))}
-                            <Link
-                                href="/book"
+                            <a
+                                href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent("Hi, I would like to book an appointment")}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="flex items-center gap-2 px-5 py-2.5 gradient-primary-h text-white text-sm font-medium rounded-full hover:shadow-lg hover:shadow-teal-500/25 transition-premium active:scale-95 cursor-pointer"
                             >
-                                <Calendar className="size-4" />
-                                Book Online
-                            </Link>
+                                <Phone className="size-4" />
+                                Book via WhatsApp
+                            </a>
                             <Link
                                 href="/login"
                                 className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-full border border-white/10 hover:border-teal-500/30 hover:bg-white/[0.04] transition-premium"
                             >
                                 <LogIn className="size-3.5 text-teal-400" />
-                                Sign In
+                                Staff Login
                             </Link>
                         </div>
 
@@ -156,20 +156,13 @@ export default function Navbar() {
                     </nav>
 
                     <div className="p-4 border-t border-white/[0.06] space-y-2">
-                        <Link
-                            href="/book"
-                            className="flex items-center justify-center gap-2 w-full px-5 py-3 gradient-primary-h text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-teal-500/25 transition-premium active:scale-95"
-                        >
-                            <Calendar className="size-4" />
-                            Book Online
-                        </Link>
                         <a
-                            href={`https://wa.me/${clinicInfo.whatsapp}`}
+                            href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent("Hi, I would like to book an appointment")}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full px-5 py-2.5 border border-white/10 text-slate-300 text-sm font-medium rounded-xl hover:bg-white/[0.04] transition-all"
+                            className="flex items-center justify-center gap-2 w-full px-5 py-3 gradient-primary-h text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-teal-500/25 transition-premium active:scale-95"
                         >
-                            <Phone className="size-4 text-teal-400" />
+                            <Phone className="size-4" />
                             Book via WhatsApp
                         </a>
                         <Link
@@ -177,7 +170,7 @@ export default function Navbar() {
                             className="flex items-center justify-center gap-2 w-full px-5 py-2.5 border border-teal-500/20 bg-teal-500/5 text-teal-300 text-sm font-medium rounded-xl hover:bg-teal-500/10 transition-all"
                         >
                             <LogIn className="size-4 text-teal-400" />
-                            Sign In (Admin / Staff / Patient)
+                            Staff Login
                         </Link>
                         <p className="text-center text-xs text-slate-600">{clinicInfo.phone}</p>
                     </div>

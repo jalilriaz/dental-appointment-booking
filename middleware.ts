@@ -4,7 +4,7 @@ import { decrypt } from "@/lib/auth";
 import { checkRateLimit, rateLimitExceededResponse } from "@/lib/rateLimit";
 
 // UI Routes
-const protectedUIRoutes = ["/admin", "/staff", "/reception", "/portal"];
+const protectedUIRoutes = ["/admin", "/staff", "/reception"];
 
 // API Routes
 // Exclude public auth routes, webhooks, or open endpoints from this list
@@ -25,7 +25,8 @@ const publicApiRoutes = [
     "/api/appointments/availability", // Public for booking form
     "/api/treatments", // Public for website
     "/api/contact",
-    "/api/bot"
+    "/api/bot",
+    "/api/cron"
 ];
 
 function isPublicApiRoute(pathname: string, method?: string) {
@@ -95,10 +96,9 @@ export default async function middleware(request: NextRequest) {
                 return applySecurityHeaders(NextResponse.redirect(new URL("/admin", request.url)));
             } else if (session.role === "STAFF") {
                 return applySecurityHeaders(NextResponse.redirect(new URL("/reception", request.url)));
-            } else if (session.role === "PATIENT") {
-                return applySecurityHeaders(NextResponse.redirect(new URL("/portal", request.url)));
+            } else {
+                return applySecurityHeaders(NextResponse.redirect(new URL("/", request.url)));
             }
-            return applySecurityHeaders(NextResponse.redirect(new URL("/", request.url)));
         } catch {
             // Bad cookie - ignore and let them access the login page
         }

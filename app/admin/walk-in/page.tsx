@@ -11,7 +11,7 @@ export default async function WalkInPage() {
     try {
         const session = await decrypt(cookie);
         if (session.role !== "ADMIN" && session.role !== "STAFF") {
-            redirect("/portal");
+            redirect("/login");
         }
     } catch {
         redirect("/login");

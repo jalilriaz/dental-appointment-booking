@@ -18,7 +18,7 @@ export async function PATCH(req: Request) {
 
         // 2. Parse and Validate Request Body
         const body = await req.json();
-        const { phone, currentDate } = body;
+        const { phone, currentDate, appointmentId } = body;
 
         if (!phone) {
             return NextResponse.json(
@@ -48,13 +48,36 @@ export async function PATCH(req: Request) {
             }
         };
 
-        if (currentDate) {
+        if (appointmentId) {
+            appointmentQuery.id = appointmentId;
+        } else if (currentDate) {
             const startOfDay = new Date(`${currentDate}T00:00:00`);
             const endOfDay = new Date(`${currentDate}T23:59:59`);
             appointmentQuery.startTime = {
                 gte: startOfDay,
                 lte: endOfDay
             };
+        } else {
+            // Check if patient has multiple upcoming appointments
+            const upcomingAppointments = await prisma.appointment.findMany({
+                where: appointmentQuery,
+                orderBy: { startTime: 'asc' },
+                include: { treatment: { select: { name: true } } },
+            });
+
+            if (upcomingAppointments.length > 1) {
+                return NextResponse.json({
+                    multipleAppointments: true,
+                    message: "The patient has multiple upcoming appointments. Please ask them which one (by date or treatment) they wish to cancel.",
+                    appointments: upcomingAppointments.map(a => ({
+                        appointmentId: a.id,
+                        patientName: a.guestName || "Patient",
+                        date: a.startTime.toISOString().split("T")[0],
+                        time: a.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+                        treatment: a.treatment.name
+                    }))
+                });
+            }
         }
 
         const existingAppointment = await prisma.appointment.findFirst({

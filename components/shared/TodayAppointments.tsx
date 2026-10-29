@@ -15,9 +15,11 @@ import {
     Stethoscope,
     AlertTriangle,
     History,
+    MessageSquare,
 } from "lucide-react";
 import PatientHistoryDialog from "@/components/shared/PatientHistoryDialog";
 import CheckoutDialog from "@/components/shared/CheckoutDialog";
+import SendPrecautionsModal from "@/components/shared/SendPrecautionsModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -60,6 +62,7 @@ export default function TodayAppointments({
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [confirmAction, setConfirmAction] = useState<{ id: string; status: string; label: string } | null>(null);
     const [checkoutApt, setCheckoutApt] = useState<TodayAppointment | null>(null);
+    const [precautionsApt, setPrecautionsApt] = useState<TodayAppointment | null>(null);
     const [amountValue, setAmountValue] = useState<string>("");
     const [historyPatientId, setHistoryPatientId] = useState<string | null>(null);
 
@@ -90,6 +93,10 @@ export default function TodayAppointments({
                 toast.success("Checked Out", {
                     description: `Payment of Rs. ${(amountPaid ?? 0).toLocaleString()} recorded.`
                 });
+
+                if (checkoutApt) {
+                    setPrecautionsApt(checkoutApt);
+                }
             } else {
                 // Use existing API for other statuses (Cancel, No Show)
                 const res = await fetch(`/api/appointments/${id}/status`, {
@@ -265,9 +272,21 @@ export default function TodayAppointments({
                                                 </Button>
                                             </>
                                         ) : apt.status === "COMPLETED" ? (
-                                            <span className="text-xs text-emerald-400 font-medium flex items-center gap-1">
-                                                <CheckCircle2 className="size-3.5" /> Done
-                                            </span>
+                                            <div className="flex items-center gap-1">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => setPrecautionsApt(apt)}
+                                                    className="h-8 text-xs gap-1 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 active:scale-95 transition-premium"
+                                                    title="Send Care Precautions to WhatsApp"
+                                                >
+                                                    <MessageSquare className="size-3.5" />
+                                                    Precautions
+                                                </Button>
+                                                <span className="text-xs text-emerald-400 font-medium hidden sm:flex items-center gap-1">
+                                                    <CheckCircle2 className="size-3.5" /> Done
+                                                </span>
+                                            </div>
                                         ) : null}
                                     </div>
                                 </div>
@@ -331,6 +350,15 @@ export default function TodayAppointments({
                 patientId={historyPatientId}
                 open={!!historyPatientId}
                 onOpenChange={(open) => { if (!open) setHistoryPatientId(null); }}
+            />
+
+            <SendPrecautionsModal
+                appointmentId={precautionsApt?.id || null}
+                patientName={precautionsApt?.patient?.name || undefined}
+                patientPhone={precautionsApt?.patient?.phone}
+                treatmentName={precautionsApt?.treatment?.name}
+                isOpen={!!precautionsApt}
+                onClose={() => setPrecautionsApt(null)}
             />
         </>
     );

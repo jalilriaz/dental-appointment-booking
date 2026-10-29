@@ -193,27 +193,4 @@ model Inventory {
   updatedAt    DateTime @updatedAt
 }
 
-// ─── Walk-In Patient Registration ────────────────────────
 
-model WalkInPatient {
-  id        Int      @id @default(autoincrement())
-  phone     String   @unique
-  cnic      String?  @unique
-  fullName  String
-  age       Int
-  createdAt DateTime @default(now())
-
-  appointments WalkInAppointment[]
-}
-
-model WalkInAppointment {
-  id          String   @id @default(cuid())
-  date        DateTime
-  time        String
-  serviceType String
-  status      String   @default("Scheduled")
-  createdAt   DateTime @default(now())
-
-  patientId Int
-  patient   WalkInPatient @relation(fields: [patientId], references: [id])
-}
