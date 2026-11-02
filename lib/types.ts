@@ -51,6 +51,17 @@ export interface Appointment {
         durationMin: number;
     };
     clinicalNotes?: ClinicalNote[];
+    patientTreatmentId?: string | null;
+    sessionNumber?: number | null;
+    sessionLabel?: string | null;
+    plannedFee?: number | null;
+    patientTreatment?: {
+        id: string;
+        totalCost: number;
+        totalSessions: number;
+        clinicalStatus: string;
+        financialStatus: string;
+    } | null;
 }
 
 export interface ClinicalNote {

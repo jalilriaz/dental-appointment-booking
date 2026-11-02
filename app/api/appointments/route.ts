@@ -7,7 +7,9 @@ import { createCalendarEvent } from "@/lib/googleCalendar";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { sendAppointmentConfirmationEmail } from "@/lib/email";
-import { revalidatePath } from "next/cache";
+import { normalizePhone } from "@/lib/phone";
+import { isSundayInKarachi, parseKarachiDateTime } from "@/lib/timezone";
+import { generateRandomPatientPasswordHash } from "@/lib/security";
 
 // Zod Schema for Booking Payload Validation
 const bookingSchema = z.object({
@@ -127,16 +129,8 @@ export async function POST(request: Request) {
             }
         }
 
-        // Validate date — no past dates, no Sundays
-        const selectedDate = new Date(date);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (selectedDate < today) {
-            return NextResponse.json({ error: "Cannot book an appointment on a past date" }, { status: 400 });
-        }
-
-        if (selectedDate.getDay() === 0) {
+        // Validate date — no Sundays
+        if (isSundayInKarachi(date)) {
             return NextResponse.json(
                 { error: "Sunday is a clinic off day. Please select another date." },
                 { status: 400 }
@@ -151,13 +145,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Treatment not found" }, { status: 404 });
         }
 
-        // Calculate start and end times
-        const [timeH, timeM] = time.split(":").map(Number);
-        const startTime = new Date(date);
-        startTime.setHours(timeH, timeM, 0, 0);
-
-        const endTime = new Date(startTime);
-        endTime.setMinutes(endTime.getMinutes() + treatment.durationMin);
+        // Calculate start and end times in Karachi timezone
+        const startTime = parseKarachiDateTime(date, time);
+        const endTime = new Date(startTime.getTime() + treatment.durationMin * 60000);
 
         // Determine booking source
         let bookedBy: "WEBSITE" | "WALK_IN" | "WHATSAPP_BOT" = "WEBSITE";
@@ -171,21 +161,22 @@ export async function POST(request: Request) {
 
             // 1. Handle New Patient or Guest Creation if needed
             if ((bookerRole === "STAFF" || bookerRole === "ADMIN") && newPatient) {
+                const canonicalPhone = normalizePhone(newPatient.phone);
                 const existingUser = await tx.user.findFirst({
                     where: {
-                        phone: newPatient.phone,
+                        phone: canonicalPhone,
                     },
                 });
 
                 if (existingUser) {
                     finalPatientId = existingUser.id;
                 } else {
-                    const hashedPassword = await bcrypt.hash("Patient123!", 10);
+                    const hashedPassword = await generateRandomPatientPasswordHash();
                     const createdUser = await tx.user.create({
                         data: {
                             name: newPatient.name,
                             email: newPatient.email || undefined,
-                            phone: newPatient.phone,
+                            phone: canonicalPhone,
                             password: hashedPassword,
                             role: "PATIENT",
                             dateOfBirth: newPatient.dateOfBirth ? new Date(newPatient.dateOfBirth) : undefined,
@@ -194,19 +185,20 @@ export async function POST(request: Request) {
                     finalPatientId = createdUser.id;
                 }
             } else if (!finalPatientId && guestPhone && guestName) {
+                const canonicalGuestPhone = normalizePhone(guestPhone);
                 const existingUser = await tx.user.findFirst({
-                    where: { phone: guestPhone },
+                    where: { phone: canonicalGuestPhone },
                 });
 
                 if (existingUser) {
                     finalPatientId = existingUser.id;
                 } else {
-                    const hashedPassword = await bcrypt.hash("Patient123!", 10);
+                    const hashedPassword = await generateRandomPatientPasswordHash();
                     const createdUser = await tx.user.create({
                         data: {
                             name: guestName,
                             email: guestEmail || undefined,
-                            phone: guestPhone,
+                            phone: canonicalGuestPhone,
                             password: hashedPassword,
                             role: "PATIENT",
                             dateOfBirth: guestDob ? new Date(guestDob) : undefined,
@@ -229,6 +221,10 @@ export async function POST(request: Request) {
 
             if (conflict) {
                 throw new Error("DOUBLE_BOOKING");
+            }
+
+            if (!finalPatientId) {
+                throw new Error("PATIENT_ID_REQUIRED");
             }
 
             // 3. Create appointment

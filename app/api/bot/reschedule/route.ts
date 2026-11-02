@@ -2,25 +2,22 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { updateCalendarEvent } from "@/lib/googleCalendar";
+import { verifyBotAuth } from "@/lib/auth-bot";
+import { normalizePhone } from "@/lib/phone";
+import { isSundayInKarachi, parseKarachiDateTime, getKarachiDayBoundaries } from "@/lib/timezone";
 
 export async function PATCH(req: Request) {
     try {
-        // 1. Secure Authentication Check
-        const authHeader = req.headers.get("authorization");
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-        }
-
-        const token = authHeader.split(" ")[1];
-        if (token !== process.env.N8N_SECRET_KEY) {
-            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        // 1. Timing-Safe Authentication Check
+        const auth = verifyBotAuth(req);
+        if (!auth.ok) {
+            return NextResponse.json({ message: auth.error }, { status: auth.status || 401 });
         }
 
         // 2. Parse and Validate Request Body
         const body = await req.json();
         const { phone, currentDate, newDate, newTime, appointmentId } = body;
 
-        // phone, newDate, and newTime are absolutely required.
         if (!phone || !newDate || !newTime) {
             return NextResponse.json(
                 { message: "Missing required fields: please provide phone, newDate, and newTime" },
@@ -28,11 +25,11 @@ export async function PATCH(req: Request) {
             );
         }
 
-        // 3. Find Existing Appointment by Phone Number
-        // We look for the soonest upcoming scheduled appointment for this patient.
+        const canonicalPhone = normalizePhone(phone);
 
-        const patient = await prisma.user.findUnique({
-            where: { phone },
+        // 3. Find Patient by Canonical Phone
+        const patient = await prisma.user.findFirst({
+            where: { phone: canonicalPhone },
         });
 
         if (!patient) {
@@ -42,31 +39,28 @@ export async function PATCH(req: Request) {
             );
         }
 
-        // Build the query to find their upcoming appointment.
-        // If they provided the 'currentDate', we can use it to be specific.
+        // Build query for upcoming appointment
         let appointmentQuery: any = {
             patientId: patient.id,
-            status: "SCHEDULED",
+            status: { in: ["SCHEDULED", "RESCHEDULED"] },
             startTime: {
-                gt: new Date() // Only look for future appointments to reschedule
-            }
+                gt: new Date(),
+            },
         };
 
         if (appointmentId) {
             appointmentQuery.id = appointmentId;
         } else if (currentDate) {
-            // If they specified which one they want to change, match it
-            const startOfDay = new Date(`${currentDate}T00:00:00`);
-            const endOfDay = new Date(`${currentDate}T23:59:59`);
+            const { startOfDay, endOfDay } = getKarachiDayBoundaries(currentDate);
             appointmentQuery.startTime = {
                 gte: startOfDay,
-                lte: endOfDay
+                lte: endOfDay,
             };
         } else {
             // Check if patient has multiple upcoming appointments
             const upcomingAppointments = await prisma.appointment.findMany({
                 where: appointmentQuery,
-                orderBy: { startTime: 'asc' },
+                orderBy: { startTime: "asc" },
                 include: { treatment: { select: { name: true } } },
             });
 
@@ -74,13 +68,13 @@ export async function PATCH(req: Request) {
                 return NextResponse.json({
                     multipleAppointments: true,
                     message: "The patient has multiple upcoming appointments. Please ask them which one (by date or treatment) they wish to reschedule.",
-                    appointments: upcomingAppointments.map(a => ({
+                    appointments: upcomingAppointments.map((a) => ({
                         appointmentId: a.id,
-                        patientName: a.guestName || "Patient",
+                        patientName: a.guestName || patient.name || "Patient",
                         date: a.startTime.toISOString().split("T")[0],
-                        time: a.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
-                        treatment: a.treatment.name
-                    }))
+                        time: a.startTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }),
+                        treatment: a.treatment.name,
+                    })),
                 });
             }
         }
@@ -88,7 +82,7 @@ export async function PATCH(req: Request) {
         const existingAppointment = await prisma.appointment.findFirst({
             where: appointmentQuery,
             orderBy: {
-                startTime: 'asc' // Get the soonest one
+                startTime: "asc",
             },
             include: {
                 treatment: true,
@@ -110,39 +104,21 @@ export async function PATCH(req: Request) {
             );
         }
 
-        // Helper to normalize "04:00 PM", "4pm", "16:00" to "HH:mm"
-        const normalizeTime = (rawTime: string) => {
-            const trimmed = rawTime.trim();
-            const ampmMatch = trimmed.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i);
-            if (ampmMatch) {
-                let hour = parseInt(ampmMatch[1], 10);
-                const minute = ampmMatch[2] || "00";
-                const modifier = ampmMatch[3].toLowerCase();
-                if (modifier === "pm" && hour < 12) hour += 12;
-                if (modifier === "am" && hour === 12) hour = 0;
-                return `${String(hour).padStart(2, "0")}:${minute}`;
-            }
-            return trimmed;
-        };
-
-        const normalizedNewTime = normalizeTime(newTime);
-
-        // 4. Calculate New Appointment Times
-        const startTimeStamp = new Date(`${newDate}T${normalizedNewTime}:00`);
-        const endTimeStamp = new Date(startTimeStamp.getTime() + existingAppointment.treatment.durationMin * 60000);
-
-        // Check if the appointment is on Sunday (0 = Sunday in JavaScript Date)
-        if (startTimeStamp.getDay() === 0) {
+        // 4. Timezone & Sunday Validation
+        if (isSundayInKarachi(newDate)) {
             return NextResponse.json(
                 { message: "The clinic is closed on Sundays. Please select a different day (Monday-Saturday)." },
                 { status: 400 }
             );
         }
 
-        // 5. Check for exact time overlap
+        const startTimeStamp = parseKarachiDateTime(newDate, newTime);
+        const endTimeStamp = new Date(startTimeStamp.getTime() + existingAppointment.treatment.durationMin * 60000);
+
+        // 5. Conflict Check
         const overlappingAppointment = await prisma.appointment.findFirst({
             where: {
-                id: { not: existingAppointment.id }, // Exclude current appointment
+                id: { not: existingAppointment.id },
                 status: {
                     notIn: ["CANCELLED", "NO_SHOW"],
                 },
@@ -156,11 +132,11 @@ export async function PATCH(req: Request) {
         if (overlappingAppointment) {
             return NextResponse.json(
                 { message: "An appointment already exists at this time. Please select another time slot." },
-                { status: 409 } // 409 Conflict
+                { status: 409 }
             );
         }
 
-        // 6. Update the Appointment status to RESCHEDULED
+        // 6. Update Appointment
         const updatedAppointment = await prisma.appointment.update({
             where: { id: existingAppointment.id },
             data: {
@@ -170,19 +146,18 @@ export async function PATCH(req: Request) {
             },
         });
 
-        // If the appointment was previously marked NO_SHOW, decrement noShowCount on recovery
         if (existingAppointment.status === "NO_SHOW") {
             try {
                 await prisma.user.update({
                     where: { id: existingAppointment.patientId },
-                    data: { noShowCount: { decrement: 1 } } as any,
+                    data: { noShowCount: { decrement: 1 } },
                 });
             } catch (userErr) {
                 console.error("Failed to decrement noShowCount on reschedule:", userErr);
             }
         }
 
-        // 7. Trigger Google Calendar sync (background)
+        // 7. Google Calendar update
         if (existingAppointment.googleEventId) {
             (async () => {
                 try {
@@ -201,8 +176,9 @@ export async function PATCH(req: Request) {
             })();
         }
 
-        // 8. Real-Time UI Revalidation for the Admin Dashboard
+        // 8. Revalidate
         revalidatePath("/admin");
+        revalidatePath("/staff");
 
         return NextResponse.json({
             success: true,

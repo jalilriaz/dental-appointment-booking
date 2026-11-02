@@ -43,9 +43,18 @@ export default async function AdminAppointmentsPage({
       treatment: {
         select: { id: true, name: true, price: true, durationMin: true },
       },
+      patientTreatment: {
+        select: {
+          id: true,
+          totalCost: true,
+          totalSessions: true,
+          clinicalStatus: true,
+          financialStatus: true,
+        },
+      },
       clinicalNotes: { orderBy: { createdAt: "desc" } },
     },
-    orderBy: { startTime: status === "SCHEDULED" ? "asc" : "desc" },
+    orderBy: { startTime: "asc" },
   })
 
   // Serialize dates for client component

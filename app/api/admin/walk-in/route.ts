@@ -10,6 +10,10 @@ import { generatePatientCode } from "@/lib/patientCode";
 import { sendAppointmentConfirmationEmail } from "@/lib/email";
 import { revalidatePath } from "next/cache";
 
+import { normalizePhone } from "@/lib/phone";
+import { isSundayInKarachi, parseKarachiDateTime, getKarachiDayBoundaries } from "@/lib/timezone";
+import { generateRandomPatientPasswordHash } from "@/lib/security";
+
 // Zod validation schema
 const walkInSchema = z.object({
     // Patient identification — either existing patientId OR new patient details
@@ -56,16 +60,10 @@ export async function POST(request: Request) {
         }
 
         const { patientId, phone, cnic, fullName, age, date, time, treatmentId, notes } = validationResult.data;
+        const canonicalPhone = phone ? normalizePhone(phone) : undefined;
 
         // 3. Validate date — no past dates, no Sundays
-        const [year, month, day] = date.split("-").map(Number);
-        const selectedDate = new Date(year, month - 1, day); // local date, no UTC offset issues
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        if (selectedDate < today) {
-            return NextResponse.json({ error: "Cannot book an appointment on a past date" }, { status: 400 });
-        }
-        if (selectedDate.getDay() === 0) {
+        if (isSundayInKarachi(date)) {
             return NextResponse.json({ error: "Sunday is a clinic off day. Please select another date." }, { status: 400 });
         }
 
@@ -73,11 +71,9 @@ export async function POST(request: Request) {
         const treatment = await prisma.treatment.findUnique({ where: { id: treatmentId } });
         if (!treatment) return NextResponse.json({ error: "Treatment not found" }, { status: 404 });
 
-        // 5. Calculate times (use local date to avoid UTC offset issues)
-        const [timeH, timeM] = time.split(":").map(Number);
-        const startTime = new Date(year, month - 1, day, timeH, timeM, 0, 0);
-        const endTime = new Date(startTime);
-        endTime.setMinutes(endTime.getMinutes() + treatment.durationMin);
+        // 5. Calculate times using Asia/Karachi timezone
+        const startTime = parseKarachiDateTime(date, time);
+        const endTime = new Date(startTime.getTime() + treatment.durationMin * 60000);
 
         // 6. Atomic transaction
         const result = await prisma.$transaction(async (tx) => {
@@ -100,12 +96,12 @@ export async function POST(request: Request) {
                 }
             } else {
                 // ── New patient path: Main User record ──
-                let user = await tx.user.findFirst({ where: { phone: phone! } });
+                let user = await tx.user.findFirst({ where: { phone: canonicalPhone! } });
                 if (!user) {
                     patientCode = await generatePatientCode();
-                    const hashedPassword = await bcrypt.hash("Patient123!", 10);
+                    const hashedPassword = await generateRandomPatientPasswordHash();
                     user = await tx.user.create({
-                        data: { name: fullName!, phone: phone!, password: hashedPassword, role: "PATIENT", patientCode },
+                        data: { name: fullName!, phone: canonicalPhone!, password: hashedPassword, role: "PATIENT", patientCode },
                     });
                 } else if (!user.patientCode) {
                     patientCode = await generatePatientCode();
@@ -118,8 +114,7 @@ export async function POST(request: Request) {
             }
 
             // Double-booking check — exact overlap on same day only
-            const dayStart = new Date(year, month - 1, day, 0, 0, 0, 0);
-            const dayEnd = new Date(year, month - 1, day, 23, 59, 59, 999);
+            const { startOfDay: dayStart, endOfDay: dayEnd } = getKarachiDayBoundaries(date);
 
             const conflict = await tx.appointment.findFirst({
                 where: {

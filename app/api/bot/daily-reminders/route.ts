@@ -1,64 +1,29 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { formatTime, formatDate } from "@/lib/utils";
-
-function isAuthorized(request: Request): boolean {
-    const authHeader = request.headers.get("authorization");
-    const configuredSecret = (process.env.N8N_SECRET_KEY || "elite-dental-n8n-bot-secret-key-2026")
-        .replace(/^["']|["']$/g, "")
-        .trim();
-    const fallbackSecret = "elite-dental-n8n-bot-secret-key-2026";
-
-    if (authHeader && authHeader.toLowerCase().startsWith("bearer ")) {
-        const token = authHeader.substring(7).replace(/^["']|["']$/g, "").trim();
-        if (token === configuredSecret || token === fallbackSecret) {
-            return true;
-        }
-    }
-
-    const url = new URL(request.url);
-    const querySecret = url.searchParams.get("secret");
-    if (querySecret && (querySecret === configuredSecret || querySecret === fallbackSecret)) {
-        return true;
-    }
-
-    return false;
-}
-
-function normalizeWhatsAppPhone(rawPhone: string): string {
-    let digits = rawPhone.replace(/\D/g, "");
-    if (digits.startsWith("0")) {
-        digits = "92" + digits.slice(1);
-    } else if (digits.startsWith("93") && digits.length === 11) {
-        digits = "923" + digits.slice(2);
-    } else if (digits.length === 10 && digits.startsWith("3")) {
-        digits = "92" + digits;
-    }
-    return digits;
-}
+import { verifyBotAuth } from "@/lib/auth-bot";
+import { normalizePhone } from "@/lib/phone";
+import { getKarachiTodayStr, getKarachiDayBoundaries } from "@/lib/timezone";
 
 export async function GET(request: Request) {
-    if (!isAuthorized(request)) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = verifyBotAuth(request);
+    if (!auth.ok) {
+        return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
     }
 
     try {
-        const now = new Date();
-        const startOfToday = new Date(now);
-        startOfToday.setHours(0, 0, 0, 0);
+        const todayStr = getKarachiTodayStr();
+        const { startOfDay, endOfDay } = getKarachiDayBoundaries(todayStr);
 
-        const endOfToday = new Date(now);
-        endOfToday.setHours(23, 59, 59, 999);
-
-        // Fetch all scheduled or rescheduled appointments for today
+        // Fetch all scheduled or rescheduled appointments for today in Karachi timezone
         const appointments = await prisma.appointment.findMany({
             where: {
                 status: {
                     in: ["SCHEDULED", "RESCHEDULED"],
                 },
                 startTime: {
-                    gte: startOfToday,
-                    lte: endOfToday,
+                    gte: startOfDay,
+                    lte: endOfDay,
                 },
             },
             include: {
@@ -88,7 +53,7 @@ export async function GET(request: Request) {
             .map((apt) => {
                 const patientName = apt.guestName || apt.patient?.name || "Patient";
                 const rawPhone = apt.guestPhone || apt.patient?.phone || "";
-                const phone = normalizeWhatsAppPhone(rawPhone);
+                const phone = normalizePhone(rawPhone);
                 const timeString = formatTime(apt.startTime);
                 const dateString = formatDate(apt.startTime, "medium");
                 const treatmentName = apt.treatment?.name || "Dental Visit";

@@ -62,6 +62,7 @@ model User {
 
   appointments Appointment[]
   patientTreatments PatientTreatment[]
+  planChangeLogs PlanChangeLog[]
 }
 
 model Appointment {
@@ -97,7 +98,14 @@ model Appointment {
   // Treatment Plan Relation
   patientTreatmentId String?
   patientTreatment   PatientTreatment? @relation(fields: [patientTreatmentId], references: [id])
+  sessionNumber      Int?
+  sessionLabel       String?
+  plannedFee         Int?             // Expected installment for this session (NOT a billing charge)
+
   payments           Payment[]
+
+  @@index([patientTreatmentId])
+  @@index([startTime])
 }
 
 model ClinicalNote {
@@ -126,6 +134,8 @@ model Treatment {
   isActive        Boolean @default(true)
   imageUrl        String?
   category        String  @default("General") // Cosmetic, Restorative, General, Consultations
+  isMultiSession  Boolean @default(false)
+  defaultSessions Int     @default(1)
 
   appointments Appointment[]
   patientTreatments PatientTreatment[]
@@ -153,19 +163,58 @@ enum TreatmentStatus {
   FULLY_PAID
 }
 
+enum ClinicalStatus {
+  IN_PROGRESS
+  COMPLETED
+  DISCONTINUED
+}
+
+enum FinancialStatus {
+  UNPAID
+  PARTIALLY_PAID
+  FULLY_PAID
+}
+
 model PatientTreatment {
-  id          String          @id @default(uuid())
-  patientId   String
-  patient     User            @relation(fields: [patientId], references: [id])
-  treatmentId String
-  treatment   Treatment       @relation(fields: [treatmentId], references: [id])
+  id              String          @id @default(uuid())
+  patientId       String
+  patient         User            @relation(fields: [patientId], references: [id])
+  treatmentId     String
+  treatment       Treatment       @relation(fields: [treatmentId], references: [id])
   
-  totalCost   Int             // Total agreed price (e.g., 110,000 for braces)
-  status      TreatmentStatus @default(ONGOING)
-  startDate   DateTime        @default(now())
+  totalCost       Int             // Total agreed price (e.g., 100,000 for braces)
+  totalSessions   Int             @default(1)
   
-  appointments Appointment[]
-  payments     Payment[]
+  // Lifecycle enums
+  clinicalStatus  ClinicalStatus  @default(IN_PROGRESS)
+  financialStatus FinancialStatus @default(UNPAID)
+  
+  // Legacy status column retained during transition
+  status          TreatmentStatus @default(ONGOING)
+  
+  startDate       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt @default(now())
+  
+  appointments    Appointment[]
+  payments        Payment[]
+  changeLogs      PlanChangeLog[]
+
+  @@index([patientId])
+  @@index([clinicalStatus])
+}
+
+model PlanChangeLog {
+  id                 String           @id @default(uuid())
+  patientTreatmentId String
+  patientTreatment   PatientTreatment @relation(fields: [patientTreatmentId], references: [id], onDelete: Cascade)
+  changedByUserId    String?
+  changedByUser      User?            @relation(fields: [changedByUserId], references: [id])
+  field              String           // "totalCost" | "totalSessions" | "clinicalStatus" | "plannedFee"
+  oldValue           String
+  newValue           String
+  createdAt          DateTime         @default(now())
+
+  @@index([patientTreatmentId])
 }
 
 model Payment {

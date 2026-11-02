@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, Fragment } from "react";
 import { checkoutAppointment } from "@/app/actions/billing";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Search, Filter, ChevronLeft, ChevronRight, Eye, RefreshCw, Trash2, Loader2, Calendar, Clock, X, CheckCircle2, UserX, AlertTriangle, CalendarX, Receipt, History, MessageSquareShare } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, Eye, RefreshCw, Trash2, Loader2, Calendar, Clock, X, CheckCircle2, UserX, AlertTriangle, CalendarX, Receipt, History, MessageSquareShare, CalendarDays, Sparkles } from "lucide-react";
+import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import ClinicalNoteDialog from "@/components/admin/ClinicalNoteDialog";
@@ -309,6 +309,8 @@ export default function AppointmentsTable({
     const [dateTo, setDateTo] = useState("");
     const [treatmentFilter, setTreatmentFilter] = useState("");
     const [page, setPage] = useState(1);
+    const [timelineFilter, setTimelineFilter] = useState<"all_active" | "today" | "tomorrow" | "upcoming" | "past" | "all">("all_active");
+    const [perPage, setPerPage] = useState(25);
     const [detailId, setDetailId] = useState<string | null>(null);
     const [rescheduleApt, setRescheduleApt] = useState<Appointment | null>(null);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -323,7 +325,47 @@ export default function AppointmentsTable({
     const [adminConfirmPastApt, setAdminConfirmPastApt] = useState<Appointment | null>(null);
     const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
-    const perPage = 10;
+    // Helper to determine the bucket of an appointment based on today's local date
+    const getAptBucket = useCallback((startTimeStr: string) => {
+        const aptDate = new Date(startTimeStr);
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+        const startOfDayAfter = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2).getTime();
+
+        const aptDayStart = new Date(aptDate.getFullYear(), aptDate.getMonth(), aptDate.getDate()).getTime();
+
+        if (aptDayStart === startOfToday) return "today";
+        if (aptDayStart === startOfTomorrow) return "tomorrow";
+        if (aptDayStart >= startOfDayAfter) return "upcoming";
+        return "past";
+    }, []);
+
+    // Quick counts for the timeline switcher
+    const timelineCounts = useMemo(() => {
+        let today = 0;
+        let tomorrow = 0;
+        let upcoming = 0;
+        let past = 0;
+        let active = 0;
+
+        for (const a of appointments) {
+            const bucket = getAptBucket(a.startTime);
+            if (bucket === "today") {
+                today++;
+                if (a.status !== "CANCELLED") active++;
+            } else if (bucket === "tomorrow") {
+                tomorrow++;
+                if (a.status !== "CANCELLED") active++;
+            } else if (bucket === "upcoming") {
+                upcoming++;
+                if (a.status !== "CANCELLED") active++;
+            } else {
+                past++;
+            }
+        }
+        return { today, tomorrow, upcoming, past, active, total: appointments.length };
+    }, [appointments, getAptBucket]);
 
     // Get unique treatments for the dropdown
     const uniqueTreatments = useMemo(() => {
@@ -342,12 +384,65 @@ export default function AppointmentsTable({
             const matchDateFrom = !dateFrom || aptDate >= new Date(dateFrom + "T00:00:00");
             const matchDateTo = !dateTo || aptDate <= new Date(dateTo + "T23:59:59");
             const matchTreatment = !treatmentFilter || a.treatment.name === treatmentFilter;
-            return matchSearch && matchStatus && matchDateFrom && matchDateTo && matchTreatment;
-        });
-    }, [appointments, search, statusFilter, dateFrom, dateTo, treatmentFilter]);
 
-    const totalPages = Math.ceil(filtered.length / perPage);
-    const paged = filtered.slice((page - 1) * perPage, page * perPage);
+            // Timeline filter
+            const bucket = getAptBucket(a.startTime);
+            let matchTimeline = true;
+            if (timelineFilter === "today") matchTimeline = bucket === "today";
+            else if (timelineFilter === "tomorrow") matchTimeline = bucket === "tomorrow";
+            else if (timelineFilter === "upcoming") matchTimeline = bucket === "upcoming";
+            else if (timelineFilter === "past") matchTimeline = bucket === "past";
+            else if (timelineFilter === "all_active") matchTimeline = bucket !== "past" || a.status === "SCHEDULED" || a.status === "RESCHEDULED";
+
+            return matchSearch && matchStatus && matchDateFrom && matchDateTo && matchTreatment && matchTimeline;
+        });
+    }, [appointments, search, statusFilter, dateFrom, dateTo, treatmentFilter, timelineFilter, getAptBucket]);
+
+    // Strict chronological sequence:
+    // Today comes first (sorted by 2 PM, then 3 PM, etc.)
+    // Tomorrow comes next (sorted by 10 AM, then 2 PM, etc.)
+    // Upcoming comes next (sorted day by day, time by time)
+    // Past comes next (most recent first)
+    const sorted = useMemo(() => {
+        return [...filtered].sort((a, b) => {
+            const timeA = new Date(a.startTime).getTime();
+            const timeB = new Date(b.startTime).getTime();
+            const bucketA = getAptBucket(a.startTime);
+            const bucketB = getAptBucket(b.startTime);
+
+            if (timelineFilter === "all_active" || timelineFilter === "all") {
+                const rank: Record<string, number> = {
+                    today: 1,
+                    tomorrow: 2,
+                    upcoming: 3,
+                    past: 4,
+                };
+                const rankA = rank[bucketA] ?? 5;
+                const rankB = rank[bucketB] ?? 5;
+
+                if (rankA !== rankB) {
+                    return rankA - rankB; // Today first, then Tomorrow, then Upcoming, then Past
+                }
+
+                // If in same bucket (e.g. both Today):
+                // Strict chronological sequence: 2 PM comes before 3 PM!
+                if (bucketA === "past") {
+                    return timeB - timeA;
+                }
+                return timeA - timeB;
+            }
+
+            if (timelineFilter === "past") {
+                return timeB - timeA;
+            }
+
+            // For "today", "tomorrow", "upcoming":
+            return timeA - timeB; // Earliest time slot first
+        });
+    }, [filtered, timelineFilter, getAptBucket]);
+
+    const totalPages = Math.ceil(sorted.length / perPage);
+    const paged = sorted.slice((page - 1) * perPage, page * perPage);
 
     const toggleStatus = (s: string) => {
         setStatusFilter((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
@@ -415,7 +510,7 @@ export default function AppointmentsTable({
         }
     }
 
-    const hasActiveFilters = search || statusFilter.length > 0 || dateFrom || dateTo || treatmentFilter;
+    const hasActiveFilters = search || statusFilter.length > 0 || dateFrom || dateTo || treatmentFilter || timelineFilter !== "all_active";
 
     function clearAllFilters() {
         setSearch("");
@@ -423,31 +518,127 @@ export default function AppointmentsTable({
         setDateFrom("");
         setDateTo("");
         setTreatmentFilter("");
+        setTimelineFilter("all_active");
         setPage(1);
     }
 
     return (
         <div className="space-y-4">
+            {/* Quick Timeline Selector & View Toggle */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                {/* Timeline Segmented Tabs */}
+                <div className="flex flex-wrap items-center gap-1.5 p-1 bg-white/[0.03] border border-white/10 rounded-2xl backdrop-blur-md">
+                    <button
+                        onClick={() => { setTimelineFilter("all_active"); setPage(1); }}
+                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+                            timelineFilter === "all_active"
+                                ? "bg-gradient-to-r from-teal-500/25 to-emerald-500/25 text-teal-300 border border-teal-500/40 shadow-sm"
+                                : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                        }`}
+                    >
+                        <Sparkles className="size-3.5 text-teal-400" />
+                        <span>Active Schedule</span>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-teal-500/20 text-teal-300 font-bold">
+                            {timelineCounts.active}
+                        </span>
+                    </button>
+
+                    <button
+                        onClick={() => { setTimelineFilter("today"); setPage(1); }}
+                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+                            timelineFilter === "today"
+                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm shadow-emerald-500/10"
+                                : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                        }`}
+                    >
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span>Today</span>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 font-bold">
+                            {timelineCounts.today}
+                        </span>
+                    </button>
+
+                    <button
+                        onClick={() => { setTimelineFilter("tomorrow"); setPage(1); }}
+                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+                            timelineFilter === "tomorrow"
+                                ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm shadow-cyan-500/10"
+                                : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                        }`}
+                    >
+                        <CalendarDays className="size-3.5 text-cyan-400" />
+                        <span>Tomorrow</span>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-cyan-500/20 text-cyan-300 font-bold">
+                            {timelineCounts.tomorrow}
+                        </span>
+                    </button>
+
+                    <button
+                        onClick={() => { setTimelineFilter("upcoming"); setPage(1); }}
+                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+                            timelineFilter === "upcoming"
+                                ? "bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow-sm shadow-blue-500/10"
+                                : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                        }`}
+                    >
+                        <Clock className="size-3.5 text-blue-400" />
+                        <span>Upcoming</span>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-500/20 text-blue-300 font-bold">
+                            {timelineCounts.upcoming}
+                        </span>
+                    </button>
+
+                    <button
+                        onClick={() => { setTimelineFilter("past"); setPage(1); }}
+                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+                            timelineFilter === "past"
+                                ? "bg-slate-700/50 text-slate-200 border border-slate-600 shadow-sm"
+                                : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                        }`}
+                    >
+                        <History className="size-3.5 text-slate-400" />
+                        <span>Past & History</span>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-white/[0.08] text-slate-300 font-bold">
+                            {timelineCounts.past}
+                        </span>
+                    </button>
+
+                    <button
+                        onClick={() => { setTimelineFilter("all"); setPage(1); }}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-all cursor-pointer ${
+                            timelineFilter === "all"
+                                ? "bg-white/[0.1] text-white border border-white/20"
+                                : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                        }`}
+                    >
+                        All ({timelineCounts.total})
+                    </button>
+                </div>
+
+                {/* List / Calendar Toggle */}
+                <div className="flex bg-white/[0.04] p-1 rounded-xl border border-white/10">
+                    <button
+                        onClick={() => setViewMode("list")}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-2 cursor-pointer ${viewMode === "list" ? "bg-teal-500/20 text-teal-400 shadow-sm border border-teal-500/30" : "text-slate-400 hover:text-slate-200"}`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                        List
+                    </button>
+                    <button
+                        onClick={() => setViewMode("calendar")}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-2 cursor-pointer ${viewMode === "calendar" ? "bg-teal-500/20 text-teal-400 shadow-sm border border-teal-500/30" : "text-slate-400 hover:text-slate-200"}`}
+                    >
+                        <Calendar className="size-4" />
+                        Calendar
+                    </button>
+                </div>
+            </div>
+
             {/* Filters */}
             <div className="glass-card rounded-xl p-4 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-                    <div className="flex bg-white/[0.04] p-1 rounded-lg border border-white/10">
-                        <button
-                            onClick={() => setViewMode("list")}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-2 ${viewMode === "list" ? "bg-teal-500/20 text-teal-400 shadow-sm" : "text-slate-400 hover:text-slate-200"}`}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-                            List
-                        </button>
-                        <button
-                            onClick={() => setViewMode("calendar")}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-2 ${viewMode === "calendar" ? "bg-teal-500/20 text-teal-400 shadow-sm" : "text-slate-400 hover:text-slate-200"}`}
-                        >
-                            <Calendar className="size-4" />
-                            Calendar
-                        </button>
-                    </div>
-                </div>
                 <div className="flex flex-wrap gap-3">
                     <div className="relative flex-1 min-w-[200px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
@@ -533,123 +724,194 @@ export default function AppointmentsTable({
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/[0.04]">
-                                {paged.map((apt) => {
+                                {paged.map((apt, index) => {
                                     const start = new Date(apt.startTime);
                                     const isPastDate = new Date(apt.startTime).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
+                                    const currentDateKey = format(start, "yyyy-MM-dd");
+                                    const prevApt = index > 0 ? paged[index - 1] : null;
+                                    const prevDateKey = prevApt ? format(new Date(prevApt.startTime), "yyyy-MM-dd") : null;
+                                    const isNewDayGroup = currentDateKey !== prevDateKey;
+                                    const bucket = getAptBucket(apt.startTime);
 
                                     return (
-                                        <tr key={apt.id} className="hover:bg-white/[0.03] transition-premium cursor-pointer">
-                                            <td className="px-4 py-3">
-                                                <p className="font-medium text-white flex items-center gap-2">
-                                                    {apt.patient?.name || "Unknown"}
-                                                    {(apt.patient?.noShowCount ?? 0) > 0 && (
-                                                        <span className="inline-flex items-center gap-1 rounded bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-400 border border-red-500/20" title={`${apt.patient?.noShowCount} previous No-Shows`}>
-                                                            <AlertTriangle className="size-3" />
-                                                            {apt.patient?.noShowCount} No-Show
+                                        <Fragment key={apt.id}>
+                                            {isNewDayGroup && (
+                                                <tr key={`header-${currentDateKey}`} className="bg-slate-900/90 border-y border-white/[0.08] backdrop-blur-md">
+                                                    <td colSpan={6} className="px-4 py-2.5">
+                                                        <div className="flex items-center justify-between flex-wrap gap-2">
+                                                            <div className="flex items-center gap-2.5">
+                                                                {bucket === "today" ? (
+                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-500/10">
+                                                                        <span className="relative flex h-2 w-2">
+                                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                                                                        </span>
+                                                                        TODAY
+                                                                    </span>
+                                                                ) : bucket === "tomorrow" ? (
+                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm shadow-cyan-500/10">
+                                                                        <CalendarDays className="size-3.5" />
+                                                                        TOMORROW
+                                                                    </span>
+                                                                ) : bucket === "upcoming" ? (
+                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                                                        <Clock className="size-3.5" />
+                                                                        UPCOMING
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-400 border border-white/5">
+                                                                        <History className="size-3" />
+                                                                        PAST RECORD
+                                                                    </span>
+                                                                )}
+                                                                <span className="text-sm font-semibold text-white tracking-wide">
+                                                                    {format(start, "EEEE, d MMMM yyyy")}
+                                                                </span>
+                                                            </div>
+                                                            <span className="text-xs text-slate-400 font-medium">
+                                                                Sequential Time Order
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            <tr className="hover:bg-white/[0.03] transition-premium cursor-pointer">
+                                                <td className="px-4 py-3">
+                                                    <p className="font-medium text-white flex items-center gap-2">
+                                                        {apt.patient?.name || "Unknown"}
+                                                        {(apt.patient?.noShowCount ?? 0) > 0 && (
+                                                            <span className="inline-flex items-center gap-1 rounded bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-400 border border-red-500/20" title={`${apt.patient?.noShowCount} previous No-Shows`}>
+                                                                <AlertTriangle className="size-3" />
+                                                                {apt.patient?.noShowCount} No-Show
+                                                            </span>
+                                                        )}
+                                                    </p>
+                                                    <p className="text-xs text-slate-400">{apt.patient?.phone}</p>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <p className="text-slate-200 font-medium">{apt.treatment.name}</p>
+                                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                                        <p className="text-xs text-slate-400 font-semibold">{formatPKR(apt.price || apt.treatment.price)}</p>
+                                                        {apt.sessionNumber ? (
+                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25">
+                                                                Session {apt.sessionNumber}{apt.patientTreatment?.totalSessions ? ` of ${apt.patientTreatment.totalSessions}` : ""}
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-slate-300">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/15 border border-teal-500/30 text-teal-300 font-bold text-sm tracking-tight shadow-sm shadow-teal-500/10">
+                                                            <Clock className="size-3.5 text-teal-400" />
+                                                            {formatTime(start)}
                                                         </span>
-                                                    )}
-                                                </p>
-                                                <p className="text-xs text-slate-400">{apt.patient?.phone}</p>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <p className="text-slate-200">{apt.treatment.name}</p>
-                                                <p className="text-xs text-slate-400">{formatPKR(apt.treatment.price)}</p>
-                                            </td>
-                                            <td className="px-4 py-3 text-slate-300">
-                                                {formatDate(start)}
-                                                <br />
-                                                <span className="text-xs text-slate-400">
-                                                    {formatTime(start)}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <StatusBadge status={apt.status} />
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className="text-xs text-slate-400">{apt.bookedBy?.replace("_", " ") || "WEBSITE"}</span>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex gap-1">
-                                                    <button onClick={() => setDetailId(apt.id)} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-slate-400 cursor-pointer transition-premium" title="View Details">
-                                                        <Eye className="size-4" />
-                                                    </button>
-                                                    <button onClick={() => apt.patient?.id && setHistoryPatientId(apt.patient.id)} className="p-1.5 rounded-lg hover:bg-blue-500/10 text-blue-400 cursor-pointer transition-premium" title="Patient History">
-                                                        <History className="size-4" />
-                                                    </button>
-                                                    {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
-                                                        <>
-                                                            {(!isPastDate || userRole === "ADMIN") && (
+                                                        <span className="text-[11px] font-medium text-slate-400 px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/[0.06]">
+                                                            {apt.treatment.durationMin}m
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+                                                        <span>{formatDate(start)}</span>
+                                                        {bucket === "today" && (
+                                                            <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/15 px-1.5 py-0.2 rounded border border-emerald-500/20">
+                                                                Today
+                                                            </span>
+                                                        )}
+                                                        {bucket === "tomorrow" && (
+                                                            <span className="text-[10px] text-cyan-400 font-semibold bg-cyan-500/15 px-1.5 py-0.2 rounded border border-cyan-500/20">
+                                                                Tomorrow
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <StatusBadge status={apt.status} />
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className="text-xs text-slate-400">{apt.bookedBy?.replace("_", " ") || "WEBSITE"}</span>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex gap-1">
+                                                        <button onClick={() => setDetailId(apt.id)} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-slate-400 cursor-pointer transition-premium" title="View Details">
+                                                            <Eye className="size-4" />
+                                                        </button>
+                                                        <button onClick={() => apt.patient?.id && setHistoryPatientId(apt.patient.id)} className="p-1.5 rounded-lg hover:bg-blue-500/10 text-blue-400 cursor-pointer transition-premium" title="Patient History">
+                                                            <History className="size-4" />
+                                                        </button>
+                                                        {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
+                                                            <>
+                                                                {(!isPastDate || userRole === "ADMIN") && (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            if (isPastDate) {
+                                                                                setAdminConfirmPastApt(apt);
+                                                                            } else {
+                                                                                setCheckoutApt(apt);
+                                                                                setAmountValue("");
+                                                                                setDiscountValue("0");
+                                                                            }
+                                                                        }}
+                                                                        className="p-1.5 rounded-lg hover:bg-teal-500/10 text-teal-400 cursor-pointer transition-premium"
+                                                                        title="Check Out — Mark as Completed"
+                                                                        disabled={checkingOutId === apt.id}
+                                                                    >
+                                                                        {checkingOutId === apt.id ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+                                                                    </button>
+                                                                )}
                                                                 <button
-                                                                    onClick={() => {
-                                                                        if (isPastDate) {
-                                                                            setAdminConfirmPastApt(apt);
-                                                                        } else {
-                                                                            setCheckoutApt(apt);
-                                                                            setAmountValue("");
-                                                                            setDiscountValue("0");
-                                                                        }
-                                                                    }}
-                                                                    className="p-1.5 rounded-lg hover:bg-teal-500/10 text-teal-400 cursor-pointer transition-premium"
-                                                                    title="Check Out — Mark as Completed"
-                                                                    disabled={checkingOutId === apt.id}
+                                                                    onClick={() => handleStatusChange(apt.id, "NO_SHOW")}
+                                                                    className="p-1.5 rounded-lg hover:bg-amber-500/10 text-amber-400 cursor-pointer transition-premium"
+                                                                    title="Mark as No Show"
                                                                 >
-                                                                    {checkingOutId === apt.id ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+                                                                    <UserX className="size-4" />
                                                                 </button>
-                                                            )}
-                                                            <button
-                                                                onClick={() => handleStatusChange(apt.id, "NO_SHOW")}
-                                                                className="p-1.5 rounded-lg hover:bg-amber-500/10 text-amber-400 cursor-pointer transition-premium"
-                                                                title="Mark as No Show"
-                                                            >
-                                                                <UserX className="size-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => setRescheduleApt(apt)}
-                                                                className="p-1.5 rounded-lg hover:bg-blue-500/10 text-blue-400 cursor-pointer transition-premium"
-                                                                title="Reschedule"
-                                                            >
-                                                                <RefreshCw className="size-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => setConfirmCancelId(apt.id)}
-                                                                className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-400 cursor-pointer transition-premium"
-                                                                title="Cancel"
-                                                                disabled={cancellingId === apt.id}
-                                                            >
-                                                                {cancellingId === apt.id ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                    <ClinicalNoteDialog
-                                                        appointmentId={apt.id}
-                                                        patientName={apt.patient?.name || "Unknown"}
-                                                        treatmentName={apt.treatment.name}
-                                                        appointmentDate={formatDate(apt.startTime)}
-                                                        existingNote={apt.clinicalNotes?.[0] || null}
-                                                        onNoteSaved={() => router.refresh()}
-                                                        readOnly={userRole !== "ADMIN"}
-                                                    />
-                                                    {apt.status === "COMPLETED" && (
-                                                        <>
-                                                            <button
-                                                                onClick={() => setPrecautionsApt(apt)}
-                                                                className="p-1.5 rounded-lg hover:bg-emerald-500/10 text-emerald-400 cursor-pointer transition-premium"
-                                                                title="Send WhatsApp Precautions"
-                                                            >
-                                                                <MessageSquareShare className="size-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => setReceiptApt(apt)}
-                                                                className="p-1.5 rounded-lg hover:bg-teal-500/10 text-teal-400 cursor-pointer transition-premium"
-                                                                title="Download Receipt"
-                                                            >
-                                                                <Receipt className="size-4" />
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                                <button
+                                                                    onClick={() => setRescheduleApt(apt)}
+                                                                    className="p-1.5 rounded-lg hover:bg-blue-500/10 text-blue-400 cursor-pointer transition-premium"
+                                                                    title="Reschedule"
+                                                                >
+                                                                    <RefreshCw className="size-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setConfirmCancelId(apt.id)}
+                                                                    className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-400 cursor-pointer transition-premium"
+                                                                    title="Cancel"
+                                                                    disabled={cancellingId === apt.id}
+                                                                >
+                                                                    {cancellingId === apt.id ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        <ClinicalNoteDialog
+                                                            appointmentId={apt.id}
+                                                            patientName={apt.patient?.name || "Unknown"}
+                                                            treatmentName={apt.treatment.name}
+                                                            appointmentDate={formatDate(apt.startTime)}
+                                                            existingNote={apt.clinicalNotes?.[0] || null}
+                                                            onNoteSaved={() => router.refresh()}
+                                                            readOnly={userRole !== "ADMIN"}
+                                                        />
+                                                        {apt.status === "COMPLETED" && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => setPrecautionsApt(apt)}
+                                                                    className="p-1.5 rounded-lg hover:bg-emerald-500/10 text-emerald-400 cursor-pointer transition-premium"
+                                                                    title="Send WhatsApp Precautions"
+                                                                >
+                                                                    <MessageSquareShare className="size-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setReceiptApt(apt)}
+                                                                    className="p-1.5 rounded-lg hover:bg-teal-500/10 text-teal-400 cursor-pointer transition-premium"
+                                                                    title="Download Receipt"
+                                                                >
+                                                                    <Receipt className="size-4" />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </Fragment>
                                     );
                                 })}
                                 {paged.length === 0 && (
@@ -660,9 +922,25 @@ export default function AppointmentsTable({
                     </div>
 
                     {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06] bg-white/[0.02]">
-                            <p className="text-sm text-slate-400">Showing {(page - 1) * perPage + 1}-{Math.min(page * perPage, filtered.length)} of {filtered.length}</p>
+                    <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-white/[0.06] bg-white/[0.02] gap-3">
+                        <div className="flex items-center gap-3">
+                            <p className="text-sm text-slate-400">
+                                Showing <strong className="text-white">{sorted.length > 0 ? (page - 1) * perPage + 1 : 0}</strong>–<strong className="text-white">{Math.min(page * perPage, sorted.length)}</strong> of <strong className="text-white">{sorted.length}</strong>
+                            </p>
+                            <div className="flex items-center gap-1 text-xs text-slate-400">
+                                <span>Per page:</span>
+                                {[10, 25, 50, 100].map((size) => (
+                                    <button
+                                        key={size}
+                                        onClick={() => { setPerPage(size); setPage(1); }}
+                                        className={`px-2 py-0.5 rounded text-xs transition-colors cursor-pointer ${perPage === size ? "bg-teal-500/20 text-teal-300 font-bold border border-teal-500/30" : "text-slate-400 hover:text-white"}`}
+                                    >
+                                        {size}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        {totalPages > 1 && (
                             <div className="flex gap-1">
                                 <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)} className="cursor-pointer">
                                     <ChevronLeft className="size-4" />
@@ -676,8 +954,8 @@ export default function AppointmentsTable({
                                     <ChevronRight className="size-4" />
                                 </Button>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             )}
 

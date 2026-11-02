@@ -57,9 +57,18 @@ export default async function StaffAppointmentsPage({ searchParams }: { searchPa
         include: {
             patient: { select: { id: true, name: true, email: true, phone: true } },
             treatment: { select: { id: true, name: true, price: true, durationMin: true } },
+            patientTreatment: {
+                select: {
+                    id: true,
+                    totalCost: true,
+                    totalSessions: true,
+                    clinicalStatus: true,
+                    financialStatus: true,
+                },
+            },
             clinicalNotes: { orderBy: { createdAt: "desc" } },
         },
-        orderBy: { startTime: status === "SCHEDULED" ? "asc" : "desc" },
+        orderBy: { startTime: "asc" },
     });
 
     // Serialize dates for client component

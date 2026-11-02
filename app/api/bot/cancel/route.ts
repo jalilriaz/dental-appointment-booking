@@ -2,18 +2,16 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { deleteCalendarEvent } from "@/lib/googleCalendar";
+import { verifyBotAuth } from "@/lib/auth-bot";
+import { normalizePhone } from "@/lib/phone";
+import { getKarachiDayBoundaries } from "@/lib/timezone";
 
 export async function PATCH(req: Request) {
     try {
-        // 1. Secure Authentication Check
-        const authHeader = req.headers.get("authorization");
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-        }
-
-        const token = authHeader.split(" ")[1];
-        if (token !== process.env.N8N_SECRET_KEY) {
-            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        // 1. Timing-Safe Authentication Check
+        const auth = verifyBotAuth(req);
+        if (!auth.ok) {
+            return NextResponse.json({ message: auth.error }, { status: auth.status || 401 });
         }
 
         // 2. Parse and Validate Request Body
@@ -27,9 +25,11 @@ export async function PATCH(req: Request) {
             );
         }
 
-        // 3. Find Existing Appointment by Phone Number
-        const patient = await prisma.user.findUnique({
-            where: { phone },
+        const canonicalPhone = normalizePhone(phone);
+
+        // 3. Find Patient by Canonical Phone
+        const patient = await prisma.user.findFirst({
+            where: { phone: canonicalPhone },
         });
 
         if (!patient) {
@@ -39,29 +39,28 @@ export async function PATCH(req: Request) {
             );
         }
 
-        // Build the query to find their upcoming appointment.
+        // Build upcoming appointment query
         let appointmentQuery: any = {
             patientId: patient.id,
-            status: "SCHEDULED",
+            status: { in: ["SCHEDULED", "RESCHEDULED"] },
             startTime: {
-                gt: new Date() // Only look for future appointments
-            }
+                gt: new Date(),
+            },
         };
 
         if (appointmentId) {
             appointmentQuery.id = appointmentId;
         } else if (currentDate) {
-            const startOfDay = new Date(`${currentDate}T00:00:00`);
-            const endOfDay = new Date(`${currentDate}T23:59:59`);
+            const { startOfDay, endOfDay } = getKarachiDayBoundaries(currentDate);
             appointmentQuery.startTime = {
                 gte: startOfDay,
-                lte: endOfDay
+                lte: endOfDay,
             };
         } else {
             // Check if patient has multiple upcoming appointments
             const upcomingAppointments = await prisma.appointment.findMany({
                 where: appointmentQuery,
-                orderBy: { startTime: 'asc' },
+                orderBy: { startTime: "asc" },
                 include: { treatment: { select: { name: true } } },
             });
 
@@ -69,13 +68,13 @@ export async function PATCH(req: Request) {
                 return NextResponse.json({
                     multipleAppointments: true,
                     message: "The patient has multiple upcoming appointments. Please ask them which one (by date or treatment) they wish to cancel.",
-                    appointments: upcomingAppointments.map(a => ({
+                    appointments: upcomingAppointments.map((a) => ({
                         appointmentId: a.id,
-                        patientName: a.guestName || "Patient",
+                        patientName: a.guestName || patient.name || "Patient",
                         date: a.startTime.toISOString().split("T")[0],
-                        time: a.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
-                        treatment: a.treatment.name
-                    }))
+                        time: a.startTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }),
+                        treatment: a.treatment.name,
+                    })),
                 });
             }
         }
@@ -83,8 +82,8 @@ export async function PATCH(req: Request) {
         const existingAppointment = await prisma.appointment.findFirst({
             where: appointmentQuery,
             orderBy: {
-                startTime: 'asc'
-            }
+                startTime: "asc",
+            },
         });
 
         if (!existingAppointment) {
@@ -102,7 +101,7 @@ export async function PATCH(req: Request) {
             });
         }
 
-        // 4. Cancel the Appointment
+        // 4. Cancel Appointment
         const cancelledAppointment = await prisma.appointment.update({
             where: { id: existingAppointment.id },
             data: {
@@ -110,13 +109,12 @@ export async function PATCH(req: Request) {
             },
         });
 
-        // 5. Trigger Google Calendar sync (background)
+        // 5. Trigger Google Calendar sync
         if (existingAppointment.googleEventId) {
             (async () => {
                 try {
                     await deleteCalendarEvent(existingAppointment.googleEventId!);
 
-                    // Remove the Google Event ID from our database since the event no longer exists on Google Calendar
                     await prisma.appointment.update({
                         where: { id: existingAppointment.id },
                         data: { googleEventId: null },
@@ -127,8 +125,9 @@ export async function PATCH(req: Request) {
             })();
         }
 
-        // 6. Real-Time UI Revalidation for the Admin Dashboard
+        // 6. Real-Time UI Revalidation
         revalidatePath("/admin");
+        revalidatePath("/staff");
 
         return NextResponse.json({
             success: true,

@@ -1,27 +1,24 @@
-
-
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { createCalendarEvent } from "@/lib/googleCalendar";
 import { generatePatientCode } from "@/lib/patientCode";
+import { verifyBotAuth } from "@/lib/auth-bot";
+import { normalizePhone } from "@/lib/phone";
+import { isSundayInKarachi, parseKarachiDateTime } from "@/lib/timezone";
+import { generateRandomPatientPasswordHash } from "@/lib/security";
 
 export async function POST(req: Request) {
     try {
-        // 1. Secure Authentication Check
-        const authHeader = req.headers.get("authorization");
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-        }
-
-        const token = authHeader.split(" ")[1];
-        if (token !== process.env.N8N_SECRET_KEY) {
-            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        // 1. Timing-Safe Authentication Check
+        const auth = verifyBotAuth(req);
+        if (!auth.ok) {
+            return NextResponse.json({ message: auth.error }, { status: auth.status || 401 });
         }
 
         // 2. Parse and Validate Request Body
         const body = await req.json();
-        const { patientName, phone, age, date, time, serviceType } = body;
+        const { patientName, phone, age, date, time, serviceType, patientTreatmentId } = body;
 
         if (!patientName || !phone || !date || !time) {
             return NextResponse.json(
@@ -30,29 +27,34 @@ export async function POST(req: Request) {
             );
         }
 
-        // 3. Find or Create the Patient
-        let patient = await prisma.user.upsert({
-            where: { phone },
-            update: {
-                name: patientName,
-            },
-            create: {
-                name: patientName,
-                phone,
-                role: "PATIENT",
-            },
+        const canonicalPhone = normalizePhone(phone);
+
+        // 3. Find or Create Patient (Never overwrite existing patient's name on incoming chat)
+        let patient = await prisma.user.findFirst({
+            where: { phone: canonicalPhone },
         });
 
-        // 3b. Assign a patient code if they don't have one yet
-        if (!(patient as any).patientCode) {
+        if (!patient) {
+            const initialPasswordHash = await generateRandomPatientPasswordHash();
+            const code = await generatePatientCode();
+            patient = await prisma.user.create({
+                data: {
+                    name: patientName,
+                    phone: canonicalPhone,
+                    role: "PATIENT",
+                    password: initialPasswordHash,
+                    patientCode: code,
+                },
+            });
+        } else if (!patient.patientCode) {
             const code = await generatePatientCode();
             patient = await prisma.user.update({
                 where: { id: patient.id },
-                data: { patientCode: code } as any,
+                data: { patientCode: code },
             });
         }
 
-        // 4. Handle Treatment Logic
+        // 4. Treatment Selection
         let treatment = null;
         if (serviceType) {
             treatment = await prisma.treatment.findFirst({
@@ -65,7 +67,6 @@ export async function POST(req: Request) {
             });
         }
 
-        // Fallback to the first available treatment if no specific match is found
         if (!treatment) {
             treatment = await prisma.treatment.findFirst();
         }
@@ -77,38 +78,18 @@ export async function POST(req: Request) {
             );
         }
 
-        // Helper to normalize "04:00 PM", "4pm", "16:00" to "HH:mm"
-        const normalizeTime = (rawTime: string) => {
-            const trimmed = rawTime.trim();
-            const ampmMatch = trimmed.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i);
-            if (ampmMatch) {
-                let hour = parseInt(ampmMatch[1], 10);
-                const minute = ampmMatch[2] || "00";
-                const modifier = ampmMatch[3].toLowerCase();
-                if (modifier === "pm" && hour < 12) hour += 12;
-                if (modifier === "am" && hour === 12) hour = 0;
-                return `${String(hour).padStart(2, "0")}:${minute}`;
-            }
-            return trimmed;
-        };
-
-        const normalizedTime = normalizeTime(time);
-
-        // 5. Calculate Appointment Times (Z removed for correct local time)
-        const startTimeStamp = new Date(`${date}T${normalizedTime}:00`);
-        const endTimeStamp = new Date(startTimeStamp.getTime() + treatment.durationMin * 60000);
-
-        // Check if the appointment is on Sunday (0 = Sunday in JavaScript Date)
-        if (startTimeStamp.getDay() === 0) {
+        // 5. Calculate Appointment Times in Asia/Karachi Timezone
+        if (isSundayInKarachi(date)) {
             return NextResponse.json(
                 { message: "The clinic is closed on Sundays. Please select a different day (Monday-Saturday)." },
                 { status: 400 }
             );
         }
 
+        const startTimeStamp = parseKarachiDateTime(date, time);
+        const endTimeStamp = new Date(startTimeStamp.getTime() + treatment.durationMin * 60000);
 
-        // 6. Check for Double Booking (Availability Check with Buffer)
-        // Check for exact time overlap
+        // 6. Double Booking Check
         const existingAppointment = await prisma.appointment.findFirst({
             where: {
                 status: {
@@ -124,12 +105,11 @@ export async function POST(req: Request) {
         if (existingAppointment) {
             return NextResponse.json(
                 { message: "An appointment already exists at this time. Please select another time slot." },
-                { status: 409 } // 409 Conflict
+                { status: 409 }
             );
         }
 
-
-        // 7. Create the Appointment
+        // 7. Create Appointment
         const appointment = await prisma.appointment.create({
             data: {
                 startTime: startTimeStamp,
@@ -138,9 +118,15 @@ export async function POST(req: Request) {
                 treatmentId: treatment.id,
                 bookedBy: "WHATSAPP_BOT",
                 status: "SCHEDULED",
+                price: treatment.price,
                 guestName: patientName,
-                guestPhone: phone,
-                notes: `Booked via WhatsApp for ${patientName}. Age provided: ${age || "N/A"}. Service requested: ${serviceType || "N/A"}`,
+                guestPhone: canonicalPhone,
+                patientTreatmentId: patientTreatmentId || null,
+                notes: `Booked via WhatsApp for ${patientName}. Age: ${age || "N/A"}. Service: ${serviceType || treatment.name}`,
+            },
+            include: {
+                treatment: true,
+                patient: true,
             },
         });
 
@@ -153,11 +139,10 @@ export async function POST(req: Request) {
                     startTime: startTimeStamp,
                     endTime: endTimeStamp,
                     patientName: patientName,
-                    patientPhone: phone,
+                    patientPhone: canonicalPhone,
                 });
 
                 if (googleEventId) {
-                    // Update the appointment with the Google Calendar event ID
                     await prisma.appointment.update({
                         where: { id: appointment.id },
                         data: { googleEventId },
@@ -168,13 +153,14 @@ export async function POST(req: Request) {
             }
         })();
 
-        // 9. Real-Time UI Revalidation for the Admin Dashboard
+        // 9. Revalidate Dashboard
         revalidatePath("/admin");
+        revalidatePath("/staff");
 
         return NextResponse.json({
             success: true,
             message: "Appointment booked successfully.",
-            patientCode: (patient as any).patientCode,
+            patientCode: patient.patientCode,
             appointment,
         });
     } catch (error) {
