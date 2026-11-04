@@ -47,33 +47,33 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         <>
             {/* Mobile overlay */}
             {open && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 lg:hidden" onClick={onClose} />
             )}
 
             {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 z-50 h-full w-64 bg-slate-950/80 backdrop-blur-xl border-r border-white/[0.06] text-white transition-transform duration-300 lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"
+                className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-200 text-slate-800 transition-transform duration-300 lg:translate-x-0 shadow-xs ${open ? "translate-x-0" : "-translate-x-full"
                     }`}
             >
                 {/* Logo area */}
-                <div className="flex items-center justify-between px-5 py-5 border-b border-white/[0.06]">
+                <div className="flex items-center justify-between px-5 py-5 border-b border-slate-100">
                     <Link href="/admin" className="flex items-center gap-2.5">
-                        <div className="size-9 rounded-lg gradient-primary flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-teal-500/20">
+                        <div className="size-9 rounded-lg bg-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-teal-600/20">
                             E
                         </div>
                         <div>
-                            <span className="font-bold text-sm text-white">Elite Dental</span>
-                            <p className="text-[10px] text-teal-400/70 font-medium tracking-wider">ADMIN PANEL</p>
+                            <span className="font-bold text-sm text-slate-900">Elite Dental</span>
+                            <p className="text-[10px] text-teal-700 font-bold tracking-wider">ADMIN PANEL</p>
                         </div>
                     </Link>
-                    <button onClick={onClose} className="lg:hidden text-slate-500 hover:text-white transition-premium">
+                    <button onClick={onClose} className="lg:hidden text-slate-500 hover:text-slate-800 transition-premium">
                         <X className="size-5" />
                     </button>
                 </div>
 
                 {/* Navigation */}
                 <nav className="mt-4 px-3 space-y-1">
-                    <p className="px-3 py-2 text-[10px] uppercase tracking-widest text-slate-600 font-semibold">
+                    <p className="px-3 py-2 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
                         Navigation
                     </p>
                     {navItems.map((item) => {
@@ -85,23 +85,23 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                                 href={item.href}
                                 onClick={onClose}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-premium ${active
-                                    ? "bg-teal-500/10 text-teal-400 font-medium border-l-2 border-teal-400 glow-border-teal"
-                                    : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+                                    ? "bg-teal-50 text-teal-800 font-semibold border-l-2 border-teal-600"
+                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
                                     }`}
                             >
-                                <Icon className={`size-5 ${active ? "text-teal-400" : "text-slate-500"}`} />
+                                <Icon className={`size-5 ${active ? "text-teal-600" : "text-slate-400"}`} />
                                 {item.label}
-                                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-teal-400 shadow-lg shadow-teal-400/50" />}
+                                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-teal-600 shadow-sm" />}
                             </Link>
                         );
                     })}
                 </nav>
 
                 {/* Bottom */}
-                <div className="absolute bottom-0 left-0 right-0 px-3 py-4 border-t border-white/[0.06]">
+                <div className="absolute bottom-0 left-0 right-0 px-3 py-4 border-t border-slate-100">
                     <Link
                         href="/api/auth/logout"
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:bg-red-500/10 hover:text-red-400 transition-premium"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-red-50 hover:text-red-700 font-medium transition-premium"
                     >
                         <LogOut className="size-5" />
                         Sign Out

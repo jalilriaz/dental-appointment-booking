@@ -92,15 +92,15 @@ export default async function StaffAppointmentsPage({ searchParams }: { searchPa
         <div className="max-w-6xl mx-auto py-8 px-4 space-y-8">
             <div className="flex items-center justify-between">
                 <div>
-                    <Link href="/staff" className="text-sm text-teal-400 hover:text-teal-300 flex items-center gap-1 mb-2 font-medium transition-premium">
+                    <Link href="/staff" className="text-sm text-teal-700 hover:text-teal-800 flex items-center gap-1.5 mb-2 font-semibold transition-premium">
                         <ArrowLeft className="size-4" /> Back to Dashboard
                     </Link>
-                    <h1 className="text-2xl font-bold text-white">All Appointments</h1>
-                    <p className="text-sm text-slate-400">Manage schedule and view patient details.</p>
+                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">All Appointments</h1>
+                    <p className="text-sm text-slate-600 font-medium">Manage schedule and view patient details.</p>
                 </div>
                 <Link
                     href="/staff/book"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 btn-brand text-sm font-medium rounded-full transition-premium active:scale-95"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-premium active:scale-95"
                 >
                     <Calendar className="size-4" />
                     Book for Patient

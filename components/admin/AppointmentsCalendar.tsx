@@ -13,27 +13,36 @@ interface AppointmentsCalendarProps {
     onEventClick: (appointmentId: string) => void;
 }
 
-// Map status to a darker background color for the calendar block
+// Map status to a clinical light tint background color for the calendar block
 const statusBackgroundColor: Record<string, string> = {
-    SCHEDULED: "#0f172a", // Slate 900
-    COMPLETED: "#064e3b", // Emerald 900
-    CANCELLED: "#450a0a", // Red 900
-    NO_SHOW: "#451a03",   // Amber 900
-    RESCHEDULED: "#1e3a8a", // Blue 900
+    SCHEDULED: "#eff6ff",   // Blue 50
+    COMPLETED: "#f0fdf4",   // Emerald 50
+    CANCELLED: "#fef2f2",   // Red 50
+    NO_SHOW: "#fffbeb",     // Amber 50
+    RESCHEDULED: "#f0fdfa", // Teal 50
 };
 
 const statusBorderColor: Record<string, string> = {
-    SCHEDULED: "#3b82f6", // Blue 500
-    COMPLETED: "#10b981", // Emerald 500
-    CANCELLED: "#ef4444", // Red 500
-    NO_SHOW: "#f59e0b",   // Amber 500
-    RESCHEDULED: "#3b82f6", // Blue 500
+    SCHEDULED: "#93c5fd",   // Blue 300
+    COMPLETED: "#86efac",   // Emerald 300
+    CANCELLED: "#fca5a5",   // Red 300
+    NO_SHOW: "#fcd34d",     // Amber 300
+    RESCHEDULED: "#5eead4", // Teal 300
+};
+
+const statusTextColor: Record<string, string> = {
+    SCHEDULED: "#1e40af",   // Blue 800
+    COMPLETED: "#065f46",   // Emerald 800
+    CANCELLED: "#991b1b",   // Red 800
+    NO_SHOW: "#92400e",     // Amber 800
+    RESCHEDULED: "#115e59", // Teal 800
 };
 
 export default function AppointmentsCalendar({ appointments, onEventClick }: AppointmentsCalendarProps) {
     const events = appointments.map((apt) => {
-        const bg = statusBackgroundColor[apt.status] || "#1e293b";
-        const border = statusBorderColor[apt.status] || "#475569";
+        const bg = statusBackgroundColor[apt.status] || "#f8fafc";
+        const border = statusBorderColor[apt.status] || "#cbd5e1";
+        const text = statusTextColor[apt.status] || "#0f172a";
 
         return {
             id: apt.id,
@@ -42,7 +51,7 @@ export default function AppointmentsCalendar({ appointments, onEventClick }: App
             end: apt.endTime,
             backgroundColor: bg,
             borderColor: border,
-            textColor: "#f8fafc",
+            textColor: text,
             extendedProps: {
                 status: apt.status,
                 treatment: apt.treatment.name,
@@ -52,24 +61,24 @@ export default function AppointmentsCalendar({ appointments, onEventClick }: App
     });
 
     return (
-        <div className="glass-card rounded-xl p-4 calendar-container overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 calendar-container overflow-hidden shadow-xs">
             <style jsx global>{`
                 .calendar-container .fc {
-                    --fc-page-bg-color: transparent;
-                    --fc-neutral-bg-color: rgba(255, 255, 255, 0.02);
-                    --fc-neutral-text-color: #94a3b8;
-                    --fc-border-color: rgba(255, 255, 255, 0.06);
-                    --fc-button-text-color: #e2e8f0;
-                    --fc-button-bg-color: rgba(255, 255, 255, 0.04);
-                    --fc-button-border-color: rgba(255, 255, 255, 0.1);
-                    --fc-button-hover-bg-color: rgba(255, 255, 255, 0.1);
-                    --fc-button-hover-border-color: rgba(255, 255, 255, 0.2);
-                    --fc-button-active-bg-color: rgba(20, 184, 166, 0.2);
-                    --fc-button-active-border-color: #14b8a6;
-                    --fc-event-bg-color: #0f172a;
-                    --fc-event-border-color: #3b82f6;
-                    --fc-today-bg-color: rgba(20, 184, 166, 0.05);
-                    color: #f8fafc;
+                    --fc-page-bg-color: #ffffff;
+                    --fc-neutral-bg-color: #f8fafc;
+                    --fc-neutral-text-color: #475569;
+                    --fc-border-color: #e2e8f0;
+                    --fc-button-text-color: #334155;
+                    --fc-button-bg-color: #f8fafc;
+                    --fc-button-border-color: #cbd5e1;
+                    --fc-button-hover-bg-color: #f1f5f9;
+                    --fc-button-hover-border-color: #94a3b8;
+                    --fc-button-active-bg-color: #0d9488;
+                    --fc-button-active-border-color: #0d9488;
+                    --fc-event-bg-color: #f8fafc;
+                    --fc-event-border-color: #cbd5e1;
+                    --fc-today-bg-color: #f0fdfa;
+                    color: #0f172a;
                     font-family: inherit;
                 }
                 .calendar-container .fc-header-toolbar {
@@ -77,41 +86,45 @@ export default function AppointmentsCalendar({ appointments, onEventClick }: App
                 }
                 .calendar-container .fc-toolbar-title {
                     font-size: 1.25rem;
-                    font-weight: 600;
-                    color: #f8fafc;
+                    font-weight: 700;
+                    color: #0f172a;
                 }
                 .calendar-container .fc-col-header-cell {
                     padding: 0.5rem 0;
-                    font-weight: 500;
+                    font-weight: 600;
                     text-transform: uppercase;
                     font-size: 0.75rem;
-                    color: #94a3b8;
+                    color: #475569;
+                    background-color: #f8fafc;
                 }
                 .calendar-container .fc-daygrid-day-number {
-                    color: #cbd5e1;
+                    color: #334155;
                     padding: 4px;
+                    font-weight: 500;
                 }
                 .calendar-container .fc-timegrid-slot-label-cushion {
-                    color: #94a3b8;
-                    font-size: 0.75rem;
-                }
-                .calendar-container .fc-event {
-                    border-radius: 4px;
-                    padding: 2px 4px;
+                    color: #64748b;
                     font-size: 0.75rem;
                     font-weight: 500;
+                }
+                .calendar-container .fc-event {
+                    border-radius: 6px;
+                    padding: 2px 4px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
                     cursor: pointer;
+                    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
                     transition: all 0.2s ease;
                 }
                 .calendar-container .fc-event:hover {
-                    filter: brightness(1.2);
-                    transform: scale(1.02);
+                    filter: brightness(0.95);
+                    transform: scale(1.01);
                 }
                 .calendar-container .fc-timegrid-event .fc-event-main {
                     padding: 2px 4px;
                 }
                 .calendar-container .fc-event-time {
-                    font-weight: 600;
+                    font-weight: 700;
                     margin-bottom: 2px;
                 }
                 .calendar-container .fc-event-title {
@@ -120,7 +133,7 @@ export default function AppointmentsCalendar({ appointments, onEventClick }: App
                 }
             `}</style>
 
-            <div className="bg-slate-900/50 rounded-lg p-2">
+            <div className="bg-white rounded-lg p-2">
                 <FullCalendar
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                     initialView="timeGridWeek"

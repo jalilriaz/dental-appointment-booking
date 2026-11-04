@@ -38,7 +38,19 @@ export async function GET() {
                     },
                 },
                 treatment: {
-                    select: { name: true, durationMin: true, price: true },
+                    select: { name: true, durationMin: true, price: true, isMultiSession: true, defaultSessions: true },
+                },
+                patientTreatment: {
+                    select: {
+                        id: true,
+                        totalCost: true,
+                        totalSessions: true,
+                        clinicalStatus: true,
+                        financialStatus: true,
+                        payments: {
+                            select: { amount: true, date: true, method: true },
+                        },
+                    },
                 },
             },
             orderBy: { startTime: "asc" },
@@ -52,6 +64,10 @@ export async function GET() {
             amountPaid: a.amountPaid ?? 0,
             price: a.price ?? a.treatment.price,
             discount: a.discount ?? 0,
+            sessionNumber: a.sessionNumber,
+            sessionLabel: a.sessionLabel,
+            patientTreatmentId: a.patientTreatmentId,
+            patientTreatment: a.patientTreatment,
             patient: a.patient
                 ? {
                       id: a.patient.id,

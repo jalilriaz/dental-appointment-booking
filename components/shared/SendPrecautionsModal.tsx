@@ -119,36 +119,36 @@ export default function SendPrecautionsModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-[540px] bg-slate-900 border-white/[0.08] text-white shadow-2xl">
+            <DialogContent className="sm:max-w-[540px] bg-white border-slate-200 text-slate-900 shadow-2xl">
                 <DialogHeader>
-                    <div className="mx-auto size-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2 border border-emerald-500/20">
+                    <div className="mx-auto size-12 rounded-full bg-emerald-50 flex items-center justify-center mb-2 border border-emerald-200">
                         {sentSuccess ? (
-                            <CheckCircle2 className="size-6 text-emerald-400" />
+                            <CheckCircle2 className="size-6 text-emerald-600" />
                         ) : (
-                            <MessageSquare className="size-6 text-emerald-400" />
+                            <MessageSquare className="size-6 text-emerald-600" />
                         )}
                     </div>
-                    <DialogTitle className="text-center text-xl font-bold">
+                    <DialogTitle className="text-center text-xl font-bold text-slate-900">
                         {sentSuccess ? "Care Precautions Delivered" : "Send Care Precautions to WhatsApp"}
                     </DialogTitle>
-                    <DialogDescription className="text-center text-slate-400">
-                        Post-treatment instructions for <strong className="text-white">{patientName}</strong> ({treatmentName}).
+                    <DialogDescription className="text-center text-slate-600">
+                        Post-treatment instructions for <strong className="text-slate-900">{patientName}</strong> ({treatmentName}).
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="py-2 space-y-4">
                     {/* Patient Phone & Status Bar */}
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                        <div className="flex items-center gap-2 text-sm text-slate-300">
-                            <Phone className="size-4 text-emerald-400" />
-                            <span>WhatsApp: <strong className="text-white">{patientPhone || "No phone provided"}</strong></span>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                        <div className="flex items-center gap-2 text-sm text-slate-700">
+                            <Phone className="size-4 text-emerald-600" />
+                            <span>WhatsApp: <strong className="text-slate-900">{patientPhone || "No phone provided"}</strong></span>
                         </div>
                         {sentSuccess ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                 <Check className="size-3.5" /> Sent via Bot
                             </span>
                         ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-teal-500/10 text-teal-300 border border-teal-500/20">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-teal-50 text-teal-700 border border-teal-200">
                                 Dr. Sheriyaar
                             </span>
                         )}
@@ -156,23 +156,23 @@ export default function SendPrecautionsModal({
 
                     {/* Success Banner */}
                     {sentSuccess ? (
-                        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
-                            <CheckCircle2 className="size-10 text-emerald-400 mx-auto" />
-                            <h4 className="text-base font-bold text-white">Directly Forwarded to Patient!</h4>
-                            <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed">
-                                The care precautions have been sent directly to <strong>{patientPhone}</strong> from the clinic WhatsApp AI assistant.
+                        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
+                            <CheckCircle2 className="size-10 text-emerald-600 mx-auto" />
+                            <h4 className="text-base font-bold text-slate-900">Directly Forwarded to Patient!</h4>
+                            <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
+                                The care precautions have been sent directly to <strong className="text-slate-900">{patientPhone}</strong> from the clinic WhatsApp AI assistant.
                             </p>
                         </div>
                     ) : null}
 
                     {/* Webhook Error Notice (if n8n was not reachable) */}
                     {n8nError && !sentSuccess && (
-                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-1">
-                            <div className="flex items-center gap-2 text-amber-300 text-xs font-semibold">
-                                <AlertCircle className="size-4" />
+                        <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 space-y-1">
+                            <div className="flex items-center gap-2 text-amber-800 text-xs font-semibold">
+                                <AlertCircle className="size-4 text-amber-600" />
                                 <span>n8n Webhook Unreachable ({n8nError})</span>
                             </div>
-                            <p className="text-[11px] text-slate-400">
+                            <p className="text-[11px] text-amber-700">
                                 Make sure your n8n workflow is activated. You can still use the <strong>Open WhatsApp Web</strong> button below as an instant backup.
                             </p>
                         </div>
@@ -181,40 +181,40 @@ export default function SendPrecautionsModal({
                     {/* Loading State or Message Preview */}
                     {loadingPreview ? (
                         <div className="py-10 flex flex-col items-center justify-center space-y-3">
-                            <Loader2 className="size-8 text-teal-400 animate-spin" />
-                            <p className="text-sm text-slate-400">Loading tailored care instructions...</p>
+                            <Loader2 className="size-8 text-teal-600 animate-spin" />
+                            <p className="text-sm text-slate-600">Loading tailored care instructions...</p>
                         </div>
                     ) : (
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
                                     Message Preview
                                 </span>
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleCopy}
-                                    className="h-7 text-xs text-slate-300 hover:text-white hover:bg-white/[0.06] gap-1"
+                                    className="h-7 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 gap-1"
                                 >
-                                    {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
+                                    {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
                                     {copied ? "Copied" : "Copy Text"}
                                 </Button>
                             </div>
-                            <div className="max-h-[200px] overflow-y-auto p-3.5 rounded-xl bg-slate-950/70 border border-white/[0.06] text-xs leading-relaxed text-slate-200 whitespace-pre-wrap font-sans">
+                            <div className="max-h-[200px] overflow-y-auto p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs leading-relaxed text-slate-800 whitespace-pre-wrap font-sans">
                                 {message || "Loading precautions..."}
                             </div>
                         </div>
                     )}
                 </div>
 
-                <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between items-center pt-2 border-t border-white/[0.06]">
+                <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between items-center pt-2 border-t border-slate-200">
                     <div>
                         {n8nError && !sentSuccess && whatsappUrl && (
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={handleOpenWhatsAppWeb}
-                                className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 text-xs gap-1.5"
+                                className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 text-xs gap-1.5"
                             >
                                 <ExternalLink className="size-3.5" />
                                 Open WhatsApp Web (Backup)
@@ -226,7 +226,7 @@ export default function SendPrecautionsModal({
                         <Button
                             variant="outline"
                             onClick={onClose}
-                            className="border-slate-700 text-slate-300 hover:bg-white/5"
+                            className="border-slate-300 text-slate-700 hover:bg-slate-100"
                         >
                             {sentSuccess ? "Close" : "Cancel"}
                         </Button>
@@ -235,7 +235,7 @@ export default function SendPrecautionsModal({
                             <Button
                                 onClick={handleSendDirectly}
                                 disabled={sending || loadingPreview || !message}
-                                className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-semibold gap-2 shadow-lg shadow-emerald-500/20 border-0"
+                                className="bg-teal-600 hover:bg-teal-700 text-white font-semibold gap-2 shadow-sm border-0"
                             >
                                 {sending ? (
                                     <>
@@ -252,7 +252,7 @@ export default function SendPrecautionsModal({
                         ) : (
                             <Button
                                 onClick={onClose}
-                                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
                             >
                                 Done
                             </Button>

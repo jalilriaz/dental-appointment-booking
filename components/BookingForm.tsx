@@ -237,23 +237,23 @@ export default function BookingForm({
     if (valid) setStep(3);
   };
 
-  const inputClasses = "h-11 bg-white/[0.04] border-white/10 text-white placeholder:text-slate-500 focus:border-teal-500/50 focus:ring-teal-500/20"
-  const errorClasses = "text-xs text-red-400 mt-1";
+  const inputClasses = "h-11 bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-teal-600 focus:ring-teal-500/20 shadow-xs"
+  const errorClasses = "text-xs text-red-600 font-medium mt-1";
 
   if (success) {
     return (
-      <div className="glass-card rounded-2xl max-w-md mx-auto text-center overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-2xl max-w-md mx-auto text-center overflow-hidden shadow-xl">
         <div className="pt-10 pb-10 px-6 space-y-4">
-          <div className="size-16 rounded-full bg-teal-500/10 flex items-center justify-center mx-auto animate-glow-pulse">
-            <CheckCircle className="size-8 text-teal-400" />
+          <div className="size-16 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center mx-auto">
+            <CheckCircle className="size-8 text-teal-600" />
           </div>
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-slate-900">
             Appointment Booked!
           </h2>
-          <p className="text-slate-400">
-            Your appointment for <strong className="text-white">{selectedTreatment?.name}</strong> has been confirmed.
+          <p className="text-slate-600">
+            Your appointment for <strong className="text-slate-900">{selectedTreatment?.name}</strong> has been confirmed.
           </p>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-600 font-medium">
             {watchDate && new Date(watchDate).toLocaleDateString("en-PK", {
               weekday: "long",
               year: "numeric",
@@ -266,12 +266,12 @@ export default function BookingForm({
             <Button
               variant="outline"
               onClick={() => router.push(returnUrl)}
-              className="border-slate-700 text-slate-200 hover:bg-white/[0.04]"
+              className="border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               Go to Dashboard
             </Button>
             <Button
-              className="btn-brand border-0 transition-premium active:scale-95"
+              className="bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-md shadow-teal-600/20 transition-premium active:scale-95"
               onClick={() => {
                 setSuccess(false)
                 setStep(1)
@@ -289,7 +289,7 @@ export default function BookingForm({
   return (
     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
       {/* Guest Booking Toggle */}
-      <div className="flex items-center space-x-2 mb-6 bg-teal-500/10 p-3 rounded-lg border border-teal-500/20">
+      <div className="flex items-center space-x-2 mb-6 bg-teal-50 p-3.5 rounded-xl border border-teal-200">
         <Controller
           name="isGuest"
           control={control}
@@ -297,21 +297,21 @@ export default function BookingForm({
             <input
               type="checkbox"
               id="guestBooking"
-              className="rounded border-slate-600 bg-slate-800 text-teal-500 focus:ring-teal-500"
+              className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
               checked={field.value}
               onChange={(e) => field.onChange(e.target.checked)}
             />
           )}
         />
-        <Label htmlFor="guestBooking" className="text-white cursor-pointer font-medium">
+        <Label htmlFor="guestBooking" className="text-teal-950 cursor-pointer font-semibold">
           Book for someone else (Family/Friend)
         </Label>
       </div>
 
       {watchIsGuest && (
-        <div className="grid gap-4 mb-6 p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] animate-in fade-in slide-in-from-top-2">
+        <div className="grid gap-4 mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200 animate-in fade-in slide-in-from-top-2">
           <div>
-            <Label className="text-slate-300 mb-1.5 block">Guest Name *</Label>
+            <Label className="text-slate-700 font-semibold mb-1.5 block">Guest Name *</Label>
             <Controller
               name="guestName"
               control={control}
@@ -325,7 +325,7 @@ export default function BookingForm({
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <Label className="text-slate-300 mb-1.5 block">Guest Phone *</Label>
+              <Label className="text-slate-700 font-semibold mb-1.5 block">Guest Phone *</Label>
               <Controller
                 name="guestPhone"
                 control={control}
@@ -338,7 +338,7 @@ export default function BookingForm({
               />
             </div>
             <div>
-              <Label className="text-slate-300 mb-1.5 block">Guest Email (Optional)</Label>
+              <Label className="text-slate-700 font-semibold mb-1.5 block">Guest Email (Optional)</Label>
               <Controller
                 name="guestEmail"
                 control={control}
@@ -351,7 +351,7 @@ export default function BookingForm({
               />
             </div>
             <div>
-              <Label className="text-slate-300 mb-1.5 block">Guest Date of Birth *</Label>
+              <Label className="text-slate-700 font-semibold mb-1.5 block">Guest Date of Birth *</Label>
               <Controller
                 name="guestDob"
                 control={control}
@@ -376,25 +376,25 @@ export default function BookingForm({
         ].map((s, i) => (
           <div key={s.num} className="flex items-center">
             <div
-              className={`flex items-center gap-2 ${step >= s.num ? "text-teal-400" : "text-slate-600"}`}
+              className={`flex items-center gap-2 ${step >= s.num ? "text-teal-700 font-semibold" : "text-slate-400"}`}
             >
               <div
                 className={`size-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-premium ${step > s.num
-                  ? "bg-teal-500 text-white border-teal-500"
+                  ? "bg-teal-600 text-white border-teal-600"
                   : step === s.num
-                    ? "border-teal-500 text-teal-400 bg-teal-500/10"
-                    : "border-slate-700 text-slate-500"
+                    ? "border-teal-600 text-teal-700 bg-teal-50"
+                    : "border-slate-300 text-slate-400 bg-white"
                   }`}
               >
                 {step > s.num ? <CheckCircle className="size-5" /> : s.num}
               </div>
-              <span className="hidden sm:inline text-sm font-medium">
+              <span className="hidden sm:inline text-sm">
                 {s.label}
               </span>
             </div>
             {i < 2 && (
               <div
-                className={`w-8 sm:w-16 h-0.5 mx-2 ${step > s.num ? "bg-teal-500" : "bg-slate-700"}`}
+                className={`w-8 sm:w-16 h-0.5 mx-2 ${step > s.num ? "bg-teal-600" : "bg-slate-200"}`}
               />
             )}
           </div>
@@ -403,10 +403,10 @@ export default function BookingForm({
 
       {/* Step 1: Select Treatment */}
       {step === 1 && (
-        <div className="glass-card rounded-2xl overflow-hidden">
-          <div className="px-6 py-5 border-b border-white/[0.06]">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Stethoscope className="size-5 text-teal-400" />
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+          <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Stethoscope className="size-5 text-teal-600" />
               Select Treatment
             </h2>
           </div>
@@ -419,14 +419,13 @@ export default function BookingForm({
                 placeholder="Search treatments..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 rounded-lg bg-white/[0.04] border border-white/10 text-white placeholder:text-slate-500 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 focus:outline-none text-sm transition-all"
+                className="w-full h-10 pl-10 pr-4 rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-teal-600 focus:ring-1 focus:ring-teal-500/20 focus:outline-none text-sm transition-all"
               />
             </div>
 
             {/* Grouped Treatment List */}
             <div
-              className="max-h-[420px] overflow-y-auto pr-1 space-y-4"
-              style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(94,234,212,0.3) transparent' }}
+              className="max-h-[420px] overflow-y-auto pr-1 space-y-4 custom-scrollbar"
             >
               {(() => {
                 const filtered = treatments.filter((t) =>
@@ -436,7 +435,7 @@ export default function BookingForm({
 
                 if (groups.length === 0) {
                   return (
-                    <div className="py-8 text-center text-slate-400 text-sm">
+                    <div className="py-8 text-center text-slate-500 text-sm">
                       No treatments found for &quot;{searchQuery}&quot;
                     </div>
                   );
@@ -457,18 +456,18 @@ export default function BookingForm({
                             return next;
                           });
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-all cursor-pointer mb-2"
+                        className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all cursor-pointer mb-2"
                       >
                         {isCollapsed ? (
-                          <ChevronRight className="size-4 text-slate-400" />
+                          <ChevronRight className="size-4 text-slate-500" />
                         ) : (
-                          <ChevronDown className="size-4 text-teal-400" />
+                          <ChevronDown className="size-4 text-teal-600" />
                         )}
                         <span className="text-sm">{group.emoji}</span>
-                        <span className="text-sm font-semibold text-slate-200">
+                        <span className="text-sm font-bold text-slate-800">
                           {group.label}
                         </span>
-                        <span className="ml-auto text-xs text-slate-500 bg-white/[0.04] px-2 py-0.5 rounded-full">
+                        <span className="ml-auto text-xs text-slate-600 font-semibold bg-slate-200/70 px-2 py-0.5 rounded-full">
                           {group.treatments.length}
                         </span>
                       </button>
@@ -485,32 +484,32 @@ export default function BookingForm({
                                 trigger("treatmentId");
                               }}
                               className={`w-full p-4 rounded-xl border-2 text-left transition-premium cursor-pointer ${watchTreatmentId === t.id
-                                ? "border-teal-500/50 bg-teal-500/10 ring-1 ring-teal-500/30"
-                                : "border-white/[0.06] hover:border-teal-500/30 hover:bg-white/[0.03]"
+                                ? "border-teal-600 bg-teal-50/70 ring-1 ring-teal-600/30 shadow-xs"
+                                : "border-slate-200 hover:border-teal-400 hover:bg-teal-50/20 bg-white shadow-2xs"
                                 }`}
                             >
                               <div className="flex items-center justify-between">
                                 <div className="min-w-0 flex-1">
                                   <p
-                                    className={`font-semibold ${watchTreatmentId === t.id ? "text-teal-400" : "text-white"
+                                    className={`font-bold ${watchTreatmentId === t.id ? "text-teal-900" : "text-slate-900"
                                       }`}
                                   >
                                     {t.name}
                                   </p>
                                   {t.description && (
-                                    <p className="text-xs text-slate-400 mt-1 line-clamp-1">
+                                    <p className="text-xs text-slate-500 mt-1 line-clamp-1">
                                       {t.description}
                                     </p>
                                   )}
                                   <div className="flex items-center gap-2 mt-2">
                                     <Clock className="size-3 text-slate-400" />
-                                    <span className="text-xs text-slate-400">
+                                    <span className="text-xs text-slate-500 font-medium">
                                       {t.durationMin} min
                                     </span>
                                   </div>
                                 </div>
                                 <div className="text-right ml-4 shrink-0">
-                                  <p className="text-lg font-bold text-teal-400">
+                                  <p className="text-lg font-extrabold text-teal-700">
                                     {formatPKR(t.price)}
                                   </p>
                                 </div>
@@ -532,7 +531,7 @@ export default function BookingForm({
                 type="button"
                 disabled={!watchTreatmentId}
                 onClick={handleNextStep1}
-                className="btn-brand border-0 transition-premium active:scale-95"
+                className="bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-md shadow-teal-600/20 border-0 transition-premium active:scale-95"
               >
                 Next <ArrowRight className="ml-1 size-4" />
               </Button>
@@ -543,16 +542,16 @@ export default function BookingForm({
 
       {/* Step 2: Date & Time */}
       {step === 2 && (
-        <div className="glass-card rounded-2xl overflow-hidden">
-          <div className="px-6 py-5 border-b border-white/[0.06]">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Calendar className="size-5 text-teal-400" />
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+          <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Calendar className="size-5 text-teal-600" />
               Select Date & Time
             </h2>
           </div>
           <div className="p-6 space-y-6">
             <div>
-              <Label className="text-sm font-medium text-slate-300 mb-2 block">
+              <Label className="text-sm font-semibold text-slate-700 mb-2 block">
                 Select Date
               </Label>
               <Controller
@@ -572,23 +571,23 @@ export default function BookingForm({
                   </>
                 )}
               />
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 font-medium mt-1.5">
                 📌 Clinic is closed on Sundays
               </p>
             </div>
 
             {watchDate && (
               <div>
-                <Label className="text-sm font-medium text-slate-300 mb-2 block">
+                <Label className="text-sm font-semibold text-slate-700 mb-2 block">
                   Available Time Slots
                   {selectedTreatment && (
-                    <span className="font-normal text-slate-400 ml-2">
+                    <span className="font-normal text-slate-500 ml-2">
                       ({selectedTreatment.durationMin} min appointment)
                     </span>
                   )}
                 </Label>
 
-                <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                   <TimeSlotSelector
                     date={watchDate}
                     treatmentId={watchTreatmentId}
@@ -603,10 +602,10 @@ export default function BookingForm({
                 {errors.time && <p className={errorClasses}>{errors.time.message}</p>}
 
                 {watchTime && selectedSlot && selectedTreatment && (
-                  <div className="mt-4 p-4 bg-teal-500/10 border border-teal-500/20 rounded-lg">
-                    <p className="text-sm text-teal-300 font-medium">
+                  <div className="mt-4 p-4 bg-teal-50 border border-teal-200 rounded-xl">
+                    <p className="text-sm text-teal-900 font-medium">
                       ⏰ Your appointment:{" "}
-                      <strong className="text-teal-200">
+                      <strong className="text-teal-950 font-bold">
                         {selectedSlot.label} – {selectedSlot.endLabel}
                       </strong>{" "}
                       ({selectedTreatment.durationMin} minutes)
@@ -617,7 +616,7 @@ export default function BookingForm({
             )}
 
             <div>
-              <Label className="text-sm font-medium text-slate-300 mb-2 block">
+              <Label className="text-sm font-semibold text-slate-700 mb-2 block">
                 Notes (optional)
               </Label>
               <Controller
@@ -628,7 +627,7 @@ export default function BookingForm({
                     {...field}
                     placeholder="Any special requests or information for the doctor..."
                     rows={3}
-                    className="bg-white/[0.04] border-white/10 text-white placeholder:text-slate-500 focus:border-teal-500/50 focus:ring-teal-500/20"
+                    className="bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-teal-600 focus:ring-teal-500/20"
                   />
                 )}
               />
@@ -639,7 +638,7 @@ export default function BookingForm({
                 type="button"
                 variant="outline"
                 onClick={() => setStep(1)}
-                className="border-slate-700 text-slate-200 hover:bg-white/[0.04]"
+                className="border-slate-300 text-slate-700 hover:bg-slate-50"
               >
                 <ArrowLeft className="mr-1 size-4" /> Back
               </Button>
@@ -647,7 +646,7 @@ export default function BookingForm({
                 type="button"
                 disabled={!watchTime}
                 onClick={handleNextStep2}
-                className="btn-brand border-0 transition-premium active:scale-95"
+                className="bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-md shadow-teal-600/20 border-0 transition-premium active:scale-95"
               >
                 Review Booking <ArrowRight className="ml-1 size-4" />
               </Button>
@@ -658,27 +657,27 @@ export default function BookingForm({
 
       {/* Step 3: Confirm */}
       {step === 3 && (
-        <div className="glass-card rounded-2xl overflow-hidden">
-          <div className="px-6 py-5 border-b border-white/[0.06]">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <CheckCircle className="size-5 text-teal-400" />
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+          <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <CheckCircle className="size-5 text-teal-600" />
               Confirm Your Booking
             </h2>
           </div>
           <div className="p-6 space-y-4">
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6 space-y-4">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">
+                  <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
                     Treatment
                   </p>
-                  <p className="font-medium text-white">{selectedTreatment?.name}</p>
+                  <p className="font-bold text-slate-900">{selectedTreatment?.name}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">
+                  <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
                     Date
                   </p>
-                  <p className="font-medium text-white">
+                  <p className="font-bold text-slate-900">
                     {watchDate &&
                       new Date(watchDate).toLocaleDateString("en-PK", {
                         weekday: "long",
@@ -689,37 +688,37 @@ export default function BookingForm({
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">
+                  <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
                     Time
                   </p>
-                  <p className="font-medium text-white">
+                  <p className="font-bold text-slate-900">
                     {selectedSlot?.label} – {selectedSlot?.endLabel}
-                    <span className="text-xs text-slate-400 ml-1">
+                    <span className="text-xs text-slate-500 font-normal ml-1">
                       ({selectedTreatment?.durationMin} min)
                     </span>
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">
+                  <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
                     Price
                   </p>
-                  <p className="font-bold text-teal-400 text-lg">
+                  <p className="font-extrabold text-teal-700 text-xl">
                     {formatPKR(selectedTreatment?.price || 0)}
                   </p>
                 </div>
               </div>
               {watchNotes && (
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">
+                  <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
                     Notes
                   </p>
-                  <p className="text-sm text-slate-300">{watchNotes}</p>
+                  <p className="text-sm text-slate-700">{watchNotes}</p>
                 </div>
               )}
             </div>
 
             {apiError && (
-              <div className="p-3 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <div className="p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg font-medium">
                 {apiError}
               </div>
             )}
@@ -729,14 +728,14 @@ export default function BookingForm({
                 type="button"
                 variant="outline"
                 onClick={() => setStep(2)}
-                className="border-slate-700 text-slate-200 hover:bg-white/[0.04]"
+                className="border-slate-300 text-slate-700 hover:bg-slate-50"
               >
                 <ArrowLeft className="mr-1 size-4" /> Back
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-brand border-0 min-w-[160px] transition-premium active:scale-95"
+                className="bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-md shadow-teal-600/20 border-0 min-w-[160px] transition-premium active:scale-95"
               >
                 {isSubmitting ? (
                   <>

@@ -27,55 +27,55 @@ export default function PatientsTable({ patients }: { patients: PatientRow[] }) 
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Patients</h1>
-                    <p className="text-sm text-slate-400">{patients.length} registered patients</p>
+                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Patients</h1>
+                    <p className="text-sm font-medium text-slate-600 mt-0.5">{patients.length} registered patients</p>
                 </div>
             </div>
 
-            <div className="glass-card rounded-xl overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                        <thead className="bg-white/[0.03] border-b border-white/[0.06]">
+                        <thead className="bg-slate-50/90 border-b border-slate-200/90">
                             <tr>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase">Patient</th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase">Contact</th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase">Appointments</th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase">Last Visit</th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase">Joined</th>
+                                <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Patient</th>
+                                <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Contact</th>
+                                <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Appointments</th>
+                                <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Last Visit</th>
+                                <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Joined</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/[0.04]">
+                        <tbody className="divide-y divide-slate-100 bg-white">
                             {paged.map((p) => (
-                                <tr key={p.id} className="hover:bg-white/[0.03] transition-premium cursor-pointer">
+                                <tr key={p.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer">
                                     <td className="px-6 py-4">
                                         <Link href={`/admin/patients/${p.id}`} className="flex items-center gap-3 group">
-                                            <div className="size-10 rounded-full bg-teal-500/15 flex items-center justify-center text-teal-400 font-bold text-sm border-2 border-teal-500/20 group-hover:border-teal-400/40 transition-premium">
+                                            <div className="size-10 rounded-full bg-teal-50 text-teal-700 font-bold text-sm border border-teal-200 flex items-center justify-center shrink-0 group-hover:border-teal-400 transition-colors">
                                                 {(p.name || "P").charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-medium text-white group-hover:text-teal-400 transition-premium">{p.name}</p>
-                                                <p className="text-xs text-slate-400">{p.email}</p>
+                                                <p className="font-semibold text-slate-900 group-hover:text-teal-700 transition-colors">{p.name}</p>
+                                                <p className="text-xs text-slate-500 font-medium">{p.email}</p>
                                             </div>
                                         </Link>
                                     </td>
-                                    <td className="px-6 py-4 text-slate-300">
+                                    <td className="px-6 py-4 text-slate-600 font-medium">
                                         {p.phone && (
-                                            <span className="flex items-center gap-1 text-xs">
-                                                <Phone className="size-3" /> {p.phone}
+                                            <span className="flex items-center gap-1.5 text-xs">
+                                                <Phone className="size-3 text-teal-600" /> {p.phone}
                                             </span>
                                         )}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-teal-500/15 text-teal-400">
+                                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200">
                                             {p.appointmentCount} total
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-slate-400 text-xs">
+                                    <td className="px-6 py-4 text-slate-600 text-xs font-medium">
                                         {p.lastAppointment
                                             ? formatDate(p.lastAppointment.startTime)
                                             : "No visits yet"}
                                     </td>
-                                    <td className="px-6 py-4 text-slate-400 text-xs">
+                                    <td className="px-6 py-4 text-slate-600 text-xs font-medium">
                                         {formatDate(p.createdAt)}
                                     </td>
                                 </tr>
@@ -86,18 +86,18 @@ export default function PatientsTable({ patients }: { patients: PatientRow[] }) 
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06] bg-white/[0.02]">
-                        <p className="text-sm text-slate-400">Showing {(page - 1) * perPage + 1}-{Math.min(page * perPage, patients.length)} of {patients.length}</p>
-                        <div className="flex gap-1">
-                            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)} className="cursor-pointer">
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200/90 bg-slate-50/70">
+                        <p className="text-sm font-medium text-slate-600">Showing {(page - 1) * perPage + 1}-{Math.min(page * perPage, patients.length)} of {patients.length}</p>
+                        <div className="flex gap-1.5">
+                            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)} className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer">
                                 <ChevronLeft className="size-4" />
                             </Button>
                             {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => (
-                                <Button key={i} variant={page === i + 1 ? "default" : "outline"} size="sm" onClick={() => setPage(i + 1)} className={`cursor-pointer ${page === i + 1 ? "btn-brand border-0" : "border-slate-700 text-slate-200 hover:bg-white/[0.04]"}`}>
+                                <Button key={i} variant={page === i + 1 ? "default" : "outline"} size="sm" onClick={() => setPage(i + 1)} className={`cursor-pointer rounded-lg ${page === i + 1 ? "bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-xs border-0" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-medium"}`}>
                                     {i + 1}
                                 </Button>
                             ))}
-                            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="cursor-pointer">
+                            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer">
                                 <ChevronRight className="size-4" />
                             </Button>
                         </div>

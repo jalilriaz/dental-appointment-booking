@@ -87,24 +87,24 @@ export default function RecordPayment({ treatmentPlanId, treatmentName, remainin
             <DialogTrigger asChild>
                 <Button
                     variant="outline"
-                    className="gap-2 bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 hover:text-emerald-300"
+                    className="gap-2 bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 font-semibold rounded-xl shadow-xs transition-premium"
                 >
                     <DollarSign className="size-4" />
                     Record Payment
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-slate-900 border-slate-800 text-slate-100">
+            <DialogContent className="sm:max-w-[440px] bg-white border border-slate-200 text-slate-900 shadow-2xl rounded-2xl">
                 <DialogHeader>
-                    <DialogTitle>Record Payment</DialogTitle>
-                    <DialogDescription className="text-slate-400">
+                    <DialogTitle className="text-xl font-bold text-slate-900">Record Payment</DialogTitle>
+                    <DialogDescription className="text-slate-500 font-medium">
                         Record a new installment payment for {treatmentName}.
                         <br />
-                        Remaining Balance: <strong className="text-amber-400">Rs. {remainingBalance.toLocaleString("en-PK")}</strong>
+                        Remaining Balance: <strong className="text-amber-800 font-bold">Rs. {remainingBalance.toLocaleString("en-PK")}</strong>
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="amount">Amount (PKR) *</Label>
+                <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="amount" className="text-xs font-bold text-slate-700 uppercase tracking-wider">Amount (PKR) *</Label>
                         <Input
                             id="amount"
                             type="number"
@@ -113,18 +113,18 @@ export default function RecordPayment({ treatmentPlanId, treatmentName, remainin
                             placeholder={`Max: ${remainingBalance}`}
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
-                            className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500"
+                            className="bg-slate-50 border-slate-200 text-slate-900 rounded-xl focus:border-teal-500 focus:ring-teal-500/20 placeholder:text-slate-400"
                             required
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="method">Payment Method</Label>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="method" className="text-xs font-bold text-slate-700 uppercase tracking-wider">Payment Method</Label>
                         <Select value={method} onValueChange={setMethod}>
-                            <SelectTrigger className="bg-slate-800 border-slate-700">
+                            <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900 rounded-xl focus:border-teal-500 focus:ring-teal-500/20">
                                 <SelectValue placeholder="Select method" />
                             </SelectTrigger>
-                            <SelectContent className="bg-slate-800 border-slate-700 text-slate-100">
+                            <SelectContent className="bg-white border-slate-200 text-slate-900 shadow-xl rounded-xl">
                                 <SelectItem value="CASH">Cash</SelectItem>
                                 <SelectItem value="CARD">Card</SelectItem>
                                 <SelectItem value="ONLINE">Online Transfer</SelectItem>
@@ -132,30 +132,30 @@ export default function RecordPayment({ treatmentPlanId, treatmentName, remainin
                         </Select>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="notes">Notes (Optional)</Label>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="notes" className="text-xs font-bold text-slate-700 uppercase tracking-wider">Notes (Optional)</Label>
                         <Input
                             id="notes"
                             placeholder="e.g. 2nd Installment"
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500"
+                            className="bg-slate-50 border-slate-200 text-slate-900 rounded-xl focus:border-teal-500 focus:ring-teal-500/20 placeholder:text-slate-400"
                         />
                     </div>
 
-                    <DialogFooter className="pt-4">
+                    <DialogFooter className="pt-4 gap-2">
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="outline"
                             onClick={() => setOpen(false)}
-                            className="hover:bg-slate-800 hover:text-slate-300"
+                            className="border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-xl"
                             disabled={isLoading}
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
-                            className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-xs"
                             disabled={isLoading}
                         >
                             {isLoading ? (

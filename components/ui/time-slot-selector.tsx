@@ -69,8 +69,8 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
 
     if (!date) {
         return (
-            <div className="flex items-center gap-2 p-3 text-sm text-slate-400 bg-white/[0.02] border border-white/[0.05] rounded-xl italic">
-                <Clock className="size-4" />
+            <div className="flex items-center gap-2 p-3 text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl italic">
+                <Clock className="size-4 text-slate-400" />
                 Please select a date first
             </div>
         );
@@ -78,8 +78,8 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
 
     if (!treatmentId) {
         return (
-            <div className="flex items-center gap-2 p-3 text-sm text-slate-400 bg-white/[0.02] border border-white/[0.05] rounded-xl italic">
-                <Clock className="size-4" />
+            <div className="flex items-center gap-2 p-3 text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl italic">
+                <Clock className="size-4 text-slate-400" />
                 Please select a treatment first
             </div>
         );
@@ -87,16 +87,16 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center p-8 bg-white/[0.02] border border-white/[0.05] rounded-xl">
-                <Loader2 className="size-6 text-teal-500 animate-spin" />
+            <div className="flex items-center justify-center p-8 bg-slate-50 border border-slate-200 rounded-xl">
+                <Loader2 className="size-6 text-teal-600 animate-spin" />
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="flex items-center gap-2 p-4 text-sm text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                <AlertCircle className="size-4 shrink-0" />
+            <div className="flex items-center gap-2 p-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl font-medium">
+                <AlertCircle className="size-4 shrink-0 text-amber-600" />
                 {error}
             </div>
         );
@@ -104,7 +104,7 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
 
     if (slots.length === 0) {
         return (
-            <div className="flex items-center justify-center p-6 text-sm text-slate-400 bg-white/[0.02] border border-white/[0.05] rounded-xl">
+            <div className="flex items-center justify-center p-6 text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl font-medium">
                 No slots available on this date.
             </div>
         );
@@ -125,22 +125,19 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
                             onChange(slot.value);
                             if (onSlotSelect) onSlotSelect(slot);
                         }}
-                        className={`relative px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-200 overflow-hidden group
+                        className={`relative px-3 py-2 text-xs font-semibold rounded-lg border transition-all duration-150 overflow-hidden group
                             ${isDisabled
-                                ? "bg-white/[0.01] border-white/[0.02] text-slate-600 cursor-not-allowed opacity-50"
+                                ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60"
                                 : isSelected
-                                    ? "bg-teal-500/20 border-teal-500 text-teal-300 shadow-[0_0_15px_rgba(20,184,166,0.2)] shadow-teal-500/20 scale-[0.98] cursor-pointer"
-                                    : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:border-teal-500/30 hover:text-white cursor-pointer"
+                                    ? "bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-600/20 scale-[0.98] cursor-pointer"
+                                    : "bg-white border-slate-200 text-slate-700 hover:bg-teal-50/60 hover:border-teal-400 hover:text-teal-900 cursor-pointer shadow-2xs"
                             }
                         `}
                     >
-                        {isSelected && (
-                            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-transparent pointer-events-none" />
-                        )}
                         <div className="flex flex-col items-center gap-0.5 relative z-10">
                             <span>{slot.label}</span>
                             {isSelected && (
-                                <span className="text-[9px] text-teal-400/80">Selected</span>
+                                <span className="text-[9px] text-white/90 font-medium">Selected</span>
                             )}
                         </div>
                     </button>

@@ -75,16 +75,16 @@ export default async function AdminAppointmentsPage({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
             Appointments
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-600 font-medium">
             Manage and track all appointments.
           </p>
         </div>
         <Link
           href="/admin/walk-in"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold hover:from-teal-400 hover:to-emerald-400 transition-all shadow-lg shadow-teal-500/20 cursor-pointer mt-3 sm:mt-0 self-start sm:self-auto"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold transition-all shadow-xs cursor-pointer mt-3 sm:mt-0 self-start sm:self-auto"
         >
           <CalendarPlus className="size-4" />
           Book Appointment

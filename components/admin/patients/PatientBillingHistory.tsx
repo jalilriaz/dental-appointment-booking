@@ -59,10 +59,10 @@ export default function PatientBillingHistory({ treatments }: PatientBillingHist
 
     if (treatments.length === 0) {
         return (
-            <Card className="glass-card border-white/[0.06]">
-                <CardContent className="py-8 text-center text-slate-400">
-                    <CreditCard className="size-10 mx-auto mb-3 opacity-50" />
-                    <p>No billing history available.</p>
+            <Card className="bg-white border border-slate-200/90 rounded-2xl shadow-xs">
+                <CardContent className="py-8 text-center text-slate-500">
+                    <CreditCard className="size-10 mx-auto mb-3 opacity-40 text-slate-400" />
+                    <p className="font-medium">No billing history available.</p>
                 </CardContent>
             </Card>
         );
@@ -77,36 +77,36 @@ export default function PatientBillingHistory({ treatments }: PatientBillingHist
                 const isExpanded = expandedId === pt.id;
 
                 return (
-                    <Card key={pt.id} className="glass-card border-white/[0.06] overflow-hidden">
+                    <Card key={pt.id} className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
                         <div
-                            className="p-6 cursor-pointer hover:bg-white/[0.02] transition-colors"
+                            className="p-6 cursor-pointer hover:bg-slate-50/60 transition-colors"
                             onClick={() => setExpandedId(isExpanded ? null : pt.id)}
                         >
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 {/* Header Info */}
                                 <div className="flex items-start gap-4">
-                                    <div className={`p-3 rounded-xl ${pt.status === "FULLY_PAID"
-                                        ? "bg-emerald-500/10 text-emerald-400"
-                                        : "bg-teal-500/10 text-teal-400"
+                                    <div className={`p-3 rounded-xl border ${pt.status === "FULLY_PAID"
+                                        ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                                        : "bg-teal-50 text-teal-600 border-teal-100"
                                         }`}>
                                         {pt.status === "FULLY_PAID" ? <CheckCircle2 className="size-6" /> : <DollarSign className="size-6" />}
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                                             {pt.treatment.name}
                                             {pt.status === "FULLY_PAID" && (
-                                                <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]">
+                                                <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold text-[10px]">
                                                     Paid in Full
                                                 </Badge>
                                             )}
                                             {pt.status === "ONGOING" && (
-                                                <Badge variant="secondary" className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px]">
+                                                <Badge variant="secondary" className="bg-teal-50 text-teal-800 border-teal-200 font-bold text-[10px]">
                                                     Ongoing
                                                 </Badge>
                                             )}
                                         </h3>
-                                        <p className="text-sm text-slate-400 flex items-center gap-2 mt-1">
-                                            <Calendar className="size-3.5" />
+                                        <p className="text-sm text-slate-500 font-medium flex items-center gap-2 mt-1">
+                                            <Calendar className="size-3.5 text-teal-600" />
                                             Started {format(new Date(pt.startDate), "MMMM d, yyyy")}
                                         </p>
                                     </div>
@@ -115,18 +115,18 @@ export default function PatientBillingHistory({ treatments }: PatientBillingHist
                                 {/* Financial Summary */}
                                 <div className="flex items-center gap-6 text-right">
                                     <div>
-                                        <p className="text-xs text-slate-500 uppercase tracking-wider">Total Cost</p>
-                                        <p className="text-lg font-bold text-white">{formatPKR(pt.totalCost)}</p>
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Cost</p>
+                                        <p className="text-lg font-extrabold text-slate-900">{formatPKR(pt.totalCost)}</p>
                                     </div>
-                                    <div className="hidden sm:block w-px h-8 bg-white/10" />
+                                    <div className="hidden sm:block w-px h-8 bg-slate-200" />
                                     <div>
-                                        <p className="text-xs text-slate-500 uppercase tracking-wider">Paid</p>
-                                        <p className="text-lg font-bold text-emerald-400">{formatPKR(totalPaid)}</p>
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Paid</p>
+                                        <p className="text-lg font-extrabold text-emerald-700">{formatPKR(totalPaid)}</p>
                                     </div>
-                                    <div className="hidden sm:block w-px h-8 bg-white/10" />
+                                    <div className="hidden sm:block w-px h-8 bg-slate-200" />
                                     <div>
-                                        <p className="text-xs text-slate-500 uppercase tracking-wider">Remaining</p>
-                                        <p className={`text-lg font-bold ${remaining > 0 ? "text-amber-400" : "text-slate-400"}`}>
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Remaining</p>
+                                        <p className={`text-lg font-extrabold ${remaining > 0 ? "text-amber-800" : "text-slate-400"}`}>
                                             {formatPKR(remaining)}
                                         </p>
                                     </div>
@@ -137,9 +137,9 @@ export default function PatientBillingHistory({ treatments }: PatientBillingHist
                             </div>
 
                             {/* Progress Bar */}
-                            <div className="mt-4 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                            <div className="mt-4 h-2 w-full bg-slate-100 border border-slate-200/60 rounded-full overflow-hidden">
                                 <div
-                                    className={`h-full transition-all duration-500 ${remaining <= 0 ? "bg-emerald-500" : "bg-teal-500"
+                                    className={`h-full transition-all duration-500 ${remaining <= 0 ? "bg-emerald-600" : "bg-teal-600"
                                         }`}
                                     style={{ width: `${progress}%` }}
                                 />
@@ -159,40 +159,40 @@ export default function PatientBillingHistory({ treatments }: PatientBillingHist
 
                         {/* Expanded Payment History */}
                         {isExpanded && (
-                            <div className="border-t border-white/[0.06] bg-black/20 animate-in slide-in-from-top-2">
+                            <div className="border-t border-slate-200/90 bg-slate-50/60 animate-in slide-in-from-top-2">
                                 <div className="p-6">
-                                    <h4 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-                                        <Clock className="size-4" /> Payment History
+                                    <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                        <Clock className="size-4 text-teal-600" /> Payment History
                                     </h4>
                                     {pt.payments.length === 0 ? (
                                         <p className="text-sm text-slate-500 italic">No payments recorded yet.</p>
                                     ) : (
-                                        <div className="rounded-lg border border-white/[0.06] overflow-hidden">
+                                        <div className="rounded-xl border border-slate-200/90 bg-white overflow-hidden shadow-xs">
                                             <Table>
-                                                <TableHeader className="bg-white/[0.02]">
-                                                    <TableRow className="border-white/[0.06] hover:bg-transparent">
-                                                        <TableHead className="text-slate-400">Date</TableHead>
-                                                        <TableHead className="text-slate-400">Amount</TableHead>
-                                                        <TableHead className="text-slate-400">Method</TableHead>
-                                                        <TableHead className="text-slate-400">Notes</TableHead>
+                                                <TableHeader className="bg-slate-50/90 border-b border-slate-200/90">
+                                                    <TableRow className="border-slate-200/90 hover:bg-transparent">
+                                                        <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Date</TableHead>
+                                                        <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Amount</TableHead>
+                                                        <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Method</TableHead>
+                                                        <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Notes</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
-                                                <TableBody>
+                                                <TableBody className="divide-y divide-slate-100">
                                                     {pt.payments.map((payment) => (
-                                                        <TableRow key={payment.id} className="border-white/[0.06] hover:bg-white/[0.02]">
-                                                            <TableCell className="text-slate-300 font-medium">
+                                                        <TableRow key={payment.id} className="border-slate-100 hover:bg-slate-50/80 transition-colors">
+                                                            <TableCell className="text-slate-800 font-semibold text-sm">
                                                                 {format(new Date(payment.date), "MMM d, yyyy")}
                                                             </TableCell>
-                                                            <TableCell className="text-emerald-400 font-bold">
+                                                            <TableCell className="text-emerald-700 font-bold text-sm">
                                                                 {formatPKR(payment.amount)}
                                                             </TableCell>
-                                                            <TableCell className="text-slate-400 text-xs">
-                                                                <Badge variant="outline" className="border-slate-700 text-slate-400">
+                                                            <TableCell className="text-xs">
+                                                                <Badge variant="outline" className="border-slate-200 bg-slate-100 text-slate-700 font-semibold">
                                                                     {payment.method}
                                                                 </Badge>
                                                             </TableCell>
-                                                            <TableCell className="text-slate-400 text-sm max-w-[200px] truncate">
-                                                                {payment.notes || "-"}
+                                                            <TableCell className="text-slate-600 text-sm max-w-[200px] truncate">
+                                                                {payment.notes || "—"}
                                                             </TableCell>
                                                         </TableRow>
                                                     ))}

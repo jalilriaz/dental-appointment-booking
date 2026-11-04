@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimeSlotSelector } from "@/components/ui/time-slot-selector";
-import { formatDate, formatTime, isSunday } from "@/lib/utils";
+import { formatDate, formatTime, isSunday, formatPKR } from "@/lib/utils";
 import StatusBadge from "@/components/shared/StatusBadge";
 import SundayWarning from "@/components/shared/SundayWarning";
 import { PremiumLoader } from "@/components/ui/premium-loader";
@@ -23,7 +23,19 @@ interface PatientHistory {
         name: string;
         phone: string | null;
         email: string | null;
+        patientCode?: number | null;
     };
+    plans?: {
+        id: string;
+        totalCost: number;
+        totalSessions: number;
+        clinicalStatus: string;
+        financialStatus: string;
+        totalPaid: number;
+        remainingBalance: number;
+        completedSessions: number;
+        treatment: { id: string; name: string; price: number };
+    }[];
     appointments: {
         id: string;
         startTime: string;
@@ -31,6 +43,8 @@ interface PatientHistory {
         status: string;
         price: number;
         notes: string | null;
+        sessionNumber?: number | null;
+        sessionLabel?: string | null;
         treatment: { name: string; price: number; durationMin: number };
         clinicalNotes: {
             id: string;
@@ -48,6 +62,7 @@ interface BookingForm {
     time: string;
     treatmentId: string;
     notes: string;
+    patientTreatmentId?: string;
 }
 
 interface NewPatientForm extends BookingForm {
@@ -99,12 +114,12 @@ export default function WalkInRegistration({ treatments }: { treatments: Treatme
             )}
 
             {/* ── Tab Headers ── */}
-            <div className="flex gap-1 mb-6 bg-white/[0.03] p-1 rounded-xl border border-white/[0.06]">
+            <div className="flex gap-1 mb-6 bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-xs">
                 <button
                     onClick={() => setActiveTab("registered")}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === "registered"
-                        ? "bg-gradient-to-r from-teal-500/20 to-emerald-500/20 text-teal-400 border border-teal-500/30 shadow-lg shadow-teal-500/10"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === "registered"
+                        ? "bg-teal-600 text-white shadow-xs"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white"
                         }`}
                 >
                     <Search className="size-4" />
@@ -112,9 +127,9 @@ export default function WalkInRegistration({ treatments }: { treatments: Treatme
                 </button>
                 <button
                     onClick={() => setActiveTab("new")}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === "new"
-                        ? "bg-gradient-to-r from-teal-500/20 to-emerald-500/20 text-teal-400 border border-teal-500/30 shadow-lg shadow-teal-500/10"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === "new"
+                        ? "bg-teal-600 text-white shadow-xs"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white"
                         }`}
                 >
                     <UserPlus className="size-4" />
@@ -225,6 +240,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                     date: bookingForm.date,
                     time: bookingForm.time,
                     treatmentId: bookingForm.treatmentId,
+                    patientTreatmentId: bookingForm.patientTreatmentId,
                     notes: bookingForm.notes || undefined,
                 }),
             });
@@ -232,7 +248,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
             if (!res.ok) throw new Error(data.error || "Failed to book");
             onSuccess(data);
             router.refresh();
-            setBookingForm({ date: "", time: "", treatmentId: "", notes: "" });
+            setBookingForm({ date: "", time: "", treatmentId: "", notes: "", patientTreatmentId: undefined });
             setShowBooking(false);
             setSelectedPatient(null);
             setHistory(null);
@@ -253,48 +269,48 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
     return (
         <div className="relative space-y-4">
             {/* Search Bar */}
-            <div className="glass-card rounded-xl p-4">
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
                 <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => { setSearchQuery(e.target.value); setSelectedPatient(null); setHistory(null); }}
                         placeholder="Search by patient name or phone number..."
-                        className="w-full pl-11 pr-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all"
                     />
-                    {searching && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-teal-400 animate-spin" />}
+                    {searching && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-teal-600 animate-spin" />}
                 </div>
             </div>
 
             {/* Error */}
             {error && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 flex items-start gap-3">
-                    <AlertCircle className="size-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-300">{error}</p>
-                    <button onClick={() => setError(null)} className="ml-auto text-red-400/60 hover:text-red-300"><X className="size-4" /></button>
+                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
+                    <AlertCircle className="size-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700 font-medium">{error}</p>
+                    <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700"><X className="size-4" /></button>
                 </div>
             )}
 
             {/* Patient List (always visible when no patient selected) */}
             {!selectedPatient && !loadingHistory && (
-                <div className="glass-card rounded-xl overflow-hidden">
-                    <div className="px-5 py-3 border-b border-white/[0.06] flex items-center justify-between">
-                        <p className="text-xs text-slate-400 font-medium">
+                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+                    <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                        <p className="text-xs text-slate-600 font-semibold">
                             {totalPatients} registered patient{totalPatients !== 1 ? "s" : ""}
-                            {searchQuery.length >= 2 && <span className="text-teal-400"> matching &quot;{searchQuery}&quot;</span>}
+                            {searchQuery.length >= 2 && <span className="text-teal-700"> matching &quot;{searchQuery}&quot;</span>}
                         </p>
                         {totalPages > 1 && (
-                            <p className="text-xs text-slate-500">Page {currentPage} of {totalPages}</p>
+                            <p className="text-xs text-slate-500 font-medium">Page {currentPage} of {totalPages}</p>
                         )}
                     </div>
                     {results.length === 0 ? (
                         <div className="p-8 text-center">
-                            <User className="size-10 text-slate-600 mx-auto mb-3" />
-                            <h3 className="text-sm font-medium text-white">
+                            <User className="size-10 text-slate-400 mx-auto mb-3" />
+                            <h3 className="text-sm font-semibold text-slate-900">
                                 {searchQuery.length >= 2 ? "No patients found" : "No registered patients"}
                             </h3>
-                            <p className="text-xs text-slate-400 mt-1">
+                            <p className="text-xs text-slate-500 mt-1">
                                 {searchQuery.length >= 2
                                     ? "Try a different name or phone number, or register as a new patient."
                                     : "Register your first walk-in patient using the New Patient tab."}
@@ -302,27 +318,27 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                         </div>
                     ) : (
                         <>
-                            <div className="divide-y divide-white/[0.04]">
+                            <div className="divide-y divide-slate-100">
                                 {results.map(p => (
                                     <button
                                         key={p.id}
                                         onClick={() => loadHistory(p.id)}
-                                        className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 hover:bg-white/[0.03] transition-all text-left group cursor-pointer"
+                                        className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 hover:bg-slate-50 transition-all text-left group cursor-pointer"
                                     >
-                                        <div className="size-11 rounded-full bg-teal-500/15 flex items-center justify-center text-teal-400 font-bold text-sm border-2 border-teal-500/20 group-hover:border-teal-400/40 transition-all shrink-0">
+                                        <div className="size-11 rounded-full bg-teal-50 flex items-center justify-center text-teal-700 font-bold text-sm border-2 border-teal-200 group-hover:border-teal-400 transition-all shrink-0">
                                             {(p.name || "P").charAt(0).toUpperCase()}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <p className="font-medium text-white group-hover:text-teal-400 transition-all truncate">{p.name}</p>
+                                                <p className="font-semibold text-slate-900 group-hover:text-teal-700 transition-all truncate">{p.name}</p>
                                                 {p.patientCode && (
-                                                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-teal-500/15 text-teal-400 border border-teal-500/20 shrink-0">
+                                                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200 shrink-0">
                                                         ID: {p.patientCode}
                                                     </span>
                                                 )}
                                             </div>
                                             <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500 mt-0.5">
-                                                {p.phone && <span className="flex items-center gap-1"><Phone className="size-3" />{p.phone}</span>}
+                                                {p.phone && <span className="flex items-center gap-1 font-medium"><Phone className="size-3 text-teal-600" />{p.phone}</span>}
                                                 <span>{p._count.appointments} visit{p._count.appointments !== 1 ? "s" : ""}</span>
                                                 {p.appointments[0] && (
                                                     <span className="hidden sm:inline">Last: {formatDate(p.appointments[0].startTime, "short")}</span>
@@ -330,21 +346,21 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                             </div>
                                         </div>
                                         {p.medicalAlerts && (
-                                            <div className="p-1.5 rounded-lg bg-red-500/15 shrink-0" title={p.medicalAlerts}>
-                                                <ShieldAlert className="size-4 text-red-400" />
+                                            <div className="p-1.5 rounded-lg bg-red-50 border border-red-200 shrink-0" title={p.medicalAlerts}>
+                                                <ShieldAlert className="size-4 text-red-600" />
                                             </div>
                                         )}
-                                        <ChevronRight className="size-4 text-slate-600 group-hover:text-teal-400 transition-all shrink-0" />
+                                        <ChevronRight className="size-4 text-slate-400 group-hover:text-teal-600 transition-all shrink-0" />
                                     </button>
                                 ))}
                             </div>
                             {/* Pagination */}
                             {totalPages > 1 && (
-                                <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.06] bg-white/[0.02]">
+                                <div className="flex items-center justify-between px-5 py-3 border-t border-slate-200 bg-slate-50/50">
                                     <button
                                         onClick={() => goToPage(currentPage - 1)}
                                         disabled={currentPage <= 1}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.08] text-xs text-slate-300 hover:bg-white/[0.04] disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                                     >
                                         <ChevronLeft className="size-3.5" /> Previous
                                     </button>
@@ -364,9 +380,9 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                                 <button
                                                     key={pageNum}
                                                     onClick={() => goToPage(pageNum)}
-                                                    className={`size-8 rounded-lg text-xs font-medium transition-all cursor-pointer ${currentPage === pageNum
-                                                        ? "bg-teal-500/20 text-teal-400 border border-teal-500/30"
-                                                        : "text-slate-400 hover:bg-white/[0.04] hover:text-white"
+                                                    className={`size-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${currentPage === pageNum
+                                                        ? "bg-teal-600 text-white"
+                                                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200"
                                                         }`}
                                                 >
                                                     {pageNum}
@@ -377,7 +393,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                     <button
                                         onClick={() => goToPage(currentPage + 1)}
                                         disabled={currentPage >= totalPages}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.08] text-xs text-slate-300 hover:bg-white/[0.04] disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                                     >
                                         Next <ChevronRight className="size-3.5" />
                                     </button>
@@ -390,9 +406,9 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
 
             {/* Loading History */}
             {loadingHistory && (
-                <div className="glass-card rounded-xl p-12 text-center">
-                    <Loader2 className="size-8 text-teal-400 animate-spin mx-auto mb-3" />
-                    <p className="text-sm text-slate-400">Loading patient records...</p>
+                <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-xs">
+                    <Loader2 className="size-8 text-teal-600 animate-spin mx-auto mb-3" />
+                    <p className="text-sm text-slate-600 font-medium">Loading patient records...</p>
                 </div>
             )}
 
@@ -418,14 +434,14 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                             <div className="flex gap-2 self-end sm:self-auto shrink-0">
                                 <button
                                     onClick={() => setShowBooking(!showBooking)}
-                                    className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-xs sm:text-sm font-semibold hover:from-teal-400 hover:to-emerald-400 transition-all shadow-lg shadow-teal-500/20"
+                                    className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
                                 >
                                     <CalendarPlus className="size-4" />
                                     Book Appointment
                                 </button>
                                 <button
                                     onClick={() => { setSelectedPatient(null); setHistory(null); setShowBooking(false); }}
-                                    className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
+                                    className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all"
                                 >
                                     <X className="size-4" />
                                 </button>
@@ -433,19 +449,62 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                         </div>
                     </div>
 
+                    {/* Active Multi-Session Plans Card */}
+                    {history.plans && history.plans.filter(p => p.clinicalStatus === "IN_PROGRESS").length > 0 && (
+                        <div className="bg-teal-50/70 rounded-xl p-4 border border-teal-200 space-y-3 shadow-xs">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-teal-800 uppercase tracking-wider flex items-center gap-1.5">
+                                    <Sparkles className="size-4 text-teal-600" /> Active Treatment Plan
+                                </span>
+                                <span className="text-xs bg-teal-100 text-teal-800 border border-teal-200 px-2 py-0.5 rounded-full font-bold">
+                                    In Progress
+                                </span>
+                            </div>
+                            {history.plans.filter(p => p.clinicalStatus === "IN_PROGRESS").map((plan) => (
+                                <div key={plan.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-white rounded-lg border border-teal-200/80 shadow-2xs">
+                                    <div className="space-y-0.5">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm font-bold text-slate-900">{plan.treatment.name}</p>
+                                            <span className="text-[11px] text-teal-700 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">
+                                                Session {plan.completedSessions + 1} of {plan.totalSessions}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-slate-600">
+                                            Package: {formatPKR(plan.totalCost)} · Paid: {formatPKR(plan.totalPaid)} · <span className="text-amber-800 font-bold">Balance: {formatPKR(plan.remainingBalance)}</span>
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setBookingForm(prev => ({
+                                                ...prev,
+                                                treatmentId: plan.treatment.id,
+                                                patientTreatmentId: plan.id,
+                                            }));
+                                            setShowBooking(true);
+                                        }}
+                                        className="px-3.5 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0"
+                                    >
+                                        <CalendarPlus className="size-3.5" /> Book Session {plan.completedSessions + 1}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
                     {/* ── Inline Booking Form ── */}
                     {showBooking && (
-                        <div className="glass-card rounded-xl overflow-hidden border-2 border-teal-500/20">
-                            <div className="px-5 py-4 border-b border-white/[0.06] bg-teal-500/5">
-                                <h4 className="text-sm font-semibold text-teal-400 flex items-center gap-2">
-                                    <CalendarPlus className="size-4" /> New Appointment for {history.patient.name}
+                        <div className="bg-white rounded-xl overflow-hidden border border-teal-200 shadow-xs">
+                            <div className="px-5 py-4 border-b border-teal-100 bg-teal-50/70">
+                                <h4 className="text-sm font-bold text-teal-900 flex items-center gap-2">
+                                    <CalendarPlus className="size-4 text-teal-600" /> New Appointment for {history.patient.name}
                                 </h4>
                             </div>
                             <form onSubmit={handleBook} className="p-5 space-y-4">
                                 <div className="grid sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
-                                            <Calendar className="size-3.5 text-teal-400" /> Date <span className="text-red-400">*</span>
+                                        <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                                            <Calendar className="size-3.5 text-teal-600" /> Date <span className="text-red-500">*</span>
                                         </label>
                                         <DatePicker
                                             value={bookingForm.date}
@@ -454,24 +513,24 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                             placeholder="Select appointment date"
                                             disabledDays={(date) => date.getDay() === 0}
                                         />
-                                        {bookingForm.date && isSunday(bookingForm.date) && <SundayWarning />}
+                                        <SundayWarning date={bookingForm.date} />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
-                                            <Stethoscope className="size-3.5 text-emerald-400" /> Treatment <span className="text-red-400">*</span>
+                                        <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                                            <Stethoscope className="size-3.5 text-teal-600" /> Treatment <span className="text-red-500">*</span>
                                         </label>
                                         <select value={bookingForm.treatmentId} onChange={e => setBookingForm(p => ({ ...p, treatmentId: e.target.value, time: "" }))} required
-                                            className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer [color-scheme:dark]">
-                                            <option value="" className="bg-slate-900 text-slate-400">Select treatment...</option>
+                                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer">
+                                            <option value="">Select treatment...</option>
                                             {treatments.map(t => (
-                                                <option key={t.id} value={t.id} className="bg-slate-900 text-white">{t.name} — Rs. {t.price.toLocaleString()}</option>
+                                                <option key={t.id} value={t.id}>{t.name} — Rs. {t.price.toLocaleString()}</option>
                                             ))}
                                         </select>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
-                                        <Clock className="size-3.5 text-blue-400" /> Available Time Slots <span className="text-red-400">*</span>
+                                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                                        <Clock className="size-3.5 text-teal-600" /> Available Time Slots <span className="text-red-500">*</span>
                                     </label>
                                     <TimeSlotSelector
                                         date={bookingForm.date}
@@ -482,16 +541,16 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                     <input type="text" name="time" value={bookingForm.time} required className="sr-only" readOnly tabIndex={-1} />
                                 </div>
                                 {selectedTreatment && (
-                                    <div className="flex items-center gap-3 text-xs text-slate-400 bg-white/[0.03] rounded-lg px-4 py-2.5">
+                                    <div className="flex items-center gap-3 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 font-medium">
                                         <span>⏱ {selectedTreatment.durationMin} min</span>
-                                        <span className="text-white/10">|</span>
-                                        <span className="text-teal-400 font-semibold">Rs. {selectedTreatment.price.toLocaleString()}</span>
+                                        <span className="text-slate-300">|</span>
+                                        <span className="text-teal-700 font-bold">Rs. {selectedTreatment.price.toLocaleString()}</span>
                                     </div>
                                 )}
                                 <textarea placeholder="Notes (optional)" value={bookingForm.notes} onChange={e => setBookingForm(p => ({ ...p, notes: e.target.value }))} rows={2}
-                                    className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all resize-none" />
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all resize-none" />
                                 <button type="submit" disabled={booking || isSunday(bookingForm.date)}
-                                    className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold hover:from-teal-400 hover:to-emerald-400 transition-all shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                    className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer">
                                     {booking ? <><Loader2 className="size-5 animate-spin" />Booking...</> : <><CalendarPlus className="size-5" />Confirm Appointment</>}
                                 </button>
                             </form>
@@ -499,27 +558,27 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                     )}
 
                     {/* ── Treatment History ── */}
-                    <div className="glass-card rounded-xl overflow-hidden">
-                        <div className="px-5 py-4 border-b border-white/[0.06]">
-                            <h4 className="text-sm font-semibold text-white">Treatment History</h4>
-                            <p className="text-xs text-slate-500 mt-0.5">Past appointments with clinical notes</p>
+                    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+                        <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/60">
+                            <h4 className="text-sm font-bold text-slate-900">Treatment History</h4>
+                            <p className="text-xs text-slate-500 mt-0.5 font-medium">Past appointments with clinical notes</p>
                         </div>
                         {history.appointments.length === 0 ? (
                             <div className="p-8 text-center">
-                                <ClipboardList className="size-10 text-slate-600 mx-auto mb-3" />
-                                <p className="text-sm text-slate-400">No medical history yet</p>
+                                <ClipboardList className="size-10 text-slate-400 mx-auto mb-3" />
+                                <p className="text-sm text-slate-500 font-medium">No medical history yet</p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-white/[0.04]">
+                            <div className="divide-y divide-slate-100">
                                 {history.appointments.map(apt => (
                                     <div key={apt.id} className="px-4 sm:px-5 py-3 sm:py-4">
                                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
                                             <div className="flex items-center gap-3">
-                                                <div className="size-10 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0">
-                                                    <Stethoscope className="size-4 text-teal-400" />
+                                                <div className="size-10 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center shrink-0">
+                                                    <Stethoscope className="size-4 text-teal-600" />
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-white text-sm">{apt.treatment.name}</p>
+                                                    <p className="font-semibold text-slate-900 text-sm">{apt.treatment.name}</p>
                                                     <p className="text-xs text-slate-500 mt-0.5">
                                                         {formatDate(apt.startTime, "short")}
                                                         {" · "}
@@ -528,35 +587,35 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3 ml-13 sm:ml-0">
-                                                <span className="text-sm font-semibold text-teal-400">Rs. {apt.price.toLocaleString()}</span>
+                                                <span className="text-sm font-bold text-teal-700">Rs. {apt.price.toLocaleString()}</span>
                                                 <StatusBadge status={apt.status} />
                                             </div>
                                         </div>
                                         {/* Clinical Notes */}
                                         {apt.clinicalNotes.length > 0 && (
-                                            <div className="mt-3 ml-13 pl-4 border-l-2 border-teal-500/20 space-y-2">
+                                            <div className="mt-3 ml-13 pl-4 border-l-2 border-teal-300 space-y-2">
                                                 {apt.clinicalNotes.map(note => (
                                                     <div key={note.id} className="grid sm:grid-cols-2 gap-2 text-xs">
                                                         {note.diagnosis && (
                                                             <div className="flex items-start gap-1.5">
-                                                                <Stethoscope className="size-3.5 text-blue-400 mt-0.5 shrink-0" />
-                                                                <span><span className="font-semibold text-slate-400">Diagnosis:</span> <span className="text-slate-300">{note.diagnosis}</span></span>
+                                                                <Stethoscope className="size-3.5 text-blue-600 mt-0.5 shrink-0" />
+                                                                <span><span className="font-semibold text-slate-700">Diagnosis:</span> <span className="text-slate-600">{note.diagnosis}</span></span>
                                                             </div>
                                                         )}
                                                         <div className="flex items-start gap-1.5">
-                                                            <ClipboardList className="size-3.5 text-teal-400 mt-0.5 shrink-0" />
-                                                            <span><span className="font-semibold text-slate-400">Treatment:</span> <span className="text-slate-300">{note.treatmentDone}</span></span>
+                                                            <ClipboardList className="size-3.5 text-teal-600 mt-0.5 shrink-0" />
+                                                            <span><span className="font-semibold text-slate-700">Treatment:</span> <span className="text-slate-600">{note.treatmentDone}</span></span>
                                                         </div>
                                                         {note.prescription && (
                                                             <div className="flex items-start gap-1.5">
-                                                                <Pill className="size-3.5 text-purple-400 mt-0.5 shrink-0" />
-                                                                <span><span className="font-semibold text-slate-400">Rx:</span> <span className="text-slate-300">{note.prescription}</span></span>
+                                                                <Pill className="size-3.5 text-teal-600 mt-0.5 shrink-0" />
+                                                                <span><span className="font-semibold text-slate-700">Rx:</span> <span className="text-slate-600">{note.prescription}</span></span>
                                                             </div>
                                                         )}
                                                         {note.remarks && (
                                                             <div className="flex items-start gap-1.5">
-                                                                <MessageSquare className="size-3.5 text-amber-400 mt-0.5 shrink-0" />
-                                                                <span><span className="font-semibold text-slate-400">Notes:</span> <span className="text-slate-300">{note.remarks}</span></span>
+                                                                <MessageSquare className="size-3.5 text-amber-600 mt-0.5 shrink-0" />
+                                                                <span><span className="font-semibold text-slate-700">Notes:</span> <span className="text-slate-600">{note.remarks}</span></span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -643,81 +702,80 @@ function NewPatientTab({ treatments, onSuccess }: {
     const today = new Date().toISOString().split("T")[0];
 
     return (
-        <div className="glass-card rounded-2xl overflow-hidden relative">
-            <div className="relative px-6 py-5 border-b border-white/[0.06] overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/5 to-transparent" />
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden relative shadow-xs">
+            <div className="relative px-6 py-5 border-b border-slate-200 overflow-hidden bg-slate-50/70">
                 <div className="relative flex items-center gap-3">
-                    <div className="size-10 rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-teal-500/20">
+                    <div className="size-10 rounded-xl bg-teal-600 flex items-center justify-center shadow-xs">
                         <UserPlus className="size-5 text-white" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-white">New Patient Registration</h2>
-                        <p className="text-xs text-slate-400">Register a new walk-in patient and book their appointment</p>
+                        <h2 className="text-lg font-bold text-slate-900">New Patient Registration</h2>
+                        <p className="text-xs text-slate-500 font-medium">Register a new walk-in patient and book their appointment</p>
                     </div>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 flex items-start gap-3">
-                        <AlertCircle className="size-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
+                        <AlertCircle className="size-5 text-red-600 flex-shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-sm font-medium text-red-300">Registration Failed</p>
-                            <p className="text-xs text-red-400/80 mt-0.5">{error}</p>
+                            <p className="text-sm font-semibold text-red-700">Registration Failed</p>
+                            <p className="text-xs text-red-600 mt-0.5">{error}</p>
                         </div>
-                        <button type="button" onClick={() => setError(null)} className="ml-auto text-red-400/60 hover:text-red-300"><X className="size-4" /></button>
+                        <button type="button" onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700"><X className="size-4" /></button>
                     </div>
                 )}
 
                 {/* Patient Information */}
                 <div>
-                    <p className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-4 flex items-center gap-2">
-                        <User className="size-3.5" /> Patient Information
+                    <p className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 flex items-center gap-2">
+                        <User className="size-3.5 text-teal-600" /> Patient Information
                     </p>
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label htmlFor="new-phone" className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
-                                <Phone className="size-3.5 text-teal-400" /> Phone Number <span className="text-red-400">*</span>
+                            <label htmlFor="new-phone" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                                <Phone className="size-3.5 text-teal-600" /> Phone Number <span className="text-red-500">*</span>
                             </label>
                             <input id="new-phone" type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="03001234567" required
-                                className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all" />
+                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all" />
                         </div>
                         <div className="space-y-1.5">
-                            <label htmlFor="new-cnic" className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
-                                <CreditCard className="size-3.5 text-blue-400" /> CNIC <span className="text-slate-600 text-xs">(Optional)</span>
+                            <label htmlFor="new-cnic" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                                <CreditCard className="size-3.5 text-blue-600" /> CNIC <span className="text-slate-500 text-xs font-normal">(Optional)</span>
                             </label>
                             <input id="new-cnic" type="text" name="cnic" value={formData.cnic} onChange={handleChange} placeholder="12345-1234567-1"
-                                className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all" />
+                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all" />
                         </div>
                         <div className="space-y-1.5">
-                            <label htmlFor="new-name" className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
-                                <User className="size-3.5 text-purple-400" /> Full Name <span className="text-red-400">*</span>
+                            <label htmlFor="new-name" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                                <User className="size-3.5 text-teal-600" /> Full Name <span className="text-red-500">*</span>
                             </label>
                             <input id="new-name" type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Muhammad Ahmed" required
-                                className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all" />
+                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all" />
                         </div>
                         <div className="space-y-1.5">
-                            <label htmlFor="new-age" className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
-                                <User className="size-3.5 text-amber-400" /> Age <span className="text-red-400">*</span>
+                            <label htmlFor="new-age" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                                <User className="size-3.5 text-amber-600" /> Age <span className="text-red-500">*</span>
                             </label>
                             <input id="new-age" type="number" name="age" value={formData.age} onChange={handleChange} placeholder="28" min="1" max="150" required
                                 onKeyDown={(e) => { if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault() }}
-                                className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all" />
+                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all" />
                         </div>
                     </div>
                 </div>
 
-                <div className="border-t border-white/[0.06]" />
+                <div className="border-t border-slate-100" />
 
                 {/* Appointment Details */}
                 <div>
-                    <p className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-4 flex items-center gap-2">
-                        <Calendar className="size-3.5" /> Appointment Details
+                    <p className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 flex items-center gap-2">
+                        <Calendar className="size-3.5 text-teal-600" /> Appointment Details
                     </p>
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label htmlFor="new-date" className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
-                                <Calendar className="size-3.5 text-teal-400" /> Date <span className="text-red-400">*</span>
+                            <label htmlFor="new-date" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                                <Calendar className="size-3.5 text-teal-600" /> Date <span className="text-red-500">*</span>
                             </label>
                             <DatePicker
                                 value={formData.date}
@@ -726,24 +784,24 @@ function NewPatientTab({ treatments, onSuccess }: {
                                 placeholder="Select appointment date"
                                 disabledDays={(date) => date.getDay() === 0}
                             />
-                            {formData.date && isSunday(formData.date) && <SundayWarning />}
+                            <SundayWarning date={formData.date} />
                         </div>
                         <div className="space-y-1.5">
-                            <label htmlFor="new-treatment" className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
-                                <Stethoscope className="size-3.5 text-emerald-400" /> Treatment <span className="text-red-400">*</span>
+                            <label htmlFor="new-treatment" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                                <Stethoscope className="size-3.5 text-teal-600" /> Treatment <span className="text-red-500">*</span>
                             </label>
                             <select id="new-treatment" name="treatmentId" value={formData.treatmentId} onChange={(e) => setFormData(prev => ({ ...prev, treatmentId: e.target.value, time: "" }))} required
-                                className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer [color-scheme:dark]">
-                                <option value="" className="bg-slate-900 text-slate-400">Select treatment...</option>
+                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer">
+                                <option value="">Select treatment...</option>
                                 {treatments.map(t => (
-                                    <option key={t.id} value={t.id} className="bg-slate-900 text-white">{t.name} — Rs. {t.price.toLocaleString()}</option>
+                                    <option key={t.id} value={t.id}>{t.name} — Rs. {t.price.toLocaleString()}</option>
                                 ))}
                             </select>
                         </div>
                     </div>
                     <div className="space-y-2 mt-4">
-                        <label className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
-                            <Clock className="size-3.5 text-blue-400" /> Available Time Slots <span className="text-red-400">*</span>
+                        <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                            <Clock className="size-3.5 text-teal-600" /> Available Time Slots <span className="text-red-500">*</span>
                         </label>
                         <TimeSlotSelector
                             date={formData.date}
@@ -754,21 +812,21 @@ function NewPatientTab({ treatments, onSuccess }: {
                         <input type="text" name="time" value={formData.time} required className="sr-only" readOnly tabIndex={-1} />
                     </div>
                     {selectedTreatment && (
-                        <div className="mt-3 flex items-center gap-3 text-xs text-slate-400 bg-white/[0.03] rounded-lg px-4 py-2.5">
+                        <div className="mt-3 flex items-center gap-3 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 font-medium">
                             <span>⏱ {selectedTreatment.durationMin} min</span>
-                            <span className="text-white/10">|</span>
-                            <span className="text-teal-400 font-semibold">Rs. {selectedTreatment.price.toLocaleString()}</span>
+                            <span className="text-slate-300">|</span>
+                            <span className="text-teal-700 font-bold">Rs. {selectedTreatment.price.toLocaleString()}</span>
                         </div>
                     )}
                     <div className="mt-4 space-y-1.5">
-                        <label htmlFor="new-notes" className="text-sm font-medium text-slate-300">Notes <span className="text-slate-600 text-xs">(Optional)</span></label>
+                        <label htmlFor="new-notes" className="text-sm font-semibold text-slate-700">Notes <span className="text-slate-500 text-xs font-normal">(Optional)</span></label>
                         <textarea id="new-notes" name="notes" value={formData.notes} onChange={handleChange} rows={2} placeholder="Any notes for this visit..."
-                            className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all resize-none" />
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all resize-none" />
                     </div>
                 </div>
 
                 <button type="submit" disabled={loading || isSunday(formData.date)}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold hover:from-teal-400 hover:to-emerald-400 transition-all shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer">
                     {loading ? <><Loader2 className="size-5 animate-spin" />Processing...</> : <><UserPlus className="size-5" />Register &amp; Book Appointment</>}
                 </button>
             </form>
@@ -788,45 +846,44 @@ function SuccessModal({ success, onClose, onCopy, copied }: {
     copied: boolean;
 }) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
             <div className="relative w-full max-w-md animate-fade-in-up">
                 <button onClick={onClose}
-                    className="absolute -top-2 -right-2 z-10 size-8 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all">
+                    className="absolute -top-2 -right-2 z-10 size-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 shadow-sm transition-all">
                     <X className="size-4" />
                 </button>
-                <div className="bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border border-white/10 overflow-hidden shadow-2xl shadow-teal-500/10">
-                    <div className="relative px-6 pt-8 pb-6 text-center overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-transparent" />
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xl">
+                    <div className="relative px-6 pt-8 pb-6 text-center overflow-hidden border-b border-slate-100 bg-emerald-50/50">
                         <div className="relative">
-                            <div className="mx-auto size-16 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mb-4">
-                                <CheckCircle2 className="size-8 text-emerald-400" />
+                            <div className="mx-auto size-16 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center mb-4">
+                                <CheckCircle2 className="size-8 text-emerald-600" />
                             </div>
-                            <h3 className="text-xl font-bold text-white">Appointment Booked!</h3>
-                            <p className="text-sm text-slate-400 mt-1">{success.patientName}</p>
+                            <h3 className="text-xl font-bold text-slate-900">Appointment Booked!</h3>
+                            <p className="text-sm text-slate-600 mt-1">{success.patientName}</p>
                         </div>
                     </div>
 
                     {/* MRN (only for new patients) */}
                     {success.patientId && (
                         <>
-                            <div className="px-6 pb-4">
-                                <div className="bg-gradient-to-br from-teal-500/10 to-emerald-500/5 border-2 border-dashed border-teal-500/40 rounded-xl p-6 text-center">
-                                    <p className="text-xs uppercase tracking-widest text-teal-400/80 font-semibold mb-2">Medical Record Number (MRN)</p>
+                            <div className="px-6 pt-6 pb-2">
+                                <div className="bg-teal-50/70 border-2 border-dashed border-teal-300 rounded-xl p-5 text-center">
+                                    <p className="text-xs uppercase tracking-widest text-teal-800 font-semibold mb-2">Medical Record Number (MRN)</p>
                                     <div className="flex items-center justify-center gap-3">
-                                        <span className="text-5xl font-black text-white tracking-wider font-mono">{success.patientId}</span>
-                                        <button onClick={onCopy} className="size-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-teal-400 hover:border-teal-500/30 transition-all" title="Copy MRN">
-                                            {copied ? <BadgeCheck className="size-5 text-emerald-400" /> : <Copy className="size-5" />}
+                                        <span className="text-4xl font-black text-slate-900 tracking-wider font-mono">{success.patientId}</span>
+                                        <button onClick={onCopy} className="size-10 rounded-lg bg-white border border-teal-200 flex items-center justify-center text-teal-700 hover:bg-teal-50 transition-all shadow-xs" title="Copy MRN">
+                                            {copied ? <BadgeCheck className="size-5 text-emerald-600" /> : <Copy className="size-5" />}
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                            <div className="mx-6 mb-4 bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-3">
+                            <div className="mx-6 mt-3 mb-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
                                 <div className="flex gap-2">
-                                    <AlertCircle className="size-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                                    <AlertCircle className="size-5 text-amber-600 shrink-0 mt-0.5" />
                                     <div>
-                                        <p className="text-sm font-semibold text-amber-300">Important</p>
-                                        <p className="text-xs text-amber-400/80 mt-0.5">
-                                            Write this MRN <span className="font-bold text-amber-300">({success.patientId})</span> on the patient&apos;s physical card for their next visit.
+                                        <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">Important Receptionist Note</p>
+                                        <p className="text-xs text-amber-800 mt-0.5">
+                                            Write this MRN <span className="font-bold text-amber-950">({success.patientId})</span> on the patient&apos;s physical clinic card.
                                         </p>
                                     </div>
                                 </div>
@@ -835,21 +892,21 @@ function SuccessModal({ success, onClose, onCopy, copied }: {
                     )}
 
                     {/* Appointment Details */}
-                    <div className="px-6 pb-6">
-                        <div className="bg-white/[0.03] rounded-lg p-4 space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-slate-500">Service</span>
-                                <span className="text-slate-200 font-medium">{success.appointment.serviceType}</span>
+                    <div className="px-6 py-4">
+                        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2.5 text-sm">
+                            <div className="flex justify-between items-center">
+                                <span className="text-slate-500 font-medium">Service</span>
+                                <span className="text-slate-900 font-semibold">{success.appointment.serviceType}</span>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-500">Date</span>
-                                <span className="text-slate-200 font-medium">
+                            <div className="flex justify-between items-center">
+                                <span className="text-slate-500 font-medium">Date</span>
+                                <span className="text-slate-900 font-semibold">
                                     {new Date(success.appointment.date).toLocaleDateString("en-PK", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
                                 </span>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-500">Time</span>
-                                <span className="text-slate-200 font-medium">
+                            <div className="flex justify-between items-center">
+                                <span className="text-slate-500 font-medium">Time</span>
+                                <span className="text-slate-900 font-semibold">
                                     {(() => {
                                         if (!success.appointment.time) return "";
                                         const [h, m] = success.appointment.time.split(":");
@@ -859,16 +916,16 @@ function SuccessModal({ success, onClose, onCopy, copied }: {
                                     })()}
                                 </span>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-500">Status</span>
-                                <span className="text-emerald-400 font-medium">{success.appointment.status}</span>
+                            <div className="flex justify-between items-center pt-1 border-t border-slate-200">
+                                <span className="text-slate-500 font-medium">Status</span>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">{success.appointment.status}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="px-6 pb-6">
+                    <div className="px-6 pb-6 pt-2">
                         <button onClick={onClose}
-                            className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold hover:from-teal-400 hover:to-emerald-400 transition-all shadow-lg shadow-teal-500/20">
+                            className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold transition-all shadow-md shadow-teal-600/20">
                             Done
                         </button>
                     </div>

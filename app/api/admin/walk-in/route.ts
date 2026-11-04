@@ -26,6 +26,7 @@ const walkInSchema = z.object({
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
     time: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format (HH:MM)"),
     treatmentId: z.string().min(1, "Treatment is required"),
+    patientTreatmentId: z.string().optional(),
     notes: z.string().optional(),
 }).superRefine((data, ctx) => {
     // Must have either patientId (registered patient) OR new patient details
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
             }, { status: 400 });
         }
 
-        const { patientId, phone, cnic, fullName, age, date, time, treatmentId, notes } = validationResult.data;
+        const { patientId, phone, cnic, fullName, age, date, time, treatmentId, patientTreatmentId, notes } = validationResult.data;
         const canonicalPhone = phone ? normalizePhone(phone) : undefined;
 
         // 3. Validate date — no past dates, no Sundays
@@ -128,20 +129,61 @@ export async function POST(request: Request) {
             });
             if (conflict) throw new Error("DOUBLE_BOOKING");
 
+            // Multi-session treatment plan linking
+            let targetPtId = patientTreatmentId || null;
+            if (!targetPtId) {
+                const activePlan = await tx.patientTreatment.findFirst({
+                    where: {
+                        patientId: userId,
+                        treatmentId: treatment.id,
+                        clinicalStatus: "IN_PROGRESS",
+                    },
+                    orderBy: { startDate: "desc" },
+                });
+                if (activePlan) {
+                    targetPtId = activePlan.id;
+                }
+            }
+
+            let sessionNumber: number | null = null;
+            let sessionLabel: string | null = null;
+            let aptPrice = treatment.price;
+
+            if (targetPtId) {
+                const plan = await tx.patientTreatment.findUnique({
+                    where: { id: targetPtId },
+                    include: {
+                        appointments: {
+                            where: { status: { notIn: ["CANCELLED", "NO_SHOW"] } },
+                        },
+                    },
+                });
+                if (plan) {
+                    sessionNumber = plan.appointments.length + 1;
+                    sessionLabel = `Session ${sessionNumber} of ${plan.totalSessions}`;
+                    aptPrice = 0; // Revenue belongs to plan package
+                }
+            }
+
             // Create appointment
             const appointment = await tx.appointment.create({
                 data: {
                     startTime, endTime, patientId: userId, treatmentId,
                     status: "SCHEDULED", bookedBy: "WALK_IN",
-                    price: treatment.price, notes: notes || null,
+                    price: aptPrice,
+                    notes: notes || (sessionLabel ? `${sessionLabel} — ${treatment.name}` : null),
+                    patientTreatmentId: targetPtId,
+                    sessionNumber,
+                    sessionLabel,
                 },
                 include: {
                     treatment: { select: { name: true, durationMin: true } },
                     patient: { select: { name: true, phone: true, email: true } },
+                    patientTreatment: true,
                 },
             });
 
-            return { appointment, patientCode, patientName };
+            return { appointment, patientCode, patientName, sessionNumber, sessionLabel };
         });
 
         // 7. Google Calendar (non-blocking in background)

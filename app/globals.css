@@ -45,68 +45,75 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* ─── Midnight Luxury – Global Dark Premium Theme ────────── */
+/* ─── Clinical Excellence – Global Light Medical Theme ────── */
 :root {
   --radius: 0.625rem;
 
-  /* Deep Midnight Background */
-  --background: hsl(222 47% 5%);
-  /* #070b14 */
-  --foreground: hsl(210 40% 98%);
-  /* #f8fafc crisp white */
+  /* Daylight Clinical Porcelain Canvas */
+  --background: hsl(210 40% 98%);
+  /* #F8FAFC */
+  --foreground: hsl(222 47% 11%);
+  /* #0F172A deep slate navy */
 
-  /* Cards: dark glass surfaces */
-  --card: hsl(217 33% 12%);
-  /* ~slate-850 */
-  --card-foreground: hsl(210 40% 98%);
+  /* Cards: pure white clinical surfaces */
+  --card: hsl(0 0% 100%);
+  /* #FFFFFF */
+  --card-foreground: hsl(222 47% 11%);
 
-  /* Popovers */
-  --popover: hsl(217 33% 14%);
-  --popover-foreground: hsl(210 40% 98%);
+  /* Popovers & Modals */
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(222 47% 11%);
 
-  /* Primary: Teal-500 (single brand anchor) */
-  --primary: hsl(171 47% 50%);
-  /* teal-500 */
+  /* Primary: Medical Dental Teal (single brand anchor) */
+  --primary: hsl(173 80% 36%);
+  /* #0D9488 - Teal-600 */
   --primary-foreground: hsl(0 0% 100%);
 
   /* Secondary */
-  --secondary: hsl(217 33% 17%);
-  --secondary-foreground: hsl(215 20% 65%);
+  --secondary: hsl(210 40% 96%);
+  /* #F1F5F9 - Slate-100 */
+  --secondary-foreground: hsl(215 25% 27%);
+  /* #334155 - Slate-700 */
 
-  /* Muted – BUMPED for readability */
-  --muted: hsl(217 33% 15%);
-  --muted-foreground: hsl(215 20% 65%);
-  /* lighter than before */
+  /* Muted */
+  --muted: hsl(210 40% 96%);
+  /* #F1F5F9 */
+  --muted-foreground: hsl(215 16% 47%);
+  /* #64748B - Slate-500 */
 
-  /* Accent */
-  --accent: hsl(217 33% 17%);
-  --accent-foreground: hsl(210 40% 98%);
+  /* Accent (Soft clinical wash) */
+  --accent: hsl(174 80% 96%);
+  /* #F0FDFA - Teal-50 */
+  --accent-foreground: hsl(173 80% 30%);
+  /* #0F766E - Teal-700 */
 
   /* Destructive */
-  --destructive: hsl(0 63% 45%);
+  --destructive: hsl(0 84% 60%);
+  /* #EF4444 */
   --destructive-foreground: hsl(0 0% 100%);
 
-  /* Borders & Inputs – STRONGER for visibility */
-  --border: hsl(217 33% 20%);
-  --input: hsl(217 33% 20%);
-  --ring: hsl(171 47% 50%);
+  /* Borders & Inputs */
+  --border: hsl(214 32% 91%);
+  /* #E2E8F0 - Slate-200 */
+  --input: hsl(214 32% 91%);
+  --ring: hsl(173 80% 36%);
 
   /* Charts */
-  --chart-1: hsl(166 72% 48%);
-  --chart-2: hsl(196 80% 56%);
-  --chart-3: hsl(262 60% 58%);
-  --chart-4: hsl(43 74% 66%);
-  --chart-5: hsl(0 72% 62%);
+  --chart-1: hsl(173 80% 36%);
+  --chart-2: hsl(199 89% 48%);
+  --chart-3: hsl(158 64% 42%);
+  --chart-4: hsl(38 92% 50%);
+  --chart-5: hsl(0 84% 60%);
 
   /* Sidebar */
-  --sidebar: hsl(222 47% 5%);
-  --sidebar-foreground: hsl(215 20% 65%);
-  --sidebar-primary: hsl(171 47% 50%);
+  --sidebar: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(215 25% 27%);
+  --sidebar-primary: hsl(173 80% 36%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(217 33% 15%);
-  --sidebar-accent-foreground: hsl(210 40% 98%);
-  --sidebar-border: hsl(217 20% 18%);
-  --sidebar-ring: hsl(171 47% 50%);
+  --sidebar-accent: hsl(174 80% 96%);
+  --sidebar-accent-foreground: hsl(173 80% 30%);
+  --sidebar-border: hsl(214 32% 91%);
+  --sidebar-ring: hsl(173 80% 36%);
 }
 
 @layer base {
@@ -116,7 +123,7 @@
 
   body {
     @apply bg-background text-foreground;
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   /* ─── Global Cursor Pointer for All Interactive Elements ── */
@@ -146,17 +153,17 @@
   }
 }
 
-/* ─── Date / Time Input – Premium Dark Styling ───────────── */
+/* ─── Date / Time Input – Clinical Light Styling ─────────── */
 input[type="date"],
 input[type="time"],
 input[type="datetime-local"] {
-  color-scheme: dark;
+  color-scheme: light;
   appearance: none;
   -webkit-appearance: none;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   border-radius: 0.5rem;
-  color: #e2e8f0;
+  color: #0f172a;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -168,24 +175,24 @@ input[type="datetime-local"] {
 input[type="date"]:hover,
 input[type="time"]:hover,
 input[type="datetime-local"]:hover {
-  border-color: rgba(20, 184, 166, 0.3);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: #0d9488;
+  background: #f8fafc;
 }
 
 input[type="date"]:focus,
 input[type="time"]:focus,
 input[type="datetime-local"]:focus {
-  border-color: rgba(20, 184, 166, 0.5);
-  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1), 0 0 12px rgba(20, 184, 166, 0.08);
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
   outline: none;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
 }
 
 /* Calendar / clock icon styling */
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator,
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.7) sepia(1) saturate(3) hue-rotate(130deg);
+  filter: none;
   cursor: pointer;
   opacity: 0.7;
   transition: opacity 0.2s ease, transform 0.2s ease;
@@ -198,14 +205,13 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover,
 input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
   transform: scale(1.1);
-  background: rgba(20, 184, 166, 0.1);
 }
 
 /* Inner text styling for Webkit */
 input[type="date"]::-webkit-datetime-edit,
 input[type="time"]::-webkit-datetime-edit,
 input[type="datetime-local"]::-webkit-datetime-edit {
-  color: #e2e8f0;
+  color: #0f172a;
   padding: 0;
 }
 
@@ -216,7 +222,7 @@ input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
 }
 
 input[type="date"]::-webkit-datetime-edit-text {
-  color: rgba(148, 163, 184, 0.5);
+  color: #64748b;
   padding: 0 2px;
 }
 
@@ -226,7 +232,7 @@ input[type="date"]::-webkit-datetime-edit-year-field,
 input[type="time"]::-webkit-datetime-edit-hour-field,
 input[type="time"]::-webkit-datetime-edit-minute-field,
 input[type="time"]::-webkit-datetime-edit-ampm-field {
-  color: #e2e8f0;
+  color: #0f172a;
   padding: 2px 1px;
   border-radius: 3px;
 }
@@ -237,43 +243,53 @@ input[type="date"]::-webkit-datetime-edit-year-field:focus,
 input[type="time"]::-webkit-datetime-edit-hour-field:focus,
 input[type="time"]::-webkit-datetime-edit-minute-field:focus,
 input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
-  background: rgba(20, 184, 166, 0.15);
-  color: #5eead4;
+  background: #ccfbf1;
+  color: #0f766e;
   outline: none;
 }
 
-/* ─── Glassmorphism Utility ──────────────────────────────── */
+/* ─── Clinical Glass & Card Utilities ────────────────────── */
 .glass {
-  background: rgba(30, 41, 59, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.03), 0 2px 4px -2px rgb(0 0 0 / 0.02);
 }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
 }
 
-/* ─── Brand Gradient (single source of truth) ────────────── */
+.glass-modal {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+}
+
+/* ─── Brand Gradient & Buttons ───────────────────────────── */
 .gradient-primary {
-  background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%);
+  background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
 }
 
 .gradient-primary-h {
-  background: linear-gradient(90deg, #14b8a6 0%, #10b981 100%);
+  background: linear-gradient(90deg, #0d9488 0%, #059669 100%);
 }
 
 .btn-brand {
-  background: linear-gradient(90deg, #14b8a6 0%, #10b981 100%);
-  color: white;
-  box-shadow: 0 4px 14px rgba(20, 184, 166, 0.2);
+  background: linear-gradient(90deg, #0d9488 0%, #059669 100%);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
+  transition: all 0.2s ease;
 }
 
 .btn-brand:hover {
-  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.3);
+  background: linear-gradient(90deg, #0f766e 0%, #047857 100%);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+  transform: translateY(-1px);
 }
 
 /* ─── Warm Accent Gradient (Gold/Amber) ──────────────────── */
@@ -282,7 +298,7 @@ input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
 }
 
 .text-gradient-warm {
-  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+  background: linear-gradient(90deg, #d97706 0%, #b45309 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -290,82 +306,75 @@ input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
 
 /* ─── Gradient Border Card ───────────────────────────────── */
 .card-gradient-border {
-  position: relative;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.7) 100%);
-  border: 1px solid transparent;
-  background-clip: padding-box;
-}
-
-.card-gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.3), rgba(16, 185, 129, 0.1), rgba(245, 158, 11, 0.2));
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
-  pointer-events: none;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.05);
 }
 
 /* ─── Glow Effects ───────────────────────────────────────── */
 .glow-teal {
-  box-shadow: 0 0 20px rgba(20, 184, 166, 0.15),
-    0 0 60px rgba(20, 184, 166, 0.05);
+  box-shadow: 0 0 20px rgba(13, 148, 136, 0.15);
 }
 
 .glow-border-teal {
-  border-color: rgba(20, 184, 166, 0.3);
-  box-shadow: 0 0 15px rgba(20, 184, 166, 0.1);
+  border-color: rgba(13, 148, 136, 0.5);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
 }
 
-/* ─── Dark Input Utility ─────────────────────────────────── */
-.input-dark {
-  background: rgba(15, 23, 42, 0.5);
-  border-color: hsl(217 33% 25%);
-  color: hsl(210 40% 98%);
+/* ─── Input Light Utility ────────────────────────────────── */
+.input-dark,
+.input-light {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
 }
 
-.input-dark::placeholder {
-  color: hsl(215 16% 47%);
+.input-dark::placeholder,
+.input-light::placeholder {
+  color: #94a3b8;
 }
 
-.input-dark:focus {
-  border-color: rgba(20, 184, 166, 0.5);
-  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.15);
+.input-dark:focus,
+.input-light:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+  outline: none;
 }
 
-/* ─── Status Badge Dark Colors ───────────────────────────── */
+/* ─── Clinical Status Badges ─────────────────────────────── */
 .badge-scheduled {
-  background: rgba(59, 130, 246, 0.15);
-  color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #dbeafe;
 }
 
 .badge-completed {
-  background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #dcfce7;
 }
 
 .badge-cancelled {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fee2e2;
 }
 
 .badge-no-show {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fcd34d;
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fef3c7;
 }
 
 .badge-rescheduled {
-  background: rgba(168, 85, 247, 0.15);
-  color: #c4b5fd;
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
 }
 
 /* ─── Smooth Transitions ────────────────────────────────── */
 .transition-premium {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ─── Scrollbar Styling ──────────────────────────────────── */
@@ -375,25 +384,24 @@ input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(217 33% 10%);
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(217 20% 25%);
-  border-radius: 3px;
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(217 20% 35%);
+  background: #94a3b8;
 }
 
 /* ─── Animations ─────────────────────────────────────────── */
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(14px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -404,7 +412,6 @@ input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
@@ -413,9 +420,8 @@ input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
 @keyframes slide-in-left {
   from {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateX(-16px);
   }
-
   to {
     opacity: 1;
     transform: translateX(0);
@@ -425,122 +431,34 @@ input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
 @keyframes toast-slide-in {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    transform: translateY(16px) scale(0.96);
   }
-
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
 
-@keyframes glow-pulse {
-
-  0%,
-  100% {
-    box-shadow: 0 0 8px rgba(20, 184, 166, 0.3);
-  }
-
-  50% {
-    box-shadow: 0 0 20px rgba(20, 184, 166, 0.6);
-  }
-}
-
 .animate-fade-in-up {
-  animation: fade-in-up 0.5s ease-out forwards;
+  animation: fade-in-up 0.4s ease-out forwards;
 }
 
 .animate-fade-in {
-  animation: fade-in 0.4s ease-out forwards;
+  animation: fade-in 0.3s ease-out forwards;
 }
 
 .animate-slide-in-left {
-  animation: slide-in-left 0.4s ease-out forwards;
+  animation: slide-in-left 0.3s ease-out forwards;
 }
 
 .animate-toast-slide-in {
-  animation: toast-slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: toast-slide-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-.animate-glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-
-/* ─── Gradient Shift Animation ───────────────────────────── */
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-.animate-gradient-shift {
-  background-size: 200% 200%;
-  animation: gradient-shift 6s ease-in-out infinite;
-}
-
-/* ─── Shimmer Effect ─────────────────────────────────────── */
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.shimmer-line {
-  position: relative;
-  overflow: hidden;
-}
-
-.shimmer-line::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
-  animation: shimmer 3s ease-in-out infinite;
-}
-
-/* ─── Scale-in Animation ─────────────────────────────────── */
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-scale-in {
-  animation: scale-in 0.4s ease-out forwards;
-}
-
-/* Stagger delays for child elements */
-.stagger-1 {
-  animation-delay: 0.05s;
-}
-
-.stagger-2 {
-  animation-delay: 0.10s;
-}
-
-.stagger-3 {
-  animation-delay: 0.15s;
-}
-
-.stagger-4 {
-  animation-delay: 0.20s;
-}
-
-.stagger-5 {
-  animation-delay: 0.25s;
-}
-
-.stagger-6 {
-  animation-delay: 0.30s;
-}
-
-.stagger-7 {
-  animation-delay: 0.35s;
-}
-
-.stagger-8 {
-  animation-delay: 0.40s;
-}
+/* ─── Stagger delays ─────────────────────────────────────── */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.30s; }

@@ -97,13 +97,13 @@ export default async function StaffDashboard() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white tracking-tight">Reception Dashboard</h1>
-                    <p className="text-slate-400 text-sm flex items-center gap-2 mt-1">
-                        <Calendar className="size-4" />
+                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Reception Dashboard</h1>
+                    <p className="text-slate-600 text-sm font-medium flex items-center gap-2 mt-1">
+                        <Calendar className="size-4 text-teal-600" />
                         {formatDate(now, "long")}
                     </p>
                 </div>
-                <Button asChild className="btn-brand border-0 rounded-full transition-premium active:scale-95">
+                <Button asChild className="bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-xs transition-premium active:scale-95">
                     <Link href="/staff/book">
                         <Plus className="size-4 mr-2" />
                         Book Appointment
@@ -111,47 +111,47 @@ export default async function StaffDashboard() {
                 </Button>
             </div>
 
-            {/* Stats Cards — Dark Glass */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <Link href="/staff/appointments?filter=today" className="glass-card rounded-xl p-4 border-l-2 border-l-blue-400 cursor-pointer block hover:scale-[1.02] hover:shadow-lg transition-premium">
-                    <div className="flex items-center gap-2 text-blue-400 mb-1">
+                <Link href="/staff/appointments?filter=today" className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs border-l-4 border-l-sky-500 cursor-pointer block hover:shadow-md transition-all">
+                    <div className="flex items-center gap-2 text-sky-700 mb-1">
                         <CalendarCheck className="size-4" />
-                        <span className="text-xs font-semibold uppercase tracking-wide">Today</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">Today</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">{todayTotal}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">appointments</p>
+                    <p className="text-2xl font-extrabold text-slate-900">{todayTotal}</p>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">appointments</p>
                 </Link>
-                <Link href="/staff/appointments?status=SCHEDULED&filter=today" className="glass-card rounded-xl p-4 border-l-2 border-l-amber-400 cursor-pointer block hover:scale-[1.02] hover:shadow-lg transition-premium">
-                    <div className="flex items-center gap-2 text-amber-400 mb-1">
+                <Link href="/staff/appointments?status=SCHEDULED&filter=today" className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs border-l-4 border-l-amber-500 cursor-pointer block hover:shadow-md transition-all">
+                    <div className="flex items-center gap-2 text-amber-800 mb-1">
                         <Clock className="size-4" />
-                        <span className="text-xs font-semibold uppercase tracking-wide">Remaining</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">Remaining</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">{remainingToday}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">left today</p>
+                    <p className="text-2xl font-extrabold text-slate-900">{remainingToday}</p>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">left today</p>
                 </Link>
-                <Link href="/staff/appointments?status=COMPLETED&filter=today" className="glass-card rounded-xl p-4 border-l-2 border-l-teal-400 cursor-pointer block hover:scale-[1.02] hover:shadow-lg transition-premium">
-                    <div className="flex items-center gap-2 text-teal-400 mb-1">
+                <Link href="/staff/appointments?status=COMPLETED&filter=today" className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs border-l-4 border-l-emerald-600 cursor-pointer block hover:shadow-md transition-all">
+                    <div className="flex items-center gap-2 text-emerald-700 mb-1">
                         <CheckCircle2 className="size-4" />
-                        <span className="text-xs font-semibold uppercase tracking-wide">Done</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">Done</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">{todayCompleted}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">completed</p>
+                    <p className="text-2xl font-extrabold text-slate-900">{todayCompleted}</p>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">completed</p>
                 </Link>
-                <Link href="/staff/appointments?filter=tomorrow" className="glass-card rounded-xl p-4 border-l-2 border-l-purple-400 cursor-pointer block hover:scale-[1.02] hover:shadow-lg transition-premium">
-                    <div className="flex items-center gap-2 text-purple-400 mb-1">
+                <Link href="/staff/appointments?filter=tomorrow" className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs border-l-4 border-l-teal-600 cursor-pointer block hover:shadow-md transition-all">
+                    <div className="flex items-center gap-2 text-teal-700 mb-1">
                         <Sunrise className="size-4" />
-                        <span className="text-xs font-semibold uppercase tracking-wide">Tomorrow</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">Tomorrow</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">{tomorrowTotal}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">booked</p>
+                    <p className="text-2xl font-extrabold text-slate-900">{tomorrowTotal}</p>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">booked</p>
                 </Link>
-                <div className="glass-card rounded-xl p-4 border-l-2 border-l-cyan-400">
-                    <div className="flex items-center gap-2 text-cyan-400 mb-1">
+                <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs border-l-4 border-l-slate-400">
+                    <div className="flex items-center gap-2 text-slate-600 mb-1">
                         <Users className="size-4" />
-                        <span className="text-xs font-semibold uppercase tracking-wide">Patients</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">Patients</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">{totalPatients}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">total seen</p>
+                    <p className="text-2xl font-extrabold text-slate-900">{totalPatients}</p>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">total seen</p>
                 </div>
             </div>
 
@@ -160,17 +160,17 @@ export default async function StaffDashboard() {
                 <div className="lg:col-span-2 space-y-6">
                     {/* Next Patient */}
                     {nextAppointment && (
-                        <div className="glass-card rounded-xl overflow-hidden border-l-2 border-l-teal-400 glow-border-teal">
+                        <div className="bg-white rounded-2xl border border-teal-200 shadow-xs overflow-hidden border-l-4 border-l-teal-600">
                             <div className="px-6 py-5">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/20 hover:bg-teal-500/15 mb-2">
+                                        <Badge className="bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100 font-bold mb-2">
                                             Next Patient
                                         </Badge>
-                                        <p className="text-xl font-bold text-white">
+                                        <p className="text-2xl font-extrabold text-slate-900">
                                             {formatTime(nextAppointment.startTime)}
                                         </p>
-                                        <p className="text-sm text-slate-400">
+                                        <p className="text-sm text-slate-600 font-medium">
                                             Starts in{" "}
                                             {Math.max(
                                                 1,
@@ -182,27 +182,27 @@ export default async function StaffDashboard() {
                                             minutes
                                         </p>
                                     </div>
-                                    <div className="size-12 rounded-full bg-teal-500/10 flex items-center justify-center text-teal-400 font-bold text-lg border border-teal-500/20">
+                                    <div className="size-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-700 font-bold text-lg border border-teal-200">
                                         {nextAppointment.patient.name?.charAt(0)}
                                     </div>
                                 </div>
                                 <div className="mt-4">
-                                    <h3 className="text-lg font-semibold text-white">
+                                    <h3 className="text-lg font-bold text-slate-900">
                                         {nextAppointment.patient.name}
                                     </h3>
-                                    <div className="flex items-center gap-4 text-sm text-slate-400 mt-1">
+                                    <div className="flex items-center gap-4 text-sm text-slate-600 font-medium mt-1">
                                         <span className="flex items-center gap-1">
-                                            <Clock className="size-3.5" />
+                                            <Clock className="size-3.5 text-teal-600" />
                                             {nextAppointment.treatment.durationMin} min
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <CheckCircle2 className="size-3.5" />
+                                            <CheckCircle2 className="size-3.5 text-teal-600" />
                                             {nextAppointment.treatment.name}
                                         </span>
                                     </div>
                                     {nextAppointment.patient?.phone && (
-                                        <div className="mt-3 pt-3 border-t border-white/[0.06] flex items-center gap-2 text-sm text-slate-400">
-                                            <Phone className="size-4 text-teal-400" />
+                                        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 text-sm text-slate-700 font-medium">
+                                            <Phone className="size-4 text-teal-600" />
                                             <span>{nextAppointment.patient.phone}</span>
                                         </div>
                                     )}
@@ -218,19 +218,19 @@ export default async function StaffDashboard() {
                 {/* Right Column */}
                 <div className="space-y-6">
                     {/* Tomorrow's Preview */}
-                    <div className="glass-card rounded-xl overflow-hidden">
-                        <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
-                            <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                                <Sunrise className="size-4 text-purple-400" />
+                    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200/90 bg-slate-50/70 flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                <Sunrise className="size-4 text-teal-600" />
                                 Tomorrow
                             </h3>
-                            <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/15">
+                            <Badge className="bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100 font-bold">
                                 {tomorrowTotal}
                             </Badge>
                         </div>
                         <div className="p-6">
                             {tomorrowAppointments.length === 0 ? (
-                                <p className="text-sm text-slate-400 text-center py-4">
+                                <p className="text-sm text-slate-500 font-medium text-center py-4">
                                     No appointments booked yet
                                 </p>
                             ) : (
@@ -240,21 +240,21 @@ export default async function StaffDashboard() {
                                             key={apt.id}
                                             className="flex items-center gap-3 py-1.5"
                                         >
-                                            <div className="text-xs font-semibold text-slate-400 w-14">
+                                            <div className="text-xs font-bold text-slate-600 w-14">
                                                 {formatTime(apt.startTime)}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium text-white truncate">
+                                                <p className="text-sm font-semibold text-slate-900 truncate">
                                                     {apt.patient.name}
                                                 </p>
-                                                <p className="text-xs text-slate-400 truncate">
+                                                <p className="text-xs text-slate-500 font-medium truncate">
                                                     {apt.treatment.name}
                                                 </p>
                                             </div>
                                         </div>
                                     ))}
                                     {tomorrowAppointments.length > 5 && (
-                                        <p className="text-xs text-slate-400 text-center pt-1">
+                                        <p className="text-xs text-slate-500 font-medium text-center pt-1">
                                             +{tomorrowAppointments.length - 5} more
                                         </p>
                                     )}
@@ -264,38 +264,38 @@ export default async function StaffDashboard() {
                     </div>
 
                     {/* Quick Stats */}
-                    <div className="glass-card rounded-xl overflow-hidden">
-                        <div className="px-6 py-4 border-b border-white/[0.06]">
-                            <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                                <TrendingUp className="size-4 text-blue-400" />
+                    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200/90 bg-slate-50/70">
+                            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                <TrendingUp className="size-4 text-teal-600" />
                                 Overview
                             </h3>
                         </div>
                         <div className="p-6 space-y-3">
-                            <div className="flex justify-between items-center py-2 border-b border-white/[0.04]">
-                                <span className="text-sm text-slate-400">Upcoming Total</span>
-                                <span className="text-sm font-bold text-white">{upcomingCount}</span>
+                            <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                                <span className="text-sm text-slate-600 font-medium">Upcoming Total</span>
+                                <span className="text-sm font-bold text-slate-900">{upcomingCount}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b border-white/[0.04]">
-                                <span className="text-sm text-slate-400">Total Patients</span>
-                                <span className="text-sm font-bold text-white">{totalPatients}</span>
+                            <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                                <span className="text-sm text-slate-600 font-medium">Total Patients</span>
+                                <span className="text-sm font-bold text-slate-900">{totalPatients}</span>
                             </div>
                             <div className="flex justify-between items-center py-2">
-                                <span className="text-sm text-slate-400">Completed Today</span>
-                                <span className="text-sm font-bold text-teal-400">{todayCompleted}</span>
+                                <span className="text-sm text-slate-600 font-medium">Completed Today</span>
+                                <span className="text-sm font-bold text-teal-700">{todayCompleted}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="glass-card rounded-xl overflow-hidden glow-border-teal">
-                        <div className="px-6 py-4 border-b border-white/[0.06]">
-                            <h3 className="text-base font-semibold text-white">Quick Actions</h3>
+                    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200/90 bg-slate-50/70">
+                            <h3 className="text-sm font-bold text-slate-900">Quick Actions</h3>
                         </div>
                         <div className="p-6 space-y-2">
                             <Button
                                 asChild
-                                className="w-full btn-brand border-0 justify-start h-11 transition-premium active:scale-[0.98]"
+                                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl justify-start h-11 transition-premium active:scale-[0.98] shadow-xs"
                             >
                                 <Link href="/staff/book">
                                     <Plus className="size-4 mr-3" />
@@ -305,12 +305,12 @@ export default async function StaffDashboard() {
                             <Button
                                 asChild
                                 variant="secondary"
-                                className="w-full bg-white/[0.04] hover:bg-white/[0.06] text-slate-200 justify-start h-11 border border-white/[0.06] transition-premium"
+                                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold justify-start h-11 border border-slate-200/80 rounded-xl transition-premium"
                             >
                                 <Link href="/staff/appointments">
-                                    <CalendarCheck className="size-4 mr-3" />
+                                    <CalendarCheck className="size-4 mr-3 text-teal-700" />
                                     View All Appointments
-                                    <ArrowRight className="size-4 ml-auto" />
+                                    <ArrowRight className="size-4 ml-auto text-slate-500" />
                                 </Link>
                             </Button>
                         </div>

@@ -37,20 +37,20 @@ export function formatDateTime(date: string | Date): string {
 }
 
 export const statusColors: Record<string, string> = {
-  SCHEDULED: "bg-blue-500/15 text-blue-400 border border-blue-500/20",
-  RESCHEDULED: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
-  COMPLETED: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20",
-  CANCELLED: "bg-red-500/15 text-red-400 border border-red-500/20",
-  NO_SHOW: "bg-amber-500/15 text-amber-400 border border-amber-500/20",
+  SCHEDULED: "bg-sky-50 text-sky-700 border border-sky-200",
+  RESCHEDULED: "bg-teal-50 text-teal-700 border border-teal-200",
+  COMPLETED: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  CANCELLED: "bg-rose-50 text-rose-700 border border-rose-200",
+  NO_SHOW: "bg-amber-50 text-amber-800 border border-amber-200",
 };
 
 /** Rich status config with label, text color, and badge background. */
 export const statusConfig: Record<string, StatusConfig> = {
-  SCHEDULED: { label: "Scheduled", color: "text-blue-300", bg: "badge-scheduled" },
-  COMPLETED: { label: "Checked Out", color: "text-emerald-300", bg: "badge-completed" },
-  CANCELLED: { label: "Cancelled", color: "text-red-300", bg: "badge-cancelled" },
-  NO_SHOW: { label: "Missed (No-Show)", color: "text-amber-300", bg: "badge-no-show" },
-  RESCHEDULED: { label: "Rescheduled", color: "text-purple-300", bg: "badge-rescheduled" },
+  SCHEDULED: { label: "Scheduled", color: "text-blue-700", bg: "badge-scheduled" },
+  COMPLETED: { label: "Checked Out", color: "text-emerald-700", bg: "badge-completed" },
+  CANCELLED: { label: "Cancelled", color: "text-red-700", bg: "badge-cancelled" },
+  NO_SHOW: { label: "Missed (No-Show)", color: "text-amber-800", bg: "badge-no-show" },
+  RESCHEDULED: { label: "Rescheduled", color: "text-teal-700", bg: "badge-rescheduled" },
 };
 
 export function getTreatmentImage(name: string): string {

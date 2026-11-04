@@ -97,29 +97,29 @@ export default function CreateTreatmentPlan({ patientId, availableTreatments }: 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="gap-2 bg-teal-500 hover:bg-teal-600 text-white">
+                <Button className="gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-xs transition-premium active:scale-95">
                     <Plus className="size-4" />
                     New Treatment Plan
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-slate-900 border-slate-800 text-slate-100">
+            <DialogContent className="sm:max-w-[440px] bg-white border border-slate-200 text-slate-900 shadow-2xl rounded-2xl">
                 <DialogHeader>
-                    <DialogTitle>Create Treatment Plan</DialogTitle>
-                    <DialogDescription className="text-slate-400">
+                    <DialogTitle className="text-xl font-bold text-slate-900">Create Treatment Plan</DialogTitle>
+                    <DialogDescription className="text-slate-500 font-medium">
                         Set up a new long-term treatment plan (e.g., Braces, Implants) for this patient.
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="treatment">Select Treatment *</Label>
+                <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="treatment" className="text-xs font-bold text-slate-700 uppercase tracking-wider">Select Treatment *</Label>
                         <Select
                             value={selectedTreatmentId}
                             onValueChange={handleTreatmentSelect}
                         >
-                            <SelectTrigger id="treatment" className="bg-slate-800 border-slate-700">
+                            <SelectTrigger id="treatment" className="bg-slate-50 border-slate-200 text-slate-900 rounded-xl focus:border-teal-500 focus:ring-teal-500/20">
                                 <SelectValue placeholder="Select a treatment" />
                             </SelectTrigger>
-                            <SelectContent className="bg-slate-800 border-slate-700 text-slate-100">
+                            <SelectContent className="bg-white border-slate-200 text-slate-900 shadow-xl rounded-xl">
                                 {availableTreatments.map((t) => (
                                     <SelectItem key={t.id} value={t.id}>
                                         {t.name}
@@ -129,8 +129,8 @@ export default function CreateTreatmentPlan({ patientId, availableTreatments }: 
                         </Select>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="totalCost">Agreed Total Cost (PKR) *</Label>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="totalCost" className="text-xs font-bold text-slate-700 uppercase tracking-wider">Agreed Total Cost (PKR) *</Label>
                         <Input
                             id="totalCost"
                             type="number"
@@ -138,13 +138,13 @@ export default function CreateTreatmentPlan({ patientId, availableTreatments }: 
                             placeholder="e.g. 110000"
                             value={totalCost}
                             onChange={(e) => setTotalCost(e.target.value)}
-                            className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500"
+                            className="bg-slate-50 border-slate-200 text-slate-900 rounded-xl focus:border-teal-500 focus:ring-teal-500/20 placeholder:text-slate-400"
                             required
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="initialPayment">Down Payment Today (PKR)</Label>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="initialPayment" className="text-xs font-bold text-slate-700 uppercase tracking-wider">Down Payment Today (PKR)</Label>
                         <Input
                             id="initialPayment"
                             type="number"
@@ -152,18 +152,18 @@ export default function CreateTreatmentPlan({ patientId, availableTreatments }: 
                             placeholder="e.g. 30000"
                             value={initialPayment}
                             onChange={(e) => setInitialPayment(e.target.value)}
-                            className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500"
+                            className="bg-slate-50 border-slate-200 text-slate-900 rounded-xl focus:border-teal-500 focus:ring-teal-500/20 placeholder:text-slate-400"
                         />
                     </div>
 
                     {Number(initialPayment) > 0 && (
-                        <div className="space-y-2 translate-y-2 animate-in fade-in zoom-in-95 duration-200">
-                            <Label htmlFor="method">Payment Method</Label>
+                        <div className="space-y-1.5 pt-1 animate-in fade-in zoom-in-95 duration-200">
+                            <Label htmlFor="method" className="text-xs font-bold text-slate-700 uppercase tracking-wider">Payment Method</Label>
                             <Select value={method} onValueChange={setMethod}>
-                                <SelectTrigger className="bg-slate-800 border-slate-700">
+                                <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900 rounded-xl focus:border-teal-500 focus:ring-teal-500/20">
                                     <SelectValue placeholder="Select method" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-slate-800 border-slate-700 text-slate-100">
+                                <SelectContent className="bg-white border-slate-200 text-slate-900 shadow-xl rounded-xl">
                                     <SelectItem value="CASH">Cash</SelectItem>
                                     <SelectItem value="CARD">Card</SelectItem>
                                     <SelectItem value="ONLINE">Online Transfer</SelectItem>
@@ -172,19 +172,19 @@ export default function CreateTreatmentPlan({ patientId, availableTreatments }: 
                         </div>
                     )}
 
-                    <DialogFooter className="pt-4">
+                    <DialogFooter className="pt-4 gap-2">
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="outline"
                             onClick={() => setOpen(false)}
-                            className="hover:bg-slate-800 hover:text-slate-300"
+                            className="border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-xl"
                             disabled={isLoading}
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
-                            className="bg-teal-500 hover:bg-teal-600 text-white"
+                            className="bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-xs"
                             disabled={isLoading}
                         >
                             {isLoading ? (

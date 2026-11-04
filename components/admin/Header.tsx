@@ -28,22 +28,21 @@ export default function Header({ onMenuClick, label = "Admin" }: HeaderProps) {
 
     return (
         <header
-            className={`sticky top-0 z-30 border-b border-white/[0.04] transition-all duration-300 ${visible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+            className={`sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md transition-all duration-300 ${visible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
                 }`}
-            style={{ background: "rgba(8, 12, 21, 0.92)", backdropFilter: "blur(16px)" }}
         >
             <div className="flex items-center justify-between h-14 px-4 lg:px-6">
                 <div className="flex items-center gap-3">
-                    <button onClick={onMenuClick} className="lg:hidden p-2 rounded-lg hover:bg-white/5 transition-premium">
-                        <Menu className="size-5 text-slate-400" />
+                    <button onClick={onMenuClick} className="lg:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-premium">
+                        <Menu className="size-5" />
                     </button>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2.5">
-                        <div className="size-8 rounded-full gradient-primary flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-teal-500/20">
+                        <div className="size-8 rounded-full bg-teal-600 flex items-center justify-center text-white text-sm font-bold shadow-xs">
                             {label.charAt(0)}
                         </div>
-                        <span className="text-sm font-medium text-slate-300 hidden sm:inline">{label}</span>
+                        <span className="text-sm font-semibold text-slate-800 hidden sm:inline">{label}</span>
                     </div>
                 </div>
             </div>

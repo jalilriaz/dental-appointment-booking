@@ -6,7 +6,7 @@ export default function StatusBadge({ status, className = "" }: { status: string
     const label = status === "NO_SHOW" ? "Missed (No-Show)" : status.replace("_", " ");
     return (
         <span
-            className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[status] || fallback} ${className}`}
+            className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusColors[status] || fallback} ${className}`}
         >
             {label}
         </span>

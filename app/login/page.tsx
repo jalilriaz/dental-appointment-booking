@@ -68,40 +68,40 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-background relative overflow-hidden">
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 relative overflow-hidden">
             <SimpleNavbar />
-            {/* Glow orbs */}
-            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl" />
+            {/* Subtle glow */}
+            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-teal-100/40 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-emerald-100/30 rounded-full blur-3xl pointer-events-none" />
 
             <div className="w-full max-w-md px-4 relative animate-fade-in-up">
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <Link href="/" className="inline-flex items-center gap-2.5 text-2xl font-bold text-white">
-                        <div className="size-10 rounded-full gradient-primary flex items-center justify-center text-white shadow-lg shadow-teal-500/20">
+                    <Link href="/" className="inline-flex items-center gap-2.5 text-2xl font-bold text-slate-900">
+                        <div className="size-10 rounded-full bg-teal-600 flex items-center justify-center text-white shadow-md shadow-teal-600/20">
                             <span className="text-lg font-bold">E</span>
                         </div>
-                        Elite <span className="text-teal-400">Dental</span>
+                        Elite <span className="text-teal-600">Dental</span>
                     </Link>
                 </div>
 
-                <div className="glass-card rounded-2xl p-8">
+                <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-xl">
                     <div className="text-center mb-6">
-                        <h1 className="text-2xl font-bold text-white">Staff & Admin Portal</h1>
-                        <p className="text-sm text-slate-400 mt-1">Sign in with your staff or administrator credentials</p>
+                        <h1 className="text-2xl font-extrabold text-slate-900">Staff & Admin Portal</h1>
+                        <p className="text-sm text-slate-600 mt-1">Sign in with your staff or administrator credentials</p>
                     </div>
 
                     {/* Patient Notice Banner */}
-                    <div className="mb-6 p-4 rounded-xl bg-teal-500/10 border border-teal-500/20 text-center">
-                        <p className="text-xs font-semibold text-teal-300">Are you a patient?</p>
-                        <p className="text-xs text-slate-300 mt-1">
+                    <div className="mb-6 p-4 rounded-xl bg-teal-50 border border-teal-200 text-center">
+                        <p className="text-xs font-bold text-teal-900 uppercase tracking-wider">Are you a patient?</p>
+                        <p className="text-xs text-teal-800 mt-1">
                             The patient portal has moved to WhatsApp. Book, reschedule, or view appointments directly in chat!
                         </p>
                         <a
                             href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent("Hi, I am a patient and would like to manage my appointments")}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 text-xs font-medium transition-all"
+                            className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow-xs transition-all"
                         >
                             <Phone className="size-3.5" /> Chat on WhatsApp
                         </a>
@@ -109,7 +109,7 @@ export default function LoginPage() {
 
                     <form onSubmit={handleLogin} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email" className="text-slate-300">Email</Label>
+                            <Label htmlFor="email" className="text-slate-700 font-semibold text-sm">Email</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -117,15 +117,15 @@ export default function LoginPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="h-11 bg-white/[0.04] border-white/10 text-white placeholder:text-slate-500 focus:border-teal-500/50 focus:ring-teal-500/20"
+                                className="h-11 bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-teal-600 focus:ring-teal-500/20 shadow-xs"
                             />
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="password" className="text-slate-300">Password</Label>
+                                <Label htmlFor="password" className="text-slate-700 font-semibold text-sm">Password</Label>
                                 <Link
                                     href="/forgot-password"
-                                    className="text-xs font-medium text-teal-400 hover:text-teal-300 transition-premium"
+                                    className="text-xs font-semibold text-teal-700 hover:text-teal-800 transition-premium"
                                 >
                                     Forgot Password?
                                 </Link>
@@ -138,12 +138,12 @@ export default function LoginPage() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    className="h-11 pr-10 bg-white/[0.04] border-white/10 text-white placeholder:text-slate-500 focus:border-teal-500/50 focus:ring-teal-500/20"
+                                    className="h-11 pr-10 bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-teal-600 focus:ring-teal-500/20 shadow-xs"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-premium"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-premium"
                                 >
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
@@ -151,14 +151,14 @@ export default function LoginPage() {
                         </div>
 
                         {error && (
-                            <div className="p-3 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg">
+                            <div className="p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg font-medium">
                                 {error}
                             </div>
                         )}
 
                         <Button
                             type="submit"
-                            className="w-full h-11 gradient-primary-h text-white font-medium border-0 shadow-lg shadow-teal-500/20 hover:shadow-xl hover:shadow-teal-500/25 active:scale-[0.98] transition-premium"
+                            className="w-full h-11 bg-teal-600 hover:bg-teal-700 text-white font-semibold border-0 shadow-md shadow-teal-600/20 hover:shadow-lg active:scale-[0.98] transition-premium"
                             disabled={loading}
                         >
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -166,8 +166,8 @@ export default function LoginPage() {
                         </Button>
                     </form>
 
-                    <div className="mt-5 p-3.5 bg-white/[0.03] rounded-xl border border-white/[0.06]">
-                        <p className="text-xs font-medium text-slate-400 mb-2.5 text-center">
+                    <div className="mt-5 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                        <p className="text-xs font-semibold text-slate-600 mb-2.5 text-center">
                             Staff Quick-Fill Credentials:
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -177,10 +177,10 @@ export default function LoginPage() {
                                     setEmail("jalilriaz990@gmail.com");
                                     setPassword("admin123");
                                 }}
-                                className="p-2 text-left rounded-lg bg-white/[0.03] hover:bg-teal-500/10 border border-white/5 hover:border-teal-500/30 transition-all text-xs group"
+                                className="p-2 text-left rounded-lg bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 transition-all text-xs group shadow-2xs"
                             >
-                                <div className="font-semibold text-white group-hover:text-teal-400">👑 Admin</div>
-                                <div className="text-[11px] text-slate-400 font-mono">/admin</div>
+                                <div className="font-bold text-slate-900 group-hover:text-teal-800">👑 Admin</div>
+                                <div className="text-[11px] text-slate-500 font-mono">/admin</div>
                             </button>
                             <button
                                 type="button"
@@ -188,10 +188,10 @@ export default function LoginPage() {
                                     setEmail("staff1@elitedental.com");
                                     setPassword("staff123");
                                 }}
-                                className="p-2 text-left rounded-lg bg-white/[0.03] hover:bg-teal-500/10 border border-white/5 hover:border-teal-500/30 transition-all text-xs group"
+                                className="p-2 text-left rounded-lg bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 transition-all text-xs group shadow-2xs"
                             >
-                                <div className="font-semibold text-white group-hover:text-teal-400">📋 Receptionist</div>
-                                <div className="text-[11px] text-slate-400 font-mono">/reception</div>
+                                <div className="font-bold text-slate-900 group-hover:text-teal-800">📋 Receptionist</div>
+                                <div className="text-[11px] text-slate-500 font-mono">/reception</div>
                             </button>
                         </div>
                     </div>

@@ -21,24 +21,22 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
     return (
         <PageTransition>
             {/* Hero */}
-            <section className="relative py-16 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-teal-500/[0.07] to-transparent" />
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-teal-500/10 rounded-full blur-3xl" />
+            <section className="relative py-16 overflow-hidden bg-gradient-to-b from-teal-50/50 via-background to-background">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
                     <ScrollReveal>
-                        <h1 className="text-4xl sm:text-5xl font-bold text-white">
+                        <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900">
                             Our{" "}
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-teal-800">
                                 Services
                             </span>
                         </h1>
-                        <p className="mt-4 text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
+                        <p className="mt-4 text-slate-600 text-lg max-w-2xl mx-auto leading-relaxed">
                             Comprehensive dental care with transparent pricing. From routine checkups to advanced
                             implant procedures - we&apos;ve got your smile covered.
                         </p>
-                        <div className="mt-6 flex items-center justify-center gap-6 text-sm text-slate-500">
+                        <div className="mt-6 flex items-center justify-center gap-6 text-sm text-slate-600 font-medium">
                             <span className="flex items-center gap-1.5">
-                                <span className="size-2 rounded-full bg-teal-500" />
+                                <span className="size-2 rounded-full bg-teal-600" />
                                 {treatments.length} different treatments available
                             </span>
                         </div>
@@ -52,40 +50,38 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
                     {treatments.map((treatment, idx) => (
                         <ScrollReveal key={treatment.id} delay={idx * 0.08} amount={0.15}>
                             <div
-                                className="glass-card rounded-xl p-0 hover:border-teal-500/30 hover:shadow-xl hover:shadow-teal-500/10 hover:-translate-y-1 transition-all duration-300 group overflow-hidden flex flex-col bg-slate-900/40 h-full"
+                                className="rounded-2xl p-0 border border-slate-200/80 bg-white shadow-xs hover:border-teal-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group overflow-hidden flex flex-col h-full"
                             >
                                 {/* Image */}
-                                <div className="w-full h-56 relative overflow-hidden flex items-center justify-center p-4">
-                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-teal-500/10 via-slate-900/50 to-slate-950/80" />
+                                <div className="w-full h-52 relative overflow-hidden bg-slate-100">
                                     <Image
                                         src={treatment.imageUrl || getTreatmentImage(treatment.name)}
                                         alt={treatment.name}
                                         fill
                                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                        className="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500 p-2 relative z-10"
+                                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent z-10" />
 
                                     {/* Duration badge */}
-                                    <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/70 backdrop-blur-sm border border-white/10 text-xs text-slate-300 z-20">
-                                        <Clock className="size-3 text-teal-400" />
+                                    <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs border border-slate-200 text-xs font-semibold text-slate-700 z-20 shadow-xs">
+                                        <Clock className="size-3 text-teal-600" />
                                         {treatment.durationMin} min
                                     </div>
                                 </div>
 
-                                <div className="p-6 flex-1 flex flex-col bg-slate-900/50">
-                                    <h3 className="text-lg lg:text-xl font-bold text-white group-hover:text-teal-400 transition-premium">
+                                <div className="p-6 flex-1 flex flex-col bg-white">
+                                    <h3 className="text-lg lg:text-xl font-bold text-slate-900 group-hover:text-teal-700 transition-premium">
                                         {treatment.name}
                                     </h3>
 
-                                    <p className="mt-3 text-sm text-slate-400 leading-relaxed flex-1">
+                                    <p className="mt-3 text-sm text-slate-600 leading-relaxed flex-1">
                                         {treatment.description || getServiceDescription(treatment.name)}
                                     </p>
 
-                                    <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-end">
+                                    <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-end">
                                         <Link
                                             href={`/services/${treatment.id}`}
-                                            className="inline-flex items-center gap-1 text-sm font-semibold text-teal-400 hover:text-teal-300 transition-premium group-hover:translate-x-1"
+                                            className="inline-flex items-center gap-1 text-sm font-semibold text-teal-700 hover:text-teal-800 transition-premium group-hover:translate-x-1"
                                         >
                                             Learn More <ChevronRight className="size-4" />
                                         </Link>
@@ -98,20 +94,18 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
             </div>
 
             {/* CTA */}
-            <section className="py-16 relative overflow-hidden border-t border-white/[0.06]">
-                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/[0.05] to-emerald-500/[0.05]" />
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-teal-500/10 rounded-full blur-3xl" />
+            <section className="py-16 relative overflow-hidden border-t border-slate-200/80 bg-teal-50/30">
                 <div className="max-w-4xl mx-auto px-4 text-center relative">
                     <ScrollReveal>
-                        <h2 className="text-3xl font-bold text-white">Ready to Get Started?</h2>
-                        <p className="mt-3 text-lg text-slate-400 max-w-xl mx-auto">
+                        <h2 className="text-3xl font-extrabold text-slate-900">Ready to Get Started?</h2>
+                        <p className="mt-3 text-lg text-slate-600 max-w-xl mx-auto">
                             Book an appointment and take the first step towards a healthier, brighter smile.
                         </p>
                         <a
                             href={`https://wa.me/${clinicInfo.whatsapp}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-8 inline-flex items-center gap-2 px-8 py-4 gradient-primary-h text-white text-lg font-semibold rounded-full hover:shadow-xl hover:shadow-teal-500/25 transition-premium active:scale-95"
+                            className="mt-8 inline-flex items-center gap-2 px-8 py-4 bg-teal-600 hover:bg-teal-700 text-white text-lg font-semibold rounded-full shadow-lg shadow-teal-600/20 hover:shadow-xl transition-premium active:scale-95"
                         >
                             <Phone className="size-5" />
                             WhatsApp Us to Book

@@ -46,18 +46,18 @@ export default function Navbar() {
     return (
         <>
             <nav className={`sticky top-0 z-50 border-b transition-all duration-300 ${scrolled
-                ? "bg-slate-950/95 border-white/10 shadow-lg py-1"
-                : "glass border-white/[0.06] py-0"
+                ? "bg-white/95 border-slate-200/90 shadow-sm py-1 backdrop-blur-md"
+                : "bg-white/80 border-slate-200/60 py-0 backdrop-blur-md"
                 } ${visible ? "translate-y-0" : "-translate-y-full"}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
                         <Link href="/" className="flex items-center gap-2 shrink-0">
-                            <div className="size-9 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-teal-500/20">
+                            <div className="size-9 rounded-full bg-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-teal-600/20">
                                 E
                             </div>
-                            <span className="text-lg font-bold text-white">
-                                Elite <span className="text-teal-400">Dental</span>
+                            <span className="text-lg font-bold text-slate-900">
+                                Elite <span className="text-teal-600">Dental</span>
                             </span>
                         </Link>
 
@@ -67,7 +67,7 @@ export default function Navbar() {
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    className={`text-sm transition-premium cursor-pointer ${pathname === link.href ? "text-teal-400 font-medium" : "text-slate-400 hover:text-teal-400"}`}
+                                    className={`text-sm transition-premium cursor-pointer ${pathname === link.href ? "text-teal-600 font-semibold" : "text-slate-600 hover:text-teal-600"}`}
                                 >
                                     {link.label}
                                 </Link>
@@ -76,16 +76,16 @@ export default function Navbar() {
                                 href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent("Hi, I would like to book an appointment")}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-5 py-2.5 gradient-primary-h text-white text-sm font-medium rounded-full hover:shadow-lg hover:shadow-teal-500/25 transition-premium active:scale-95 cursor-pointer"
+                                className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-full shadow-md shadow-teal-600/20 hover:shadow-lg hover:shadow-teal-600/25 transition-premium active:scale-95 cursor-pointer"
                             >
                                 <Phone className="size-4" />
                                 Book via WhatsApp
                             </a>
                             <Link
                                 href="/login"
-                                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-full border border-white/10 hover:border-teal-500/30 hover:bg-white/[0.04] transition-premium"
+                                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 rounded-full border border-slate-200 hover:border-teal-500/40 hover:bg-slate-50 transition-premium shadow-xs"
                             >
-                                <LogIn className="size-3.5 text-teal-400" />
+                                <LogIn className="size-3.5 text-teal-600" />
                                 Staff Login
                             </Link>
                         </div>
@@ -93,14 +93,14 @@ export default function Navbar() {
                         {/* Mobile: Hamburger */}
                         <button
                             onClick={() => setMobileOpen(!mobileOpen)}
-                            className="md:hidden relative size-10 flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] transition-all duration-200 focus:outline-none"
+                            className="md:hidden relative size-10 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all duration-200 focus:outline-none"
                             aria-label="Toggle navigation menu"
                         >
                             <span className={`absolute transition-all duration-300 ${mobileOpen ? "opacity-100 rotate-0" : "opacity-0 rotate-90"}`}>
-                                <X className="size-5 text-teal-400" />
+                                <X className="size-5 text-teal-600" />
                             </span>
                             <span className={`absolute transition-all duration-300 ${mobileOpen ? "opacity-0 -rotate-90" : "opacity-100 rotate-0"}`}>
-                                <Menu className="size-5 text-slate-300" />
+                                <Menu className="size-5 text-slate-700" />
                             </span>
                         </button>
                     </div>
@@ -112,27 +112,27 @@ export default function Navbar() {
                 className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${mobileOpen ? "visible" : "invisible"}`}
                 onClick={() => setMobileOpen(false)}
             >
-                <div className={`absolute inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? "opacity-100" : "opacity-0"}`} />
+                <div className={`absolute inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300 ${mobileOpen ? "opacity-100" : "opacity-0"}`} />
             </div>
 
             {/* Mobile Drawer Panel */}
             <div
                 className={`fixed top-0 right-0 h-full w-[280px] z-50 md:hidden transition-transform duration-300 ease-in-out ${mobileOpen ? "translate-x-0" : "translate-x-full"}`}
             >
-                <div className="h-full bg-slate-950/98 border-l border-white/[0.08] flex flex-col shadow-2xl shadow-black/50 backdrop-blur-xl">
+                <div className="h-full bg-white border-l border-slate-200 flex flex-col shadow-2xl backdrop-blur-xl">
                     {/* Drawer Header */}
-                    <div className="flex items-center justify-between px-6 h-16 border-b border-white/[0.06]">
+                    <div className="flex items-center justify-between px-6 h-16 border-b border-slate-100">
                         <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                            <div className="size-8 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-sm">
+                            <div className="size-8 rounded-full bg-teal-600 flex items-center justify-center text-white font-bold text-sm">
                                 E
                             </div>
-                            <span className="text-base font-bold text-white">
-                                Elite <span className="text-teal-400">Dental</span>
+                            <span className="text-base font-bold text-slate-900">
+                                Elite <span className="text-teal-600">Dental</span>
                             </span>
                         </Link>
                         <button
                             onClick={() => setMobileOpen(false)}
-                            className="size-8 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/[0.06] transition-all"
+                            className="size-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all"
                         >
                             <X className="size-4" />
                         </button>
@@ -144,35 +144,35 @@ export default function Navbar() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${pathname === link.href
-                                    ? "bg-teal-500/10 text-teal-400 border border-teal-500/20"
-                                    : "text-slate-300 hover:bg-white/[0.05] hover:text-white border border-transparent"
+                                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group ${pathname === link.href
+                                    ? "bg-teal-50 text-teal-700 border border-teal-200"
+                                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
                                     }`}
                             >
                                 {link.label}
-                                <ChevronRight className={`size-4 transition-transform duration-200 group-hover:translate-x-1 ${pathname === link.href ? "text-teal-400" : "text-slate-600"}`} />
+                                <ChevronRight className={`size-4 transition-transform duration-200 group-hover:translate-x-1 ${pathname === link.href ? "text-teal-600" : "text-slate-400"}`} />
                             </Link>
                         ))}
                     </nav>
 
-                    <div className="p-4 border-t border-white/[0.06] space-y-2">
+                    <div className="p-4 border-t border-slate-100 space-y-2">
                         <a
                             href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent("Hi, I would like to book an appointment")}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full px-5 py-3 gradient-primary-h text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-teal-500/25 transition-premium active:scale-95"
+                            className="flex items-center justify-center gap-2 w-full px-5 py-3 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-teal-600/20 transition-premium active:scale-95"
                         >
                             <Phone className="size-4" />
                             Book via WhatsApp
                         </a>
                         <Link
                             href="/login"
-                            className="flex items-center justify-center gap-2 w-full px-5 py-2.5 border border-teal-500/20 bg-teal-500/5 text-teal-300 text-sm font-medium rounded-xl hover:bg-teal-500/10 transition-all"
+                            className="flex items-center justify-center gap-2 w-full px-5 py-2.5 border border-slate-200 bg-slate-50 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-100 transition-all"
                         >
-                            <LogIn className="size-4 text-teal-400" />
+                            <LogIn className="size-4 text-teal-600" />
                             Staff Login
                         </Link>
-                        <p className="text-center text-xs text-slate-600">{clinicInfo.phone}</p>
+                        <p className="text-center text-xs text-slate-500">{clinicInfo.phone}</p>
                     </div>
                 </div>
             </div>

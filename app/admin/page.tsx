@@ -97,8 +97,8 @@ export default async function AdminDashboard() {
   return (
     <AnimatedDashboard className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-sm text-slate-400">
+        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Dashboard</h1>
+        <p className="text-sm text-slate-600 font-medium mt-0.5">
           Welcome back! Here&apos;s what&apos;s happening today.
         </p>
       </div>
@@ -106,61 +106,61 @@ export default async function AdminDashboard() {
       {/* Revenue Cards — Top Priority */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Realized Revenue */}
-        <div className="glass-card rounded-xl p-5 border-l-2 border-l-emerald-500 hover:scale-[1.02] hover:border-teal-500/50 transition-premium animate-fade-in-up opacity-0 stagger-1">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs border-l-4 border-l-emerald-600 hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Realized Revenue
               </p>
-              <p className="text-2xl font-bold text-emerald-400 mt-1">
+              <p className="text-2xl font-extrabold text-slate-900 mt-1">
                 {formatPKR(realizedRevenue)}
               </p>
-              <p className="text-[10px] text-slate-500 mt-1">
+              <p className="text-[11px] text-emerald-700 font-semibold mt-1">
                 ✓ Completed visits only
               </p>
             </div>
-            <div className="size-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-              <DollarSign className="size-6 text-emerald-400" />
+            <div className="size-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+              <DollarSign className="size-6" />
             </div>
           </div>
         </div>
 
         {/* Projected Revenue */}
-        <div className="glass-card rounded-xl p-5 border-l-2 border-l-blue-400 hover:scale-[1.02] hover:border-blue-400/50 transition-premium animate-fade-in-up opacity-0 stagger-2">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs border-l-4 border-l-sky-500 hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Projected Revenue
               </p>
-              <p className="text-2xl font-bold text-blue-400 mt-1">
+              <p className="text-2xl font-extrabold text-slate-900 mt-1">
                 {formatPKR(projectedRevenue)}
               </p>
-              <p className="text-[10px] text-slate-500 mt-1">
+              <p className="text-[11px] text-sky-700 font-semibold mt-1">
                 Scheduled + Completed
               </p>
             </div>
-            <div className="size-12 rounded-xl bg-blue-400/10 flex items-center justify-center">
-              <TrendingUp className="size-6 text-blue-400" />
+            <div className="size-12 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
+              <TrendingUp className="size-6" />
             </div>
           </div>
         </div>
 
         {/* Monthly Revenue */}
-        <div className="glass-card rounded-xl p-5 border-l-2 border-l-green-400 hover:scale-[1.02] hover:border-green-400/50 transition-premium animate-fade-in-up opacity-0 stagger-3">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs border-l-4 border-l-teal-600 hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 This Month
               </p>
-              <p className="text-2xl font-bold text-green-400 mt-1">
+              <p className="text-2xl font-extrabold text-slate-900 mt-1">
                 {formatPKR(monthRevenue)}
               </p>
-              <p className="text-[10px] text-slate-500 mt-1">
+              <p className="text-[11px] text-teal-700 font-semibold mt-1">
                 Realized this month
               </p>
             </div>
-            <div className="size-12 rounded-xl bg-green-400/10 flex items-center justify-center">
-              <CalendarCheck className="size-6 text-green-400" />
+            <div className="size-12 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600">
+              <CalendarCheck className="size-6" />
             </div>
           </div>
         </div>
@@ -168,22 +168,22 @@ export default async function AdminDashboard() {
         {/* Today */}
         <Link
           href="/admin/appointments?filter=today"
-          className="glass-card rounded-xl p-5 border-l-2 border-l-amber-400 hover:scale-[1.02] hover:border-amber-400/50 transition-premium animate-fade-in-up opacity-0 stagger-4 block cursor-pointer hover:shadow-lg"
+          className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs border-l-4 border-l-amber-500 hover:shadow-md transition-all block cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Today
               </p>
-              <p className="text-2xl font-bold text-white mt-1">
+              <p className="text-2xl font-extrabold text-slate-900 mt-1">
                 {appointmentsToday}
               </p>
-              <p className="text-[10px] text-slate-500 mt-1">
+              <p className="text-[11px] text-amber-800 font-semibold mt-1">
                 appointments today
               </p>
             </div>
-            <div className="size-12 rounded-xl bg-amber-400/10 flex items-center justify-center">
-              <Clock className="size-6 text-amber-400" />
+            <div className="size-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+              <Clock className="size-6" />
             </div>
           </div>
         </Link>
@@ -193,56 +193,56 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Link
           href="/admin/patients"
-          className="glass-card rounded-xl p-4 flex items-center gap-3 hover:scale-[1.02] transition-premium animate-fade-in-up opacity-0 stagger-5 cursor-pointer hover:shadow-lg hover:border-teal-500/50"
+          className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:shadow-md hover:border-slate-300 transition-all cursor-pointer"
         >
-          <div className="size-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-            <Users className="size-5 text-blue-400" />
+          <div className="size-10 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
+            <Users className="size-5" />
           </div>
           <div>
-            <p className="text-lg font-bold text-white">{totalPatients}</p>
-            <p className="text-xs text-slate-400">Total Patients</p>
+            <p className="text-xl font-extrabold text-slate-900">{totalPatients}</p>
+            <p className="text-xs font-medium text-slate-600">Total Patients</p>
           </div>
         </Link>
         <Link
           href="/admin/appointments?status=COMPLETED"
-          className="glass-card rounded-xl p-4 flex items-center gap-3 hover:scale-[1.02] transition-premium animate-fade-in-up opacity-0 stagger-6 cursor-pointer hover:shadow-lg hover:border-teal-500/50"
+          className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer"
         >
-          <div className="size-10 rounded-lg bg-teal-500/10 flex items-center justify-center">
-            <CheckCircle2 className="size-5 text-teal-400" />
+          <div className="size-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+            <CheckCircle2 className="size-5" />
           </div>
           <div>
-            <p className="text-lg font-bold text-white">
+            <p className="text-xl font-extrabold text-slate-900">
               {completedAppointments}
             </p>
-            <p className="text-xs text-slate-400">Completed</p>
+            <p className="text-xs font-medium text-slate-600">Completed</p>
           </div>
         </Link>
         <Link
           href="/admin/appointments?status=SCHEDULED"
-          className="glass-card rounded-xl p-4 flex items-center gap-3 hover:scale-[1.02] transition-premium animate-fade-in-up opacity-0 stagger-7 cursor-pointer hover:shadow-lg hover:border-teal-500/50"
+          className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:shadow-md hover:border-amber-300 transition-all cursor-pointer"
         >
-          <div className="size-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-            <Clock className="size-5 text-amber-400" />
+          <div className="size-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+            <Clock className="size-5" />
           </div>
           <div>
-            <p className="text-lg font-bold text-white">
+            <p className="text-xl font-extrabold text-slate-900">
               {upcomingAppointments}
             </p>
-            <p className="text-xs text-slate-400">Upcoming</p>
+            <p className="text-xs font-medium text-slate-600">Upcoming</p>
           </div>
         </Link>
         <Link
           href="/admin/appointments?status=CANCELLED"
-          className="glass-card rounded-xl p-4 flex items-center gap-3 hover:scale-[1.02] transition-premium animate-fade-in-up opacity-0 stagger-8 cursor-pointer hover:shadow-lg hover:border-teal-500/50"
+          className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:shadow-md hover:border-rose-300 transition-all cursor-pointer"
         >
-          <div className="size-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-            <CalendarX className="size-5 text-red-400" />
+          <div className="size-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+            <CalendarX className="size-5" />
           </div>
           <div>
-            <p className="text-lg font-bold text-white">
+            <p className="text-xl font-extrabold text-slate-900">
               {cancelledAppointments}
             </p>
-            <p className="text-xs text-slate-400">Cancelled</p>
+            <p className="text-xs font-medium text-slate-600">Cancelled</p>
           </div>
         </Link>
       </div>
@@ -251,56 +251,56 @@ export default async function AdminDashboard() {
       <TodayAppointments initialAppointments={serializedToday} />
 
       {/* Recent Appointments Table */}
-      <div className="glass-card rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
-          <h2 className="text-lg font-semibold text-white">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/90 bg-slate-50/70">
+          <h2 className="text-base font-bold text-slate-900">
             Recent Appointments
           </h2>
           <Link
             href="/admin/appointments"
-            className="text-sm text-teal-400 hover:text-teal-300 font-medium transition-premium"
+            className="text-sm text-teal-700 hover:text-teal-800 font-semibold transition-colors"
           >
             View All →
           </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-white/[0.03]">
+            <thead className="bg-slate-50/90 border-b border-slate-200/90">
               <tr>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <th className="text-left px-6 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   Patient
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <th className="text-left px-6 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   Treatment
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <th className="text-left px-6 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   Date & Time
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <th className="text-left px-6 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   Price
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <th className="text-left px-6 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   Status
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
+            <tbody className="divide-y divide-slate-100 bg-white">
               {recentAppointments.map((apt) => (
                 <tr
                   key={apt.id}
-                  className="hover:bg-white/[0.03] transition-premium cursor-pointer"
+                  className="hover:bg-slate-50/80 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 font-medium text-slate-200">
+                  <td className="px-6 py-4 font-semibold text-slate-900">
                     {apt.patient?.name || "Unknown"}
                   </td>
-                  <td className="px-6 py-4 text-slate-400">
+                  <td className="px-6 py-4 text-slate-600 font-medium">
                     {apt.treatment?.name}
                   </td>
-                  <td className="px-6 py-4 text-slate-400">
+                  <td className="px-6 py-4 text-slate-600 font-medium">
                     {formatDate(apt.startTime, "short")},{" "}
                     {formatTime(apt.startTime)}
                   </td>
-                  <td className="px-6 py-4 text-teal-400 font-semibold">
+                  <td className="px-6 py-4 text-teal-700 font-bold">
                     {formatPKR(apt.treatment?.price || 0)}
                   </td>
                   <td className="px-6 py-4">

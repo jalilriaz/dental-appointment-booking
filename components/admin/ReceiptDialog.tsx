@@ -84,16 +84,16 @@ export default function ReceiptDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[420px] bg-slate-900 border-white/[0.06] text-white">
+            <DialogContent className="sm:max-w-[420px] bg-white border-slate-200 text-slate-900 shadow-2xl">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Receipt className="size-5 text-teal-400" />
+                    <DialogTitle className="flex items-center gap-2 text-slate-900">
+                        <Receipt className="size-5 text-teal-600" />
                         Payment Receipt
                     </DialogTitle>
                 </DialogHeader>
 
                 {/* Receipt Preview */}
-                <div className="bg-white text-slate-900 rounded-lg p-5 mt-2 shadow-inner">
+                <div className="bg-slate-50 text-slate-900 rounded-lg p-5 mt-2 border border-slate-200 shadow-xs">
                     <div ref={receiptRef}>
                         <div className="header" style={{ textAlign: "center", marginBottom: 16, paddingBottom: 12, borderBottom: "2px dashed #ddd" }}>
                             <h1 style={{ fontSize: 18, fontWeight: 700, color: "#0d9488" }}>
@@ -167,10 +167,10 @@ export default function ReceiptDialog({
                 </div>
 
                 <DialogFooter className="sm:justify-center gap-2 mt-2">
-                    <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-700 text-slate-300 hover:bg-white/5">
+                    <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-300 text-slate-700 hover:bg-slate-100">
                         Close
                     </Button>
-                    <Button onClick={handlePrint} className="btn-brand border-0 gap-2 shadow-lg shadow-teal-500/20">
+                    <Button onClick={handlePrint} className="bg-teal-600 hover:bg-teal-700 text-white font-semibold border-0 gap-2 shadow-xs">
                         <Printer className="size-4" />
                         Print Receipt
                     </Button>
