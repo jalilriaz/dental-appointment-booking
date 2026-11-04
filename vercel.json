@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/mark-no-show",
-      "schedule": "5 0 * * *"
-    }
-  ]
-}

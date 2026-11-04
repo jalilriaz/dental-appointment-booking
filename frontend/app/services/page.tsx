@@ -1,0 +1,27 @@
+import prisma from "@/lib/prisma";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { Metadata } from "next";
+import ServicesClient from "./ServicesClient";
+
+export const metadata: Metadata = {
+    title: "Our Services | Elite Dental Centre",
+    description: "Explore comprehensive dental services at Elite Dental Centre - implants, whitening, braces, root canal, and more with transparent PKR pricing.",
+};
+
+export default async function ServicesPage() {
+    const treatments = await prisma.treatment.findMany({
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+    });
+
+    return (
+        <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+            <div>
+                <Navbar />
+                <ServicesClient treatments={treatments} />
+            </div>
+            <Footer />
+        </div>
+    );
+}
