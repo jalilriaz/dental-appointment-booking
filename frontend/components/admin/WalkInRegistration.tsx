@@ -2,11 +2,29 @@
 
 import { useState, useEffect, useCallback, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import {
-    UserPlus, Phone, CreditCard, User, Calendar, Clock,
-    CalendarPlus, Search, Info, AlertTriangle, ShieldCheck, UserCheck, SearchX, MapPin, Building, Briefcase, Activity, Upload, Plus, History, LogOut, ChevronRight, Lock, Key, Moon, Sun, Monitor, Bell, Settings as SettingsIcon, Menu, FileText, ChevronDown, Check, Download, Mail, Filter, Pill, PlusCircle, CheckCircle, ClipboardList, MessageSquare, BadgeCheck, Syringe, Sparkles, Droplet, UserCog, Loader2,
-    ChevronLeft, X, ShieldAlert, Stethoscope, AlertCircle, Copy, CheckCircle2
-} from "lucide-react";
+
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
+import ChevronLeftOutlinedIcon from "@mui/icons-material/ChevronLeftOutlined";
+import MedicationOutlinedIcon from "@mui/icons-material/MedicationOutlined";
+import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
+import VerifiedOutlinedIcon from "@mui/icons-material/VerifiedOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import MedicalServicesOutlinedIcon from "@mui/icons-material/MedicalServicesOutlined";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
+import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimeSlotSelector } from "@/components/ui/time-slot-selector";
 import { formatDate, formatTime, isSunday, formatPKR } from "@/lib/utils";
@@ -122,7 +140,7 @@ export default function WalkInRegistration({ treatments }: { treatments: Treatme
                         : "text-slate-600 hover:text-slate-900 hover:bg-white"
                         }`}
                 >
-                    <Search className="size-4" />
+                    <SearchOutlinedIcon className="size-4" />
                     Registered Patient
                 </button>
                 <button
@@ -132,7 +150,7 @@ export default function WalkInRegistration({ treatments }: { treatments: Treatme
                         : "text-slate-600 hover:text-slate-900 hover:bg-white"
                         }`}
                 >
-                    <UserPlus className="size-4" />
+                    <PersonAddOutlinedIcon className="size-4" />
                     New Patient
                 </button>
             </div>
@@ -271,7 +289,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
             {/* Search Bar */}
             <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
                 <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                    <SearchOutlinedIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                     <input
                         type="text"
                         value={searchQuery}
@@ -279,16 +297,16 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                         placeholder="Search by patient name or phone number..."
                         className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all"
                     />
-                    {searching && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-teal-600 animate-spin" />}
+                    {searching && <AutorenewOutlinedIcon className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-teal-600 animate-spin" />}
                 </div>
             </div>
 
             {/* Error */}
             {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                    <AlertCircle className="size-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <ErrorOutlineOutlinedIcon className="size-5 text-red-600 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-red-700 font-medium">{error}</p>
-                    <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700"><X className="size-4" /></button>
+                    <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700"><CloseOutlinedIcon className="size-4" /></button>
                 </div>
             )}
 
@@ -306,7 +324,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                     </div>
                     {results.length === 0 ? (
                         <div className="p-8 text-center">
-                            <User className="size-10 text-slate-400 mx-auto mb-3" />
+                            <PersonOutlineOutlinedIcon className="size-10 text-slate-400 mx-auto mb-3" />
                             <h3 className="text-sm font-semibold text-slate-900">
                                 {searchQuery.length >= 2 ? "No patients found" : "No registered patients"}
                             </h3>
@@ -338,7 +356,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                                 )}
                                             </div>
                                             <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500 mt-0.5">
-                                                {p.phone && <span className="flex items-center gap-1 font-medium"><Phone className="size-3 text-teal-600" />{p.phone}</span>}
+                                                {p.phone && <span className="flex items-center gap-1 font-medium"><PhoneOutlinedIcon className="size-3 text-teal-600" />{p.phone}</span>}
                                                 <span>{p._count.appointments} visit{p._count.appointments !== 1 ? "s" : ""}</span>
                                                 {p.appointments[0] && (
                                                     <span className="hidden sm:inline">Last: {formatDate(p.appointments[0].startTime, "short")}</span>
@@ -347,10 +365,10 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                         </div>
                                         {p.medicalAlerts && (
                                             <div className="p-1.5 rounded-lg bg-red-50 border border-red-200 shrink-0" title={p.medicalAlerts}>
-                                                <ShieldAlert className="size-4 text-red-600" />
+                                                <SecurityOutlinedIcon className="size-4 text-red-600" />
                                             </div>
                                         )}
-                                        <ChevronRight className="size-4 text-slate-400 group-hover:text-teal-600 transition-all shrink-0" />
+                                        <ChevronRightOutlinedIcon className="size-4 text-slate-400 group-hover:text-teal-600 transition-all shrink-0" />
                                     </button>
                                 ))}
                             </div>
@@ -362,7 +380,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                         disabled={currentPage <= 1}
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                                     >
-                                        <ChevronLeft className="size-3.5" /> Previous
+                                        <ChevronLeftOutlinedIcon className="size-3.5" /> Previous
                                     </button>
                                     <div className="flex gap-1">
                                         {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -395,7 +413,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                         disabled={currentPage >= totalPages}
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                                     >
-                                        Next <ChevronRight className="size-3.5" />
+                                        Next <ChevronRightOutlinedIcon className="size-3.5" />
                                     </button>
                                 </div>
                             )}
@@ -407,7 +425,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
             {/* Loading History */}
             {loadingHistory && (
                 <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-xs">
-                    <Loader2 className="size-8 text-teal-600 animate-spin mx-auto mb-3" />
+                    <AutorenewOutlinedIcon className="size-8 text-teal-600 animate-spin mx-auto mb-3" />
                     <p className="text-sm text-slate-600 font-medium">Loading patient records...</p>
                 </div>
             )}
@@ -425,7 +443,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                 <div className="min-w-0">
                                     <h3 className="text-base sm:text-lg font-bold text-white truncate">{history.patient.name}</h3>
                                     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500 mt-1">
-                                        {history.patient.phone && <span className="flex items-center gap-1"><Phone className="size-3" />{history.patient.phone}</span>}
+                                        {history.patient.phone && <span className="flex items-center gap-1"><PhoneOutlinedIcon className="size-3" />{history.patient.phone}</span>}
                                         {history.patient.email && <span className="truncate">{history.patient.email}</span>}
                                     </div>
                                     <p className="text-xs text-slate-500 mt-0.5">{history.appointments.length} appointment{history.appointments.length !== 1 ? "s" : ""} on record</p>
@@ -436,14 +454,14 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                     onClick={() => setShowBooking(!showBooking)}
                                     className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
                                 >
-                                    <CalendarPlus className="size-4" />
+                                    <EventAvailableOutlinedIcon className="size-4" />
                                     Book Appointment
                                 </button>
                                 <button
                                     onClick={() => { setSelectedPatient(null); setHistory(null); setShowBooking(false); }}
                                     className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all"
                                 >
-                                    <X className="size-4" />
+                                    <CloseOutlinedIcon className="size-4" />
                                 </button>
                             </div>
                         </div>
@@ -454,7 +472,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                         <div className="bg-teal-50/70 rounded-xl p-4 border border-teal-200 space-y-3 shadow-xs">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold text-teal-800 uppercase tracking-wider flex items-center gap-1.5">
-                                    <Sparkles className="size-4 text-teal-600" /> Active Treatment Plan
+                                    <AutoAwesomeOutlinedIcon className="size-4 text-teal-600" /> Active Treatment Plan
                                 </span>
                                 <span className="text-xs bg-teal-100 text-teal-800 border border-teal-200 px-2 py-0.5 rounded-full font-bold">
                                     In Progress
@@ -485,7 +503,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                         }}
                                         className="px-3.5 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0"
                                     >
-                                        <CalendarPlus className="size-3.5" /> Book Session {plan.completedSessions + 1}
+                                        <EventAvailableOutlinedIcon className="size-3.5" /> Book Session {plan.completedSessions + 1}
                                     </button>
                                 </div>
                             ))}
@@ -497,14 +515,14 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                         <div className="bg-white rounded-xl overflow-hidden border border-teal-200 shadow-xs">
                             <div className="px-5 py-4 border-b border-teal-100 bg-teal-50/70">
                                 <h4 className="text-sm font-bold text-teal-900 flex items-center gap-2">
-                                    <CalendarPlus className="size-4 text-teal-600" /> New Appointment for {history.patient.name}
+                                    <EventAvailableOutlinedIcon className="size-4 text-teal-600" /> New Appointment for {history.patient.name}
                                 </h4>
                             </div>
                             <form onSubmit={handleBook} className="p-5 space-y-4">
                                 <div className="grid sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                                            <Calendar className="size-3.5 text-teal-600" /> Date <span className="text-red-500">*</span>
+                                            <CalendarTodayOutlinedIcon className="size-3.5 text-teal-600" /> Date <span className="text-red-500">*</span>
                                         </label>
                                         <DatePicker
                                             value={bookingForm.date}
@@ -517,7 +535,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                                            <Stethoscope className="size-3.5 text-teal-600" /> Treatment <span className="text-red-500">*</span>
+                                            <MedicalServicesOutlinedIcon className="size-3.5 text-teal-600" /> Treatment <span className="text-red-500">*</span>
                                         </label>
                                         <select value={bookingForm.treatmentId} onChange={e => setBookingForm(p => ({ ...p, treatmentId: e.target.value, time: "" }))} required
                                             className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer">
@@ -530,7 +548,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                                        <Clock className="size-3.5 text-teal-600" /> Available Time Slots <span className="text-red-500">*</span>
+                                        <AccessTimeOutlinedIcon className="size-3.5 text-teal-600" /> Available Time Slots <span className="text-red-500">*</span>
                                     </label>
                                     <TimeSlotSelector
                                         date={bookingForm.date}
@@ -551,7 +569,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                     className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all resize-none" />
                                 <button type="submit" disabled={booking || isSunday(bookingForm.date)}
                                     className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer">
-                                    {booking ? <><Loader2 className="size-5 animate-spin" />Booking...</> : <><CalendarPlus className="size-5" />Confirm Appointment</>}
+                                    {booking ? <><AutorenewOutlinedIcon className="size-5 animate-spin" />Booking...</> : <><EventAvailableOutlinedIcon className="size-5" />Confirm Appointment</>}
                                 </button>
                             </form>
                         </div>
@@ -565,7 +583,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                         </div>
                         {history.appointments.length === 0 ? (
                             <div className="p-8 text-center">
-                                <ClipboardList className="size-10 text-slate-400 mx-auto mb-3" />
+                                <AssignmentOutlinedIcon className="size-10 text-slate-400 mx-auto mb-3" />
                                 <p className="text-sm text-slate-500 font-medium">No medical history yet</p>
                             </div>
                         ) : (
@@ -575,7 +593,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
                                             <div className="flex items-center gap-3">
                                                 <div className="size-10 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center shrink-0">
-                                                    <Stethoscope className="size-4 text-teal-600" />
+                                                    <MedicalServicesOutlinedIcon className="size-4 text-teal-600" />
                                                 </div>
                                                 <div>
                                                     <p className="font-semibold text-slate-900 text-sm">{apt.treatment.name}</p>
@@ -598,23 +616,23 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                                     <div key={note.id} className="grid sm:grid-cols-2 gap-2 text-xs">
                                                         {note.diagnosis && (
                                                             <div className="flex items-start gap-1.5">
-                                                                <Stethoscope className="size-3.5 text-blue-600 mt-0.5 shrink-0" />
+                                                                <MedicalServicesOutlinedIcon className="size-3.5 text-blue-600 mt-0.5 shrink-0" />
                                                                 <span><span className="font-semibold text-slate-700">Diagnosis:</span> <span className="text-slate-600">{note.diagnosis}</span></span>
                                                             </div>
                                                         )}
                                                         <div className="flex items-start gap-1.5">
-                                                            <ClipboardList className="size-3.5 text-teal-600 mt-0.5 shrink-0" />
+                                                            <AssignmentOutlinedIcon className="size-3.5 text-teal-600 mt-0.5 shrink-0" />
                                                             <span><span className="font-semibold text-slate-700">Treatment:</span> <span className="text-slate-600">{note.treatmentDone}</span></span>
                                                         </div>
                                                         {note.prescription && (
                                                             <div className="flex items-start gap-1.5">
-                                                                <Pill className="size-3.5 text-teal-600 mt-0.5 shrink-0" />
+                                                                <MedicationOutlinedIcon className="size-3.5 text-teal-600 mt-0.5 shrink-0" />
                                                                 <span><span className="font-semibold text-slate-700">Rx:</span> <span className="text-slate-600">{note.prescription}</span></span>
                                                             </div>
                                                         )}
                                                         {note.remarks && (
                                                             <div className="flex items-start gap-1.5">
-                                                                <MessageSquare className="size-3.5 text-amber-600 mt-0.5 shrink-0" />
+                                                                <ChatBubbleOutlineOutlinedIcon className="size-3.5 text-amber-600 mt-0.5 shrink-0" />
                                                                 <span><span className="font-semibold text-slate-700">Notes:</span> <span className="text-slate-600">{note.remarks}</span></span>
                                                             </div>
                                                         )}
@@ -706,7 +724,7 @@ function NewPatientTab({ treatments, onSuccess }: {
             <div className="relative px-6 py-5 border-b border-slate-200 overflow-hidden bg-slate-50/70">
                 <div className="relative flex items-center gap-3">
                     <div className="size-10 rounded-xl bg-teal-600 flex items-center justify-center shadow-xs">
-                        <UserPlus className="size-5 text-white" />
+                        <PersonAddOutlinedIcon className="size-5 text-white" />
                     </div>
                     <div>
                         <h2 className="text-lg font-bold text-slate-900">New Patient Registration</h2>
@@ -718,45 +736,45 @@ function NewPatientTab({ treatments, onSuccess }: {
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                        <AlertCircle className="size-5 text-red-600 flex-shrink-0 mt-0.5" />
+                        <ErrorOutlineOutlinedIcon className="size-5 text-red-600 flex-shrink-0 mt-0.5" />
                         <div>
                             <p className="text-sm font-semibold text-red-700">Registration Failed</p>
                             <p className="text-xs text-red-600 mt-0.5">{error}</p>
                         </div>
-                        <button type="button" onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700"><X className="size-4" /></button>
+                        <button type="button" onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700"><CloseOutlinedIcon className="size-4" /></button>
                     </div>
                 )}
 
                 {/* Patient Information */}
                 <div>
                     <p className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 flex items-center gap-2">
-                        <User className="size-3.5 text-teal-600" /> Patient Information
+                        <PersonOutlineOutlinedIcon className="size-3.5 text-teal-600" /> Patient Information
                     </p>
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <label htmlFor="new-phone" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                                <Phone className="size-3.5 text-teal-600" /> Phone Number <span className="text-red-500">*</span>
+                                <PhoneOutlinedIcon className="size-3.5 text-teal-600" /> Phone Number <span className="text-red-500">*</span>
                             </label>
                             <input id="new-phone" type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="03001234567" required
                                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all" />
                         </div>
                         <div className="space-y-1.5">
                             <label htmlFor="new-cnic" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                                <CreditCard className="size-3.5 text-blue-600" /> CNIC <span className="text-slate-500 text-xs font-normal">(Optional)</span>
+                                <CreditCardOutlinedIcon className="size-3.5 text-blue-600" /> CNIC <span className="text-slate-500 text-xs font-normal">(Optional)</span>
                             </label>
                             <input id="new-cnic" type="text" name="cnic" value={formData.cnic} onChange={handleChange} placeholder="12345-1234567-1"
                                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all" />
                         </div>
                         <div className="space-y-1.5">
                             <label htmlFor="new-name" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                                <User className="size-3.5 text-teal-600" /> Full Name <span className="text-red-500">*</span>
+                                <PersonOutlineOutlinedIcon className="size-3.5 text-teal-600" /> Full Name <span className="text-red-500">*</span>
                             </label>
                             <input id="new-name" type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Muhammad Ahmed" required
                                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all" />
                         </div>
                         <div className="space-y-1.5">
                             <label htmlFor="new-age" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                                <User className="size-3.5 text-amber-600" /> Age <span className="text-red-500">*</span>
+                                <PersonOutlineOutlinedIcon className="size-3.5 text-amber-600" /> Age <span className="text-red-500">*</span>
                             </label>
                             <input id="new-age" type="number" name="age" value={formData.age} onChange={handleChange} placeholder="28" min="1" max="150" required
                                 onKeyDown={(e) => { if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault() }}
@@ -770,12 +788,12 @@ function NewPatientTab({ treatments, onSuccess }: {
                 {/* Appointment Details */}
                 <div>
                     <p className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 flex items-center gap-2">
-                        <Calendar className="size-3.5 text-teal-600" /> Appointment Details
+                        <CalendarTodayOutlinedIcon className="size-3.5 text-teal-600" /> Appointment Details
                     </p>
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <label htmlFor="new-date" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                                <Calendar className="size-3.5 text-teal-600" /> Date <span className="text-red-500">*</span>
+                                <CalendarTodayOutlinedIcon className="size-3.5 text-teal-600" /> Date <span className="text-red-500">*</span>
                             </label>
                             <DatePicker
                                 value={formData.date}
@@ -788,7 +806,7 @@ function NewPatientTab({ treatments, onSuccess }: {
                         </div>
                         <div className="space-y-1.5">
                             <label htmlFor="new-treatment" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                                <Stethoscope className="size-3.5 text-teal-600" /> Treatment <span className="text-red-500">*</span>
+                                <MedicalServicesOutlinedIcon className="size-3.5 text-teal-600" /> Treatment <span className="text-red-500">*</span>
                             </label>
                             <select id="new-treatment" name="treatmentId" value={formData.treatmentId} onChange={(e) => setFormData(prev => ({ ...prev, treatmentId: e.target.value, time: "" }))} required
                                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer">
@@ -801,7 +819,7 @@ function NewPatientTab({ treatments, onSuccess }: {
                     </div>
                     <div className="space-y-2 mt-4">
                         <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                            <Clock className="size-3.5 text-teal-600" /> Available Time Slots <span className="text-red-500">*</span>
+                            <AccessTimeOutlinedIcon className="size-3.5 text-teal-600" /> Available Time Slots <span className="text-red-500">*</span>
                         </label>
                         <TimeSlotSelector
                             date={formData.date}
@@ -827,7 +845,7 @@ function NewPatientTab({ treatments, onSuccess }: {
 
                 <button type="submit" disabled={loading || isSunday(formData.date)}
                     className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer">
-                    {loading ? <><Loader2 className="size-5 animate-spin" />Processing...</> : <><UserPlus className="size-5" />Register &amp; Book Appointment</>}
+                    {loading ? <><AutorenewOutlinedIcon className="size-5 animate-spin" />Processing...</> : <><PersonAddOutlinedIcon className="size-5" />Register &amp; Book Appointment</>}
                 </button>
             </form>
             {loading && <PremiumLoader text="Processing Registration & Booking..." variant="inline" />}
@@ -850,13 +868,13 @@ function SuccessModal({ success, onClose, onCopy, copied }: {
             <div className="relative w-full max-w-md animate-fade-in-up">
                 <button onClick={onClose}
                     className="absolute -top-2 -right-2 z-10 size-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 shadow-sm transition-all">
-                    <X className="size-4" />
+                    <CloseOutlinedIcon className="size-4" />
                 </button>
                 <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xl">
                     <div className="relative px-6 pt-8 pb-6 text-center overflow-hidden border-b border-slate-100 bg-emerald-50/50">
                         <div className="relative">
                             <div className="mx-auto size-16 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center mb-4">
-                                <CheckCircle2 className="size-8 text-emerald-600" />
+                                <CheckCircleOutlineOutlinedIcon className="size-8 text-emerald-600" />
                             </div>
                             <h3 className="text-xl font-bold text-slate-900">Appointment Booked!</h3>
                             <p className="text-sm text-slate-600 mt-1">{success.patientName}</p>
@@ -872,14 +890,14 @@ function SuccessModal({ success, onClose, onCopy, copied }: {
                                     <div className="flex items-center justify-center gap-3">
                                         <span className="text-4xl font-black text-slate-900 tracking-wider font-mono">{success.patientId}</span>
                                         <button onClick={onCopy} className="size-10 rounded-lg bg-white border border-teal-200 flex items-center justify-center text-teal-700 hover:bg-teal-50 transition-all shadow-xs" title="Copy MRN">
-                                            {copied ? <BadgeCheck className="size-5 text-emerald-600" /> : <Copy className="size-5" />}
+                                            {copied ? <VerifiedOutlinedIcon className="size-5 text-emerald-600" /> : <ContentCopyOutlinedIcon className="size-5" />}
                                         </button>
                                     </div>
                                 </div>
                             </div>
                             <div className="mx-6 mt-3 mb-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
                                 <div className="flex gap-2">
-                                    <AlertCircle className="size-5 text-amber-600 shrink-0 mt-0.5" />
+                                    <ErrorOutlineOutlinedIcon className="size-5 text-amber-600 shrink-0 mt-0.5" />
                                     <div>
                                         <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">Important Receptionist Note</p>
                                         <p className="text-xs text-amber-800 mt-0.5">

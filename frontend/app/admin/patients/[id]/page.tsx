@@ -2,7 +2,15 @@ import React from "react";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Phone, Mail, Calendar, ArrowLeft, Stethoscope, ClipboardList, Pill, MessageSquare, ShieldAlert } from "lucide-react";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
+import MedicalServicesOutlinedIcon from "@mui/icons-material/MedicalServicesOutlined";
+import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import MedicationOutlinedIcon from "@mui/icons-material/MedicationOutlined";
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
+import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import { cn, formatPKR, formatDate, formatTime } from "@/lib/utils";
 import StatusBadge from "@/components/shared/StatusBadge";
 import PatientBillingHistory from "@/components/admin/patients/PatientBillingHistory";
@@ -53,7 +61,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
         <div className="space-y-6">
             <div className="flex items-center gap-4 mb-6">
                 <Link href="/admin/patients" className="p-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-premium shadow-xs">
-                    <ArrowLeft className="size-5" />
+                    <ArrowBackOutlinedIcon className="size-5" />
                 </Link>
                 <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Patient Profile</h1>
             </div>
@@ -63,7 +71,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                 <div className="relative overflow-hidden rounded-2xl border border-rose-200 bg-rose-50/80 p-4 shadow-xs">
                     <div className="relative flex items-start gap-3">
                         <div className="p-2 rounded-xl bg-rose-100 border border-rose-200 shrink-0 text-rose-700">
-                            <ShieldAlert className="size-5" />
+                            <SecurityOutlinedIcon className="size-5" />
                         </div>
                         <div className="flex-1">
                             <p className="text-xs font-bold text-rose-700 uppercase tracking-wider mb-1">⚠ Medical Alert</p>
@@ -92,7 +100,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-100">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-sky-50 text-sky-600 border border-sky-100 rounded-xl">
-                                    <Phone className="size-4" />
+                                    <PhoneOutlinedIcon className="size-4" />
                                 </div>
                                 <div>
                                     <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Phone</p>
@@ -101,7 +109,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-xl">
-                                    <Mail className="size-4" />
+                                    <EmailOutlinedIcon className="size-4" />
                                 </div>
                                 <div>
                                     <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Email</p>
@@ -110,7 +118,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-amber-50 text-amber-600 border border-amber-100 rounded-xl">
-                                    <Calendar className="size-4" />
+                                    <CalendarTodayOutlinedIcon className="size-4" />
                                 </div>
                                 <div>
                                     <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Last Visit</p>
@@ -121,7 +129,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-teal-50 text-teal-600 border border-teal-100 rounded-xl">
-                                    <Calendar className="size-4" />
+                                    <CalendarTodayOutlinedIcon className="size-4" />
                                 </div>
                                 <div>
                                     <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Upcoming</p>
@@ -258,7 +266,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                                                 <div key={note.id} className="grid sm:grid-cols-2 gap-3 text-xs">
                                                     {note.diagnosis && (
                                                         <div className="flex items-start gap-1.5">
-                                                            <Stethoscope className="size-3.5 text-sky-600 mt-0.5 shrink-0" />
+                                                            <MedicalServicesOutlinedIcon className="size-3.5 text-sky-600 mt-0.5 shrink-0" />
                                                             <div>
                                                                 <span className="font-bold text-slate-600">Diagnosis:</span>
                                                                 <span className="text-slate-800 ml-1 font-medium">{note.diagnosis}</span>
@@ -266,7 +274,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                                                         </div>
                                                     )}
                                                     <div className="flex items-start gap-1.5">
-                                                        <ClipboardList className="size-3.5 text-teal-600 mt-0.5 shrink-0" />
+                                                        <AssignmentOutlinedIcon className="size-3.5 text-teal-600 mt-0.5 shrink-0" />
                                                         <div>
                                                                 <span className="font-bold text-slate-600">Treatment:</span>
                                                                 <span className="text-slate-800 ml-1 font-medium">{note.treatmentDone}</span>
@@ -274,7 +282,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                                                     </div>
                                                     {note.prescription && (
                                                         <div className="flex items-start gap-1.5">
-                                                            <Pill className="size-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                                                            <MedicationOutlinedIcon className="size-3.5 text-emerald-600 mt-0.5 shrink-0" />
                                                             <div>
                                                                 <span className="font-bold text-slate-600">Rx:</span>
                                                                 <span className="text-slate-800 ml-1 font-medium">{note.prescription}</span>
@@ -283,7 +291,7 @@ export default async function PatientProfilePage({ params }: { params: Promise<{
                                                     )}
                                                     {note.remarks && (
                                                         <div className="flex items-start gap-1.5">
-                                                            <MessageSquare className="size-3.5 text-amber-600 mt-0.5 shrink-0" />
+                                                            <ChatBubbleOutlineOutlinedIcon className="size-3.5 text-amber-600 mt-0.5 shrink-0" />
                                                             <div>
                                                                 <span className="font-bold text-slate-600">Notes:</span>
                                                                 <span className="text-slate-800 ml-1 font-medium">{note.remarks}</span>

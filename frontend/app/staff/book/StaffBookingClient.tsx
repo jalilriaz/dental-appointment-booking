@@ -6,7 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Search, ArrowLeft, UserPlus } from "lucide-react";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
+import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -104,7 +107,7 @@ export default function StaffBookingClient({ patients, treatments, backUrl = "/s
         <div className="glass-card rounded-2xl max-w-xl mx-auto overflow-hidden">
             <div className="px-6 py-5 border-b border-white/[0.06]">
                 <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                    <User className="size-5 text-teal-400" />
+                    <PersonOutlineOutlinedIcon className="size-5 text-teal-400" />
                     Select Patient
                 </h2>
                 <p className="text-sm text-slate-400 mt-1">
@@ -140,7 +143,7 @@ export default function StaffBookingClient({ patients, treatments, backUrl = "/s
                                 </SelectContent>
                             </Select>
                             <p className="text-xs text-slate-400 flex items-center gap-1">
-                                <Search className="size-3" />
+                                <SearchOutlinedIcon className="size-3" />
                                 Select a registered patient to proceed.
                             </p>
                         </div>
@@ -208,7 +211,7 @@ export default function StaffBookingClient({ patients, treatments, backUrl = "/s
 
                 <div className="pt-4 border-t border-white/[0.06] flex justify-between items-center mt-4">
                     <Link href={backUrl} className="text-sm text-slate-400 hover:text-teal-400 flex items-center gap-1 transition-premium font-medium">
-                        <ArrowLeft className="size-4" /> Back to Dashboard
+                        <ArrowBackOutlinedIcon className="size-4" /> Back to Dashboard
                     </Link>
                 </div>
             </div>

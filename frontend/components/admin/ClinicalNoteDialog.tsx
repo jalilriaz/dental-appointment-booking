@@ -13,7 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Loader2, Save, Stethoscope, Pill, MessageSquare, ClipboardList } from "lucide-react";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import MedicalServicesOutlinedIcon from "@mui/icons-material/MedicalServicesOutlined";
+import MedicationOutlinedIcon from "@mui/icons-material/MedicationOutlined";
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
+import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import { Badge } from "@/components/ui/badge";
 import OdontogramChart, { type OdontogramData } from "@/components/admin/OdontogramChart";
 
@@ -118,7 +124,7 @@ export default function ClinicalNoteDialog({
                         : "bg-teal-600 hover:bg-teal-700 text-white gap-1.5 cursor-pointer transition-premium shadow-xs border-0"
                     }
                 >
-                    <FileText className="size-3.5" />
+                    <DescriptionOutlinedIcon className="size-3.5" />
                     {hasNote ? "View Notes" : "Add Notes"}
                 </Button>
             </DialogTrigger>
@@ -127,7 +133,7 @@ export default function ClinicalNoteDialog({
                 <div className="px-6 pt-6 pb-4 border-b border-slate-200 shrink-0">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 text-lg text-slate-900">
-                            <ClipboardList className="size-5 text-teal-600" />
+                            <AssignmentOutlinedIcon className="size-5 text-teal-600" />
                             {readOnly ? "View Clinical Notes" : "Clinical Notes"}
                         </DialogTitle>
                         <DialogDescription className="text-slate-600">
@@ -145,7 +151,7 @@ export default function ClinicalNoteDialog({
                     {success ? (
                         <div className="py-8 text-center">
                             <div className="size-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-3">
-                                <Save className="size-6 text-emerald-600" />
+                                <SaveOutlinedIcon className="size-6 text-emerald-600" />
                             </div>
                             <p className="font-semibold text-slate-900">Notes saved successfully!</p>
                         </div>
@@ -154,7 +160,7 @@ export default function ClinicalNoteDialog({
                             {/* Diagnosis */}
                             <div className="space-y-2">
                                 <Label className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs">
-                                    <Stethoscope className="size-3.5 text-blue-600" />
+                                    <MedicalServicesOutlinedIcon className="size-3.5 text-blue-600" />
                                     Diagnosis
                                     {!readOnly && <Badge variant="secondary" className="text-[10px] ml-1 bg-slate-100 text-slate-700">Optional</Badge>}
                                 </Label>
@@ -170,7 +176,7 @@ export default function ClinicalNoteDialog({
                             {/* Treatment Done */}
                             <div className="space-y-2">
                                 <Label className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs">
-                                    <ClipboardList className="size-3.5 text-teal-600" />
+                                    <AssignmentOutlinedIcon className="size-3.5 text-teal-600" />
                                     Treatment Done {!readOnly && <span className="text-red-500">*</span>}
                                 </Label>
                                 <Textarea
@@ -185,7 +191,7 @@ export default function ClinicalNoteDialog({
                             {/* Prescription */}
                             <div className="space-y-2">
                                 <Label className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs">
-                                    <Pill className="size-3.5 text-teal-600" />
+                                    <MedicationOutlinedIcon className="size-3.5 text-teal-600" />
                                     Prescription
                                     {!readOnly && <Badge variant="secondary" className="text-[10px] ml-1 bg-slate-100 text-slate-700">Optional</Badge>}
                                 </Label>
@@ -201,7 +207,7 @@ export default function ClinicalNoteDialog({
                             {/* Remarks */}
                             <div className="space-y-2">
                                 <Label className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs">
-                                    <MessageSquare className="size-3.5 text-amber-600" />
+                                    <ChatBubbleOutlineOutlinedIcon className="size-3.5 text-amber-600" />
                                     Remarks / Follow-up
                                     {!readOnly && <Badge variant="secondary" className="text-[10px] ml-1 bg-slate-100 text-slate-700">Optional</Badge>}
                                 </Label>
@@ -251,12 +257,12 @@ export default function ClinicalNoteDialog({
                             >
                                 {saving ? (
                                     <>
-                                        <Loader2 className="size-4 mr-2 animate-spin" />
+                                        <AutorenewOutlinedIcon className="size-4 mr-2 animate-spin" />
                                         Saving...
                                     </>
                                 ) : (
                                     <>
-                                        <Save className="size-4 mr-2" />
+                                        <SaveOutlinedIcon className="size-4 mr-2" />
                                         {hasNote ? "Update Notes" : "Save Notes"}
                                     </>
                                 )}

@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MessageSquare, Phone, Copy, Check, ExternalLink, Loader2, AlertCircle, CheckCircle2, Send, RefreshCw } from "lucide-react";
+
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
+import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
+import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import SendOutlinedIcon from "@mui/icons-material/SendOutlined";
+import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -123,9 +133,9 @@ export default function SendPrecautionsModal({
                 <DialogHeader>
                     <div className="mx-auto size-12 rounded-full bg-emerald-50 flex items-center justify-center mb-2 border border-emerald-200">
                         {sentSuccess ? (
-                            <CheckCircle2 className="size-6 text-emerald-600" />
+                            <CheckCircleOutlineOutlinedIcon className="size-6 text-emerald-600" />
                         ) : (
-                            <MessageSquare className="size-6 text-emerald-600" />
+                            <ChatBubbleOutlineOutlinedIcon className="size-6 text-emerald-600" />
                         )}
                     </div>
                     <DialogTitle className="text-center text-xl font-bold text-slate-900">
@@ -140,12 +150,12 @@ export default function SendPrecautionsModal({
                     {/* Patient Phone & Status Bar */}
                     <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
                         <div className="flex items-center gap-2 text-sm text-slate-700">
-                            <Phone className="size-4 text-emerald-600" />
+                            <PhoneOutlinedIcon className="size-4 text-emerald-600" />
                             <span>WhatsApp: <strong className="text-slate-900">{patientPhone || "No phone provided"}</strong></span>
                         </div>
                         {sentSuccess ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                <Check className="size-3.5" /> Sent via Bot
+                                <CheckOutlinedIcon className="size-3.5" /> Sent via Bot
                             </span>
                         ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-teal-50 text-teal-700 border border-teal-200">
@@ -157,7 +167,7 @@ export default function SendPrecautionsModal({
                     {/* Success Banner */}
                     {sentSuccess ? (
                         <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
-                            <CheckCircle2 className="size-10 text-emerald-600 mx-auto" />
+                            <CheckCircleOutlineOutlinedIcon className="size-10 text-emerald-600 mx-auto" />
                             <h4 className="text-base font-bold text-slate-900">Directly Forwarded to Patient!</h4>
                             <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
                                 The care precautions have been sent directly to <strong className="text-slate-900">{patientPhone}</strong> from the clinic WhatsApp AI assistant.
@@ -169,7 +179,7 @@ export default function SendPrecautionsModal({
                     {n8nError && !sentSuccess && (
                         <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 space-y-1">
                             <div className="flex items-center gap-2 text-amber-800 text-xs font-semibold">
-                                <AlertCircle className="size-4 text-amber-600" />
+                                <ErrorOutlineOutlinedIcon className="size-4 text-amber-600" />
                                 <span>n8n Webhook Unreachable ({n8nError})</span>
                             </div>
                             <p className="text-[11px] text-amber-700">
@@ -181,7 +191,7 @@ export default function SendPrecautionsModal({
                     {/* Loading State or Message Preview */}
                     {loadingPreview ? (
                         <div className="py-10 flex flex-col items-center justify-center space-y-3">
-                            <Loader2 className="size-8 text-teal-600 animate-spin" />
+                            <AutorenewOutlinedIcon className="size-8 text-teal-600 animate-spin" />
                             <p className="text-sm text-slate-600">Loading tailored care instructions...</p>
                         </div>
                     ) : (
@@ -196,7 +206,7 @@ export default function SendPrecautionsModal({
                                     onClick={handleCopy}
                                     className="h-7 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 gap-1"
                                 >
-                                    {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
+                                    {copied ? <CheckOutlinedIcon className="size-3.5 text-emerald-600" /> : <ContentCopyOutlinedIcon className="size-3.5" />}
                                     {copied ? "Copied" : "Copy Text"}
                                 </Button>
                             </div>
@@ -216,7 +226,7 @@ export default function SendPrecautionsModal({
                                 onClick={handleOpenWhatsAppWeb}
                                 className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 text-xs gap-1.5"
                             >
-                                <ExternalLink className="size-3.5" />
+                                <OpenInNewOutlinedIcon className="size-3.5" />
                                 Open WhatsApp Web (Backup)
                             </Button>
                         )}
@@ -239,12 +249,12 @@ export default function SendPrecautionsModal({
                             >
                                 {sending ? (
                                     <>
-                                        <Loader2 className="size-4 animate-spin" />
+                                        <AutorenewOutlinedIcon className="size-4 animate-spin" />
                                         Sending to WhatsApp...
                                     </>
                                 ) : (
                                     <>
-                                        <Send className="size-4" />
+                                        <SendOutlinedIcon className="size-4" />
                                         Send to Patient WhatsApp (1-Click)
                                     </>
                                 )}

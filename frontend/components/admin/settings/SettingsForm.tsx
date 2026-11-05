@@ -6,7 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Save, Calendar, CheckCircle2, ExternalLink, Clock, SunMedium, Moon, Info } from "lucide-react";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
+import NightsStayOutlinedIcon from "@mui/icons-material/NightsStayOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useRouter } from "next/navigation";
 
 interface SettingsFormProps {
@@ -95,7 +103,7 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Clock className="size-5 text-teal-400" />
+                            <AccessTimeOutlinedIcon className="size-5 text-teal-400" />
                             Working Hours
                         </CardTitle>
                         <CardDescription>Set the clinic&apos;s opening and closing times. These control which time slots appear on the appointment booking page.</CardDescription>
@@ -104,7 +112,7 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="workingHoursStart" className="flex items-center gap-1.5">
-                                    <SunMedium className="size-3.5 text-amber-400" />
+                                    <WbSunnyOutlinedIcon className="size-3.5 text-amber-400" />
                                     Opening Time
                                 </Label>
                                 <Input
@@ -118,7 +126,7 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="workingHoursEnd" className="flex items-center gap-1.5">
-                                    <Moon className="size-3.5 text-indigo-400" />
+                                    <NightsStayOutlinedIcon className="size-3.5 text-indigo-400" />
                                     Closing Time
                                 </Label>
                                 <Input
@@ -150,7 +158,7 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-slate-500">
-                                <Info className="size-3 shrink-0" />
+                                <InfoOutlinedIcon className="size-3 shrink-0" />
                                 <span>Up to <strong className="text-slate-400">{calcSlots()} appointment slots</strong> per day (30 min each). Sundays are off.</span>
                             </div>
                         </div>
@@ -161,7 +169,7 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Calendar className="size-5 text-teal-400" />
+                            <CalendarTodayOutlinedIcon className="size-5 text-teal-400" />
                             Google Calendar
                         </CardTitle>
                         <CardDescription>
@@ -173,7 +181,7 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
                             <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-5 space-y-4">
                                 <div className="flex items-start gap-3">
                                     <div className="size-10 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                        <CheckCircle2 className="size-5 text-emerald-400" />
+                                        <CheckCircleOutlineOutlinedIcon className="size-5 text-emerald-400" />
                                     </div>
                                     <div>
                                         <p className="font-semibold text-emerald-300">Connected & Syncing</p>
@@ -194,7 +202,7 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
                                     href="/api/auth/google"
                                     className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/20 text-emerald-300 rounded-lg text-sm font-medium transition-colors"
                                 >
-                                    <ExternalLink className="size-4" />
+                                    <OpenInNewOutlinedIcon className="size-4" />
                                     Reconnect Google Calendar
                                 </a>
                             </div>
@@ -202,7 +210,7 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
                             <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-5 space-y-4">
                                 <div className="flex items-start gap-3">
                                     <div className="size-10 rounded-full bg-white/[0.06] flex items-center justify-center shrink-0">
-                                        <Calendar className="size-5 text-slate-400" />
+                                        <CalendarTodayOutlinedIcon className="size-5 text-slate-400" />
                                     </div>
                                     <div>
                                         <p className="font-semibold text-white">Not Connected</p>
@@ -210,15 +218,15 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
                                     </div>
                                 </div>
                                 <div className="space-y-2 text-sm text-slate-500">
-                                    <p className="flex items-center gap-2"><CheckCircle2 className="size-3.5 text-slate-600" /> Auto-create calendar events for bookings</p>
-                                    <p className="flex items-center gap-2"><CheckCircle2 className="size-3.5 text-slate-600" /> Remove events on cancellation</p>
-                                    <p className="flex items-center gap-2"><CheckCircle2 className="size-3.5 text-slate-600" /> Update events on reschedule</p>
+                                    <p className="flex items-center gap-2"><CheckCircleOutlineOutlinedIcon className="size-3.5 text-slate-600" /> Auto-create calendar events for bookings</p>
+                                    <p className="flex items-center gap-2"><CheckCircleOutlineOutlinedIcon className="size-3.5 text-slate-600" /> Remove events on cancellation</p>
+                                    <p className="flex items-center gap-2"><CheckCircleOutlineOutlinedIcon className="size-3.5 text-slate-600" /> Update events on reschedule</p>
                                 </div>
                                 <a
                                     href="/api/auth/google"
                                     className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
                                 >
-                                    <ExternalLink className="size-4" />
+                                    <OpenInNewOutlinedIcon className="size-4" />
                                     Connect Google Calendar
                                 </a>
                             </div>
@@ -231,11 +239,11 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
                 <Button type="submit" disabled={loading} className="btn-brand border-0 min-w-[150px]">
                     {loading ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                            <AutorenewOutlinedIcon className="mr-2 h-4 w-4 animate-spin" /> Saving...
                         </>
                     ) : (
                         <>
-                            <Save className="mr-2 h-4 w-4" /> Save Settings
+                            <SaveOutlinedIcon className="mr-2 h-4 w-4" /> Save Settings
                         </>
                     )}
                 </Button>

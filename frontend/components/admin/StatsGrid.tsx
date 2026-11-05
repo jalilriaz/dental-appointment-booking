@@ -1,4 +1,8 @@
-import { Users, Calendar, DollarSign, Activity, TrendingUp } from "lucide-react";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
+import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
+import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 
 interface StatsGridProps {
     totalPatients: number;
@@ -10,57 +14,57 @@ interface StatsGridProps {
 export function StatsGrid({ totalPatients, appointmentsToday, totalRevenue, monthlyGrowth }: StatsGridProps) {
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="glass-card rounded-xl p-5 border-l-2 border-l-emerald-500 hover:scale-[1.02] hover:border-teal-500/50 transition-premium animate-fade-in-up opacity-0 stagger-1">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 border-l-4 border-l-emerald-600 shadow-sm hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Total Revenue</p>
-                        <p className="text-2xl font-bold text-emerald-400 mt-1">${totalRevenue.toLocaleString()}</p>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Revenue</p>
+                        <p className="text-2xl font-extrabold text-emerald-600 mt-1">${totalRevenue.toLocaleString()}</p>
                         <p className="text-xs text-slate-500 flex items-center mt-1">
-                            <TrendingUp className="h-3 w-3 mr-1 text-emerald-400" />
-                            <span className="text-emerald-400 font-medium">+{monthlyGrowth}%</span> from last month
+                            <TrendingUpOutlinedIcon className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                            <span className="text-emerald-700 font-bold">+{monthlyGrowth}%</span> from last month
                         </p>
                     </div>
-                    <div className="size-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                        <DollarSign className="size-6 text-emerald-400" />
+                    <div className="size-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                        <AttachMoneyOutlinedIcon className="size-6 text-emerald-600" />
                     </div>
                 </div>
             </div>
 
-            <div className="glass-card rounded-xl p-5 border-l-2 border-l-blue-400 hover:scale-[1.02] hover:border-blue-400/50 transition-premium animate-fade-in-up opacity-0 stagger-2">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 border-l-4 border-l-sky-600 shadow-sm hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Appointments Today</p>
-                        <p className="text-2xl font-bold text-white mt-1">{appointmentsToday}</p>
-                        <p className="text-xs text-slate-500 mt-1">Busy schedule</p>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Appointments Today</p>
+                        <p className="text-2xl font-extrabold text-slate-900 mt-1">{appointmentsToday}</p>
+                        <p className="text-xs text-slate-500 mt-1">Scheduled sessions</p>
                     </div>
-                    <div className="size-12 rounded-xl bg-blue-400/10 flex items-center justify-center">
-                        <Calendar className="size-6 text-blue-400" />
+                    <div className="size-12 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center">
+                        <CalendarTodayOutlinedIcon className="size-6 text-sky-600" />
                     </div>
                 </div>
             </div>
 
-            <div className="glass-card rounded-xl p-5 border-l-2 border-l-purple-400 hover:scale-[1.02] hover:border-purple-400/50 transition-premium animate-fade-in-up opacity-0 stagger-3">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 border-l-4 border-l-teal-600 shadow-sm hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Total Patients</p>
-                        <p className="text-2xl font-bold text-white mt-1">{totalPatients}</p>
-                        <p className="text-xs text-slate-500 mt-1">Active records</p>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Patients</p>
+                        <p className="text-2xl font-extrabold text-slate-900 mt-1">{totalPatients}</p>
+                        <p className="text-xs text-slate-500 mt-1">Active clinical records</p>
                     </div>
-                    <div className="size-12 rounded-xl bg-purple-400/10 flex items-center justify-center">
-                        <Users className="size-6 text-purple-400" />
+                    <div className="size-12 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center">
+                        <PeopleAltOutlinedIcon className="size-6 text-teal-600" />
                     </div>
                 </div>
             </div>
 
-            <div className="glass-card rounded-xl p-5 border-l-2 border-l-orange-400 hover:scale-[1.02] hover:border-orange-400/50 transition-premium animate-fade-in-up opacity-0 stagger-4">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 border-l-4 border-l-amber-600 shadow-sm hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Patient Retention</p>
-                        <p className="text-2xl font-bold text-white mt-1">85%</p>
-                        <p className="text-xs text-slate-500 mt-1">Top tier</p>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Patient Retention</p>
+                        <p className="text-2xl font-extrabold text-slate-900 mt-1">85%</p>
+                        <p className="text-xs text-slate-500 mt-1">High satisfaction</p>
                     </div>
-                    <div className="size-12 rounded-xl bg-orange-400/10 flex items-center justify-center">
-                        <Activity className="size-6 text-orange-400" />
+                    <div className="size-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center">
+                        <ShowChartOutlinedIcon className="size-6 text-amber-600" />
                     </div>
                 </div>
             </div>

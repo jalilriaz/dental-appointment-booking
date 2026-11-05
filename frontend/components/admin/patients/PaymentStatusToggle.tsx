@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, X, Loader2 } from "lucide-react";
+import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -44,14 +46,14 @@ export default function PaymentStatusToggle({ appointmentId, initialStatus }: Pa
             onClick={toggleStatus}
             disabled={loading}
             className={cn(
-                "h-7 text-xs font-semibold gap-1.5 transition-all border",
+                "h-7 text-xs font-semibold gap-1.5 transition-all border cursor-pointer",
                 status === "PAID"
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:text-emerald-800"
                     : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 hover:text-amber-800"
             )}
         >
-            {loading ? <Loader2 className="size-3 animate-spin" /> : (
-                status === "PAID" ? <Check className="size-3" /> : <X className="size-3" />
+            {loading ? <AutorenewOutlinedIcon className="size-3 animate-spin" /> : (
+                status === "PAID" ? <CheckOutlinedIcon className="size-3" /> : <CloseOutlinedIcon className="size-3" />
             )}
             {status === "PAID" ? "Paid" : "Unpaid"}
         </Button>

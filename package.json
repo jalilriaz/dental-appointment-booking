@@ -3,14 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "turbo run dev",
-    "dev:frontend": "pnpm --filter frontend dev",
-    "dev:frontend:webpack": "pnpm --filter frontend dev:webpack",
-    "dev:backend": "pnpm --filter backend dev",
-    "build": "turbo run build",
-    "build:frontend": "pnpm --filter frontend build",
-    "build:backend": "pnpm --filter backend build",
-    "lint": "turbo run lint"
+    "dev": "pnpm --filter frontend dev",
+    "dev:turbo": "pnpm --filter frontend dev:turbo",
+    "build": "pnpm --filter frontend build",
+    "build:turbo": "pnpm --filter frontend build:turbo",
+    "start": "pnpm --filter frontend start",
+    "lint": "pnpm --filter frontend lint"
   },
   "devDependencies": {
     "turbo": "^2.4.4"

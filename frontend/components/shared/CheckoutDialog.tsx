@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle2, CalendarPlus, CreditCard, Banknote, Globe, Sparkles, AlertCircle } from "lucide-react";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
+import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -156,7 +160,7 @@ export default function CheckoutDialog({
             <DialogContent className="sm:max-w-[480px] bg-white border-slate-200 text-slate-900 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
                 <DialogHeader>
                     <div className="mx-auto size-12 rounded-full bg-teal-50 border border-teal-100 flex items-center justify-center mb-2">
-                        <CheckCircle2 className="size-6 text-teal-600" />
+                        <CheckCircleOutlineOutlinedIcon className="size-6 text-teal-600" />
                     </div>
                     <DialogTitle className="text-center text-lg font-bold text-slate-900">Check Out Visit</DialogTitle>
                     <DialogDescription className="text-center text-slate-500">
@@ -170,7 +174,7 @@ export default function CheckoutDialog({
                         <div className="p-3.5 bg-teal-50/70 rounded-xl border border-teal-200/80 space-y-2">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold uppercase tracking-wider text-teal-700 flex items-center gap-1.5">
-                                    <Sparkles className="size-3.5" /> Ongoing Treatment Plan
+                                    <AutoAwesomeOutlinedIcon className="size-3.5" /> Ongoing Treatment Plan
                                 </span>
                                 <span className="text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full font-semibold border border-teal-200">
                                     Session {currentSessionNumber} of {planTotalSessions}
@@ -198,7 +202,7 @@ export default function CheckoutDialog({
                         <div className="p-3.5 bg-sky-50/70 rounded-xl border border-sky-200 space-y-3">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold uppercase tracking-wider text-sky-800 flex items-center gap-1.5">
-                                    <Sparkles className="size-3.5" /> Multi-Session Plan (Session 1)
+                                    <AutoAwesomeOutlinedIcon className="size-3.5" /> Multi-Session Plan (Session 1)
                                 </span>
                                 <span className="text-xs bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full font-semibold border border-sky-200">
                                     New Package
@@ -324,7 +328,7 @@ export default function CheckoutDialog({
                                         : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                                 }`}
                             >
-                                <Banknote className="size-3.5" /> Cash
+                                <PaymentsOutlinedIcon className="size-3.5" /> Cash
                             </button>
                             <button
                                 type="button"
@@ -335,7 +339,7 @@ export default function CheckoutDialog({
                                         : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                                 }`}
                             >
-                                <CreditCard className="size-3.5" /> Card / POS
+                                <CreditCardOutlinedIcon className="size-3.5" /> Card / POS
                             </button>
                             <button
                                 type="button"
@@ -346,7 +350,7 @@ export default function CheckoutDialog({
                                         : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                                 }`}
                             >
-                                <Globe className="size-3.5" /> Online / Bank
+                                <LanguageOutlinedIcon className="size-3.5" /> Online / Bank
                             </button>
                         </div>
                     </div>

@@ -1,6 +1,10 @@
 "use client";
 
-import { FileText, Stethoscope, Pill, StickyNote, Download } from "lucide-react";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import MedicalServicesOutlinedIcon from "@mui/icons-material/MedicalServicesOutlined";
+import MedicationOutlinedIcon from "@mui/icons-material/MedicationOutlined";
+import NoteAltOutlinedIcon from "@mui/icons-material/NoteAltOutlined";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import { cn, formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -22,17 +26,17 @@ interface MedicalRecordListProps {
 }
 
 const typeConfig: Record<string, { icon: any, color: string, bg: string }> = {
-    PRESCRIPTION: { icon: Pill, color: "text-sky-700", bg: "bg-sky-50 border border-sky-200" },
-    LAB_REPORT: { icon: FileText, color: "text-teal-700", bg: "bg-teal-50 border border-teal-200" },
-    X_RAY: { icon: Stethoscope, color: "text-slate-700", bg: "bg-slate-100 border border-slate-200" },
-    NOTES: { icon: StickyNote, color: "text-amber-800", bg: "bg-amber-50 border border-amber-200" },
+    PRESCRIPTION: { icon: MedicationOutlinedIcon, color: "text-sky-700", bg: "bg-sky-50 border border-sky-200" },
+    LAB_REPORT: { icon: DescriptionOutlinedIcon, color: "text-teal-700", bg: "bg-teal-50 border border-teal-200" },
+    X_RAY: { icon: MedicalServicesOutlinedIcon, color: "text-slate-700", bg: "bg-slate-100 border border-slate-200" },
+    NOTES: { icon: NoteAltOutlinedIcon, color: "text-amber-800", bg: "bg-amber-50 border border-amber-200" },
 };
 
 export default function MedicalRecordList({ records }: MedicalRecordListProps) {
     if (records.length === 0) {
         return (
             <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300 shadow-xs">
-                <FileText className="size-10 text-slate-400 mx-auto mb-3 opacity-60" />
+                <DescriptionOutlinedIcon className="size-10 text-slate-400 mx-auto mb-3 opacity-60" />
                 <h3 className="text-sm font-bold text-slate-900">No medical records found</h3>
                 <p className="text-xs text-slate-500 font-medium mt-1">Start by adding a prescription or clinical note.</p>
             </div>
@@ -79,7 +83,7 @@ export default function MedicalRecordList({ records }: MedicalRecordListProps) {
                                 </div>
                                 {record.fileUrl && (
                                     <Button variant="ghost" size="sm" className="h-7 text-xs font-semibold gap-1 text-teal-700 hover:text-teal-800 hover:bg-teal-50 rounded-lg">
-                                        <Download className="size-3.5" /> Attachment
+                                        <DownloadOutlinedIcon className="size-3.5" /> Attachment
                                     </Button>
                                 )}
                             </div>

@@ -1,12 +1,12 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
 
 export function LoadingSpinner({ size = "md", className = "" }: { size?: "sm" | "md" | "lg"; className?: string }) {
     const sizeMap = { sm: "h-4 w-4", md: "h-8 w-8", lg: "h-12 w-12" };
     return (
         <div className={`flex items-center justify-center ${className}`}>
-            <Loader2 className={`animate-spin text-teal-400 ${sizeMap[size]}`} />
+            <AutorenewOutlinedIcon className={`animate-spin text-teal-600 ${sizeMap[size]}`} />
         </div>
     );
 }
@@ -15,7 +15,7 @@ export function PageLoader() {
     return (
         <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
-                <Loader2 className="h-10 w-10 animate-spin text-teal-400 mx-auto mb-3" />
+                <AutorenewOutlinedIcon className="h-10 w-10 animate-spin text-teal-600 mx-auto mb-3" />
                 <p className="text-sm text-slate-400">Loading...</p>
             </div>
         </div>

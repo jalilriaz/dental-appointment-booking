@@ -1,13 +1,13 @@
 import prisma from "@/lib/prisma"
 import {
-  Users,
-  CalendarCheck,
-  DollarSign,
-  Clock,
-  TrendingUp,
-  CalendarX,
-  CheckCircle2,
-} from "lucide-react"
+  PeopleAltOutlined,
+  EventAvailableOutlined,
+  AttachMoneyOutlined,
+  AccessTimeOutlined,
+  TrendingUpOutlined,
+  EventBusyOutlined,
+  CheckCircleOutlineOutlined,
+} from "@mui/icons-material"
 import Link from "next/link"
 import TodayAppointments from "@/components/shared/TodayAppointments"
 import AnimatedDashboard from "@/components/shared/AnimatedDashboard"
@@ -120,7 +120,7 @@ export default async function AdminDashboard() {
               </p>
             </div>
             <div className="size-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-              <DollarSign className="size-6" />
+              <AttachMoneyOutlined sx={{ fontSize: 26 }} />
             </div>
           </div>
         </div>
@@ -140,7 +140,7 @@ export default async function AdminDashboard() {
               </p>
             </div>
             <div className="size-12 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
-              <TrendingUp className="size-6" />
+              <TrendingUpOutlined sx={{ fontSize: 26 }} />
             </div>
           </div>
         </div>
@@ -160,7 +160,7 @@ export default async function AdminDashboard() {
               </p>
             </div>
             <div className="size-12 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600">
-              <CalendarCheck className="size-6" />
+              <EventAvailableOutlined sx={{ fontSize: 26 }} />
             </div>
           </div>
         </div>
@@ -183,7 +183,7 @@ export default async function AdminDashboard() {
               </p>
             </div>
             <div className="size-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-              <Clock className="size-6" />
+              <AccessTimeOutlined sx={{ fontSize: 26 }} />
             </div>
           </div>
         </Link>
@@ -196,7 +196,7 @@ export default async function AdminDashboard() {
           className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:shadow-md hover:border-slate-300 transition-all cursor-pointer"
         >
           <div className="size-10 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
-            <Users className="size-5" />
+            <PeopleAltOutlined sx={{ fontSize: 22 }} />
           </div>
           <div>
             <p className="text-xl font-extrabold text-slate-900">{totalPatients}</p>
@@ -208,7 +208,7 @@ export default async function AdminDashboard() {
           className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer"
         >
           <div className="size-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-            <CheckCircle2 className="size-5" />
+            <CheckCircleOutlineOutlined sx={{ fontSize: 22 }} />
           </div>
           <div>
             <p className="text-xl font-extrabold text-slate-900">
@@ -222,7 +222,7 @@ export default async function AdminDashboard() {
           className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:shadow-md hover:border-amber-300 transition-all cursor-pointer"
         >
           <div className="size-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-            <Clock className="size-5" />
+            <AccessTimeOutlined sx={{ fontSize: 22 }} />
           </div>
           <div>
             <p className="text-xl font-extrabold text-slate-900">
@@ -236,7 +236,7 @@ export default async function AdminDashboard() {
           className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:shadow-md hover:border-rose-300 transition-all cursor-pointer"
         >
           <div className="size-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
-            <CalendarX className="size-5" />
+            <EventBusyOutlined sx={{ fontSize: 22 }} />
           </div>
           <div>
             <p className="text-xl font-extrabold text-slate-900">

@@ -12,7 +12,10 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
-import { Pencil, Loader2, ShieldAlert, Save } from "lucide-react";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import { useRouter } from "next/navigation";
 
 interface MedicalAlertEditorProps {
@@ -56,7 +59,7 @@ export default function MedicalAlertEditor({ patientId, initialAlerts }: Medical
                 onClick={() => setOpen(true)}
                 className="text-xs gap-1.5 text-slate-700 border-slate-200 bg-white hover:bg-slate-50 font-medium rounded-xl shadow-xs transition-premium"
             >
-                <Pencil className="size-3 text-teal-600" />
+                <EditOutlinedIcon className="size-3 text-teal-600" />
                 {initialAlerts ? "Edit Alerts" : "Add Alerts"}
             </Button>
 
@@ -64,7 +67,7 @@ export default function MedicalAlertEditor({ patientId, initialAlerts }: Medical
                 <DialogContent className="sm:max-w-md bg-white border border-slate-200 text-slate-900 shadow-2xl rounded-2xl">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 text-lg font-bold text-slate-900">
-                            <ShieldAlert className="size-5 text-rose-600" />
+                            <SecurityOutlinedIcon className="size-5 text-rose-600" />
                             Medical Alerts
                         </DialogTitle>
                     </DialogHeader>
@@ -87,7 +90,7 @@ export default function MedicalAlertEditor({ patientId, initialAlerts }: Medical
                             Cancel
                         </Button>
                         <Button onClick={handleSave} disabled={saving} className="bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl shadow-xs border-0">
-                            {saving ? <><Loader2 className="size-4 mr-2 animate-spin" /> Saving...</> : <><Save className="size-4 mr-2" /> Save Alerts</>}
+                            {saving ? <><AutorenewOutlinedIcon className="size-4 mr-2 animate-spin" /> Saving...</> : <><SaveOutlinedIcon className="size-4 mr-2" /> Save Alerts</>}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -20,15 +20,17 @@ import {
   WorkspacePremiumOutlined,
   LocalHospitalOutlined,
   HelpOutlineOutlined,
+  PaymentsOutlined,
+  CreditCardOutlined,
 } from "@mui/icons-material";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import prisma from "@/lib/prisma";
-import BookingForm from "@/components/BookingForm";
+import AppointmentCtaBanner from "@/components/AppointmentCtaBanner";
 import ToothOrbitalBadge from "@/components/ToothOrbitalBadge";
 import SmileShowcase from "@/components/SmileShowcase";
-import FaqAccordion, { FaqItem } from "@/components/FaqAccordion";
-import TestimonialCard from "@/components/TestimonialCard";
+import FaqSection from "@/components/FaqSection";
+import ReviewsSection from "@/components/ReviewsSection";
 import { formatPKR, getTreatmentImage } from "@/lib/utils";
 
 export const metadata = {
@@ -57,45 +59,65 @@ export const metadata = {
   },
 };
 
-const landingFaqs: FaqItem[] = [
+const landingFaqs = [
   {
     question: "Is dental implant surgery painful?",
     answer:
       "No. At Elite Dental, all implant placements are performed under localized computerized anesthesia and minimally invasive 3D-guided surgery. Most patients report feeling only mild pressure during the procedure and return to normal daily routines within 24 to 48 hours with standard over-the-counter pain relievers.",
-    category: "Implantology",
+    icon: MedicalServicesOutlined,
   },
   {
     question: "How much does a dental procedure cost at Elite Dental?",
     answer:
       "We believe in 100% transparent healthcare. Standard procedures start from Rs. 2,500 for scaling and cleaning, Rs. 13,000 for single-canal root canal therapy, and Rs. 70,000 for certified titanium implants. Every patient receives a comprehensive, itemized written treatment plan with zero surprise fees before any work begins.",
-    category: "Fees & Pricing",
+    icon: PaymentsOutlined,
   },
   {
     question: "Do you offer emergency or same-day appointments?",
     answer:
       "Yes. We maintain reserved daily emergency slots for severe toothaches, dental trauma, knocked-out teeth, or acute facial swelling. You can contact our emergency WhatsApp line or book online for same-day priority clinical triage.",
-    category: "Emergency Care",
+    icon: LocalHospitalOutlined,
   },
   {
     question: "What sterilization standards are followed at your Islamabad facility?",
     answer:
       "We strictly follow ISO 9001 hospital-grade sterilization protocols. Every surgical instrument undergoes multi-stage ultrasonic scrubbing, Class-B vacuum autoclaving at 134°C with biological spore testing, and is sealed in single-use medical pouches opened directly in your presence.",
-    category: "Safety & Hygiene",
+    icon: HealthAndSafetyOutlined,
   },
   {
     question: "Can I pay in installments for orthodontic braces or multi-visit treatments?",
     answer:
       "Yes. For multi-session dental treatments such as orthodontic braces, clear aligners, and comprehensive smile makeovers, we provide structured installment plans spread across your active session visits without additional interest.",
-    category: "Payment Plans",
+    icon: CreditCardOutlined,
   },
 ];
 
+import { ALL_TREATMENTS } from "@/lib/treatmentsData";
+
 export default async function LandingPage() {
-  const treatments = await prisma.treatment.findMany({
-    where: { isActive: true },
-    take: 8,
-    orderBy: { name: "asc" },
-  });
+  let treatments = ALL_TREATMENTS.slice(0, 8) as any;
+  try {
+    const dbTreatments = await prisma.treatment.findMany({
+      where: { isActive: true },
+      take: 8,
+      orderBy: { name: "asc" },
+    });
+    if (dbTreatments && dbTreatments.length > 0) {
+      treatments = dbTreatments.map((dbT) => {
+        const match = ALL_TREATMENTS.find((t) => t.name.toLowerCase() === dbT.name.toLowerCase());
+        if (match) {
+          return {
+            ...dbT,
+            durationMin: match.durationMin,
+            description: match.description,
+          };
+        }
+        return dbT;
+      }) as any;
+    }
+  } catch (error) {
+    console.warn("[LandingPage] Database unavailable at localhost:5432, utilizing clinical fallback catalog:", error instanceof Error ? error.message : error);
+  }
 
   // Structured Data (JSON-LD) for Google MedicalClinic, Dentist, and FAQPage Schema
   const structuredData = {
@@ -392,7 +414,7 @@ export default async function LandingPage() {
             </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {treatments.map((t) => (
+              {treatments.map((t: any) => (
                 <div
                   key={t.id}
                   className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs hover:shadow-md hover:border-teal-400 transition-all duration-300 flex flex-col justify-between group"
@@ -411,9 +433,11 @@ export default async function LandingPage() {
 
                   <div className="p-5 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-bold text-slate-900 text-base group-hover:text-teal-700 transition-colors">
-                        {t.name}
-                      </h3>
+                      <Link href={`/services/${t.id}`} className="block group/title hover:opacity-95">
+                        <h3 className="font-bold text-slate-900 text-base group-hover:text-teal-700 transition-colors hover:underline underline-offset-2 decoration-teal-500">
+                          {t.name}
+                        </h3>
+                      </Link>
                       <p className="text-xs text-slate-500 line-clamp-2 mt-1.5 leading-relaxed">
                         {t.description || "Certified procedural protocol performed under hospital-grade sterile barrier isolation."}
                       </p>
@@ -470,11 +494,10 @@ export default async function LandingPage() {
               <div className="lg:col-span-5 relative">
                 <div className="relative h-[440px] sm:h-[480px] rounded-3xl overflow-hidden shadow-xl border border-slate-200 bg-slate-100">
                   <Image
-                    src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=800&auto=format&fit=crop"
+                    src="/images/dr_sheriyaar.jpg"
                     alt="Dr. Sheriyaar - Chief Implantologist & Dental Surgeon"
                     fill
-                    unoptimized
-                    className="object-cover"
+                    className="object-cover object-top"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B1528]/85 via-transparent to-transparent" />
                   <div className="absolute bottom-6 left-6 right-6 text-white">
@@ -668,78 +691,21 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ── 8. PATIENT TESTIMONIALS & GOOGLE SOCIAL PROOF ── */}
-        <section className="py-20 bg-[#F8FAFC] border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-                  Patient Reviews
-                </span>
-                <h2 className="text-3xl sm:text-4xl font-black text-[#0B1528] mt-3 tracking-tight font-sans">
-                  Rated 4.9 Stars Across 850+ Patient Reviews
-                </h2>
-                <p className="text-slate-600 mt-2 text-base max-w-xl font-normal">
-                  Read authentic feedback from families and patients who trust Elite Dental for gentle, painless dental procedures.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 p-3 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <StarOutlined key={s} sx={{ fontSize: 18, color: "#f59e0b" }} />
-                  ))}
-                </div>
-                <span className="text-xs font-black text-slate-900">4.9 / 5.0 Google Score</span>
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {testimonials.map((t, idx) => (
-                <TestimonialCard key={idx} t={t} />
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* ── 8. PATIENT REVIEWS & GOOGLE SOCIAL PROOF (REDESIGNED) ── */}
+        <ReviewsSection />
 
         {/* ── 9. CLINICAL FAQ SECTION (SEO & CONVERSION) ── */}
-        <section className="py-20 bg-white border-b border-slate-200">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <span className="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-                Common Inquiries
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-[#0B1528] mt-3 tracking-tight font-sans">
-                Frequently Asked Patient Questions
-              </h2>
-              <p className="text-slate-600 mt-2 text-base font-normal">
-                Have questions before your visit? Here is everything you need to know about our treatments, costs, and safety standards.
-              </p>
-            </div>
-
-            <FaqAccordion faqs={landingFaqs} />
-          </div>
+        <section className="bg-white border-b border-slate-200">
+          <FaqSection
+            kicker="Help & Support"
+            title="Frequently asked questions"
+            subtitle="Here's everything you need to know about our treatments, procedures, and transparent fees. Can't spot the answer you need? Our friendly clinical team is just a call away."
+            items={landingFaqs}
+          />
         </section>
 
-        {/* ── 10. DIRECT APPOINTMENT BOOKING ANCHOR ── */}
-        <section id="book" className="py-20 bg-[#F8FAFC] border-b border-slate-200 scroll-mt-20">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <span className="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-                Direct Scheduling
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-[#0B1528] mt-3 tracking-tight font-sans">
-                Reserve Your Appointment Online
-              </h2>
-              <p className="text-slate-600 mt-2 text-base font-normal">
-                Choose your procedure and preferred time slot. You will receive an SMS and WhatsApp confirmation instantly.
-              </p>
-            </div>
-
-            <div className="p-6 sm:p-8 rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50">
-              <BookingForm treatments={treatments} />
-            </div>
-          </div>
-        </section>
+        {/* ── 10. DIRECT APPOINTMENT SCHEDULING BANNER & MODAL ── */}
+        <AppointmentCtaBanner treatments={treatments} />
 
         {/* ── 11. CLINIC LOCATION, HOURS & OPERATORY MAP ── */}
         <section className="py-20 bg-white border-b border-slate-200">

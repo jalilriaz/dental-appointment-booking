@@ -4,178 +4,205 @@ import Footer from "@/components/Footer";
 import { clinicInfo } from "@/app/constants/mockData";
 import {
   VerifiedOutlined,
-  CheckCircleOutlined,
   HealthAndSafetyOutlined,
   MedicalServicesOutlined,
   SupportAgentOutlined,
+  LocationOnOutlined,
 } from "@mui/icons-material";
-import Image from "next/image";
-import Link from "next/link";
+import FaqSection from "@/components/FaqSection";
+import AboutHero from "@/components/AboutHero";
+import AboutClient from "@/components/AboutClient";
+import AppointmentCtaBanner from "@/components/AppointmentCtaBanner";
+import { ALL_TREATMENTS } from "@/lib/treatmentsData";
+import prisma from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "About Our Clinic & Specialists | Elite Dental Centre Islamabad",
+  title: "Our Clinic & Doctor | Elite Dental Centre Islamabad",
   description:
-    "Meet Dr. Jalil Riaz and our specialized dental surgery team at Elite Dental Centre, F-10 Markaz Islamabad. 15+ years of clinical excellence in cosmetic dentistry, dental implants, and painless restorations.",
+    "Meet Dr. Sheriyaar, PMDC-registered Lead Dental Surgeon at Elite Dental Centre, F-10 Markaz Islamabad. Explore our 3D CBCT imaging bay, Class-B sterilization, and patient-first care.",
   alternates: {
-    canonical: "https://elitedentalcentre.com/about",
+    canonical: "https://elitedental.pk/about",
+  },
+  openGraph: {
+    title: "Our Clinic & Doctor | Elite Dental Centre Islamabad",
+    description: "PMDC-registered Lead Dental Surgeon Dr. Sheriyaar, European Class-B sterilization, and 3D CBCT diagnostics in F-10 Markaz, Islamabad.",
+    url: "https://elitedental.pk/about",
+    type: "website",
   },
 };
 
-export default function AboutPage() {
+const aboutFaqs = [
+  {
+    question: "What qualifications and clinical experience does Dr. Sheriyaar possess?",
+    answer: "Dr. Sheriyaar holds BDS and RDS degrees with advanced certifications in dental implantology and microscopic endodontics. With over 12 years of dedicated clinical practice in Islamabad, he specializes in pain-free dental implants, root canals, and aesthetic smile restorations.",
+    icon: VerifiedOutlined,
+  },
+  {
+    question: "What hospital-grade sterilization protocols are enforced at your facility?",
+    answer: "Our clinic operates European Class-B vacuum autoclaves at 134°C with daily biological spore test verification. Surgical handpieces, burs, and instruments undergo a rigorous 4-step ultrasonic scrubbing and are sealed in sterile pouches opened only at your chairside.",
+    icon: HealthAndSafetyOutlined,
+  },
+  {
+    question: "Do you accommodate patients with dental anxiety or severe phobia?",
+    answer: "Yes. We offer computerized painless anesthesia delivery, noise-canceling headphones, and patient-paced breaks. We also provide oral premedication options for nervous patients.",
+    icon: MedicalServicesOutlined,
+  },
+  {
+    question: "Are second opinion consultations available for complex implant plans?",
+    answer: "Absolutely. Many patients visit us with external OPG x-rays or treatment proposals for an honest, unbiased second opinion. We review biological longevity, bone health, and cost-effective alternatives.",
+    icon: SupportAgentOutlined,
+  },
+  {
+    question: "Where is Elite Dental Centre located and is elevator parking available?",
+    answer: "We are situated in the heart of Islamabad at D-Watson Chemist Building, 2nd Floor, F-10 Markaz. Ample street and plaza parking is available directly at the entrance with elevator access to our clinical suites.",
+    icon: LocationOnOutlined,
+  },
+];
+
+export default async function AboutPage() {
+  let treatments = ALL_TREATMENTS as any;
+  try {
+    const dbTreatments = await prisma.treatment.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+    });
+    if (dbTreatments && dbTreatments.length > 0) {
+      treatments = dbTreatments.map((dbT) => {
+        const match = ALL_TREATMENTS.find((t) => t.name.toLowerCase() === dbT.name.toLowerCase());
+        if (match) {
+          return {
+            ...dbT,
+            durationMin: match.durationMin,
+            description: match.description,
+            maxPrice: match.maxPrice,
+          };
+        }
+        return dbT;
+      }) as any;
+    }
+  } catch (e) {
+    console.warn("[AboutPage] Using fallback authoritative treatments:", e instanceof Error ? e.message : e);
+  }
+
+  // Schema.org Structured Data for Google E-E-A-T, Physician Faculty & Local SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Dentist",
+        "@id": "https://elitedental.pk/#clinic",
+        name: "Elite Dental Centre",
+        url: "https://elitedental.pk",
+        logo: "https://elitedental.pk/logo.svg",
+        telephone: clinicInfo.phone,
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: clinicInfo.address,
+          addressLocality: "Islamabad",
+          addressRegion: "Federal Capital",
+          postalCode: "44000",
+          addressCountry: "PK",
+        },
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: 33.6938,
+          longitude: 73.0189,
+        },
+        openingHoursSpecification: [
+          {
+            "@type": "OpeningHoursSpecification",
+            dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            opens: "12:00",
+            closes: "20:00",
+          },
+        ],
+        medicalSpecialty: [
+          "Dentistry",
+          "Implantology",
+          "OralSurgery",
+          "Orthodontics",
+          "Periodontics",
+          "Endodontics",
+        ],
+      },
+      {
+        "@type": "Physician",
+        "@id": "https://elitedental.pk/about#dr-sheriyaar",
+        name: "Dr. Sheriyaar",
+        jobTitle: "Lead Dental Surgeon & Clinical Director",
+        medicalSpecialty: [
+          "Dentistry",
+          "Implantology",
+          "Endodontics",
+          "Restorative Dentistry",
+        ],
+        alumniOf: "PMDC Registered BDS, RDS",
+        worksFor: {
+          "@id": "https://elitedental.pk/#clinic",
+        },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://elitedental.pk/about#faq",
+        mainEntity: aboutFaqs.map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: faq.answer,
+          },
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://elitedental.pk/about#breadcrumb",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://elitedental.pk",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Our Clinic & Doctor",
+            item: "https://elitedental.pk/about",
+          },
+        ],
+      },
+    ],
+  };
+
   return (
-    <div className="bg-slate-50 min-h-screen">
-      <Navbar />
+    <div className="bg-slate-50 min-h-screen flex flex-col justify-between">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <div>
+        <Navbar />
 
-      {/* Hero / Philosophy */}
-      <section className="bg-slate-950 text-white py-16 lg:py-24 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <span className="text-xs font-bold uppercase tracking-wider text-teal-400 bg-teal-950 border border-teal-800 px-3 py-1 rounded-full">
-              Our Clinic & Medical Heritage
-            </span>
-            <h1 className="text-3xl sm:text-5xl font-extrabold text-white mt-4 tracking-tight">
-              Excellence in Precision Dentistry
-            </h1>
-            <p className="mt-4 text-slate-300 text-base sm:text-lg leading-relaxed">
-              Founded on the core belief that dental treatment should be pain-free, scientifically grounded, and transparent. We combine international sterilization standards with personalized patient care.
-            </p>
-          </div>
-        </div>
-      </section>
+        {/* 1. Hero: Light Modern Clinical Aesthetic with Male Dentist & Contact Strip */}
+        <AboutHero treatments={treatments} />
 
-      {/* Lead Doctor Dossier (E-E-A-T Focus) */}
-      <section className="py-20 bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
-            {/* Doctor Card Profile */}
-            <div className="lg:col-span-5">
-              <div className="rounded-2xl border border-slate-200 bg-slate-900 p-3 shadow-xl">
-                <div className="relative h-96 w-full rounded-xl overflow-hidden bg-slate-800">
-                  <Image
-                    src="/images/services/dental_crown.png"
-                    alt="Dr. Jalil Riaz - Chief Dental Surgeon"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <div className="text-xs font-mono uppercase tracking-wider text-teal-400 font-bold">
-                      PMC / PMDC Registered Specialist
-                    </div>
-                    <h3 className="text-2xl font-bold mt-1">Dr. Jalil Riaz</h3>
-                    <p className="text-xs text-slate-300">BDS, RDS, C-Implant (Germany), MCPS (Oral Surgery)</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* 2. Comprehensive E-E-A-T Medical Faculty, 3D Facility Tour & Patient Care Flow */}
+        <AboutClient treatments={treatments} />
 
-            {/* Credentials & Background */}
-            <div className="lg:col-span-7 space-y-6">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-                  Medical Leadership
-                </span>
-                <h2 className="text-3xl font-extrabold text-slate-950 mt-3 tracking-tight">
-                  15+ Years of Dedicated Clinical Practice
-                </h2>
-                <p className="text-slate-600 mt-4 leading-relaxed text-base">
-                  Dr. Jalil Riaz has pioneered computer-guided implant dentistry and aesthetic smile makeovers in Islamabad for over a decade. His philosophy prioritizes biological tooth preservation and minimally invasive surgical techniques.
-                </p>
-              </div>
+        {/* 3. Accreditations & Clinical FAQ Section */}
+        <section className="bg-white border-t border-slate-200">
+          <FaqSection
+            kicker="Clinic & Standards"
+            title="About our practice & accreditations"
+            subtitle="Everything you need to know about our clinical standards, surgical qualifications, and patient safety."
+            items={aboutFaqs}
+          />
+        </section>
 
-              <div className="grid sm:grid-cols-2 gap-4 pt-2">
-                {[
-                  {
-                    title: "German Certified Implantology",
-                    desc: "Trained in advanced bone regeneration and immediate-load dental implants.",
-                  },
-                  {
-                    title: "Painless Sedation Protocols",
-                    desc: "Specialized in anxiety-free treatments for dental phobic patients.",
-                  },
-                  {
-                    title: "Certified Digital Smile Design",
-                    desc: "Utilizing 3D facial aesthetic software before prepping porcelain veneers.",
-                  },
-                  {
-                    title: "Strict Spore-Tested Sterilization",
-                    desc: "Continuous hospital-grade infection control certified under international ISO standards.",
-                  },
-                ].map((cred, idx) => (
-                  <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-                    <div className="flex items-center gap-2 text-teal-700 font-bold text-sm mb-1">
-                      <CheckCircleOutlined sx={{ fontSize: 16, color: "#0d9488" }} />
-                      <span>{cred.title}</span>
-                    </div>
-                    <p className="text-xs text-slate-500 leading-relaxed">{cred.desc}</p>
-                  </div>
-                ))}
-              </div>
+        {/* 4. High-Converting Booking Banner with Modal Dialog */}
+        <AppointmentCtaBanner treatments={treatments} />
+      </div>
 
-              <div className="pt-4 flex items-center gap-4">
-                <Link
-                  href="/#book"
-                  className="px-6 py-3 rounded-xl bg-slate-950 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-colors"
-                >
-                  Schedule Consultation with Dr. Jalil
-                </Link>
-                <a
-                  href={`tel:${clinicInfo.phone}`}
-                  className="text-xs font-bold text-slate-700 hover:text-teal-700"
-                >
-                  Direct Clinic Line: {clinicInfo.phone}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Clinic Values & Standards */}
-      <section className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-100/70 border border-teal-200 px-3 py-1 rounded-full">
-              Patient Charter
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 mt-3 tracking-tight">
-              The Elite Dental Standard of Care
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-2xl border border-slate-200 bg-white shadow-xs">
-              <div className="size-12 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center mb-5">
-                <VerifiedOutlined sx={{ fontSize: 26, color: "#0d9488" }} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-950 mb-2">Zero Pressure, Transparent Advice</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                We explain all treatment options, biological trade-offs, and costs before initiating any treatment.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-2xl border border-slate-200 bg-white shadow-xs">
-              <div className="size-12 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center mb-5">
-                <MedicalServicesOutlined sx={{ fontSize: 26, color: "#0d9488" }} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-950 mb-2">Single-Visit Restorations</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                High-precision intraoral scanning eliminates traditional messy impressions for crowns and aligners.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-2xl border border-slate-200 bg-white shadow-xs">
-              <div className="size-12 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center mb-5">
-                <SupportAgentOutlined sx={{ fontSize: 26, color: "#0d9488" }} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-950 mb-2">24/7 Post-Operative Support</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Dedicated emergency lines and direct WhatsApp doctor contact after every surgical procedure.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
       <Footer />
     </div>
   );

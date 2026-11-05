@@ -2,7 +2,9 @@
 
 import * as React from "react"
 import { format, parse, isValid } from "date-fns"
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import ChevronLeftOutlinedIcon from "@mui/icons-material/ChevronLeftOutlined";
+import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
 import { type Matcher } from "react-day-picker"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -93,7 +95,7 @@ export function DatePicker({
                         className
                     )}
                 >
-                    <CalendarIcon className={cn(
+                    <CalendarTodayOutlinedIcon className={cn(
                         "shrink-0 transition-colors duration-200",
                         compact ? "size-3.5" : "size-4",
                         value ? "text-teal-400" : "text-slate-500 group-hover:text-slate-400"
@@ -122,7 +124,7 @@ export function DatePicker({
                     {/* Calendar Header */}
                     <div className="px-4 pt-3 pb-1">
                         <div className="flex items-center gap-2 text-xs text-slate-500">
-                            <CalendarIcon className="size-3" />
+                            <CalendarTodayOutlinedIcon className="size-3" />
                             <span>Select a date</span>
                         </div>
                     </div>
@@ -159,9 +161,9 @@ export function DatePicker({
                         components={{
                             Chevron: ({ orientation, ...props }) => {
                                 if (orientation === "left") {
-                                    return <ChevronLeft className="size-4" {...props} />
+                                    return <ChevronLeftOutlinedIcon className="size-4" {...props} />
                                 }
-                                return <ChevronRight className="size-4" {...props} />
+                                return <ChevronRightOutlinedIcon className="size-4" {...props} />
                             },
                             DayButton: ({ day, modifiers, className: dayClassName, ...props }) => {
                                 const isSelected = modifiers.selected

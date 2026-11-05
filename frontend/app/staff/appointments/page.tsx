@@ -6,7 +6,8 @@ import { AppointmentsSkeleton } from "@/components/LoadingSpinner";
 import AppointmentsTable from "@/app/admin/appointments/AppointmentsTable";
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeft, Calendar } from "lucide-react";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 
 import { startOfDay, endOfDay } from "date-fns";
 
@@ -93,7 +94,7 @@ export default async function StaffAppointmentsPage({ searchParams }: { searchPa
             <div className="flex items-center justify-between">
                 <div>
                     <Link href="/staff" className="text-sm text-teal-700 hover:text-teal-800 flex items-center gap-1.5 mb-2 font-semibold transition-premium">
-                        <ArrowLeft className="size-4" /> Back to Dashboard
+                        <ArrowBackOutlinedIcon className="size-4" /> Back to Dashboard
                     </Link>
                     <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">All Appointments</h1>
                     <p className="text-sm text-slate-600 font-medium">Manage schedule and view patient details.</p>
@@ -102,7 +103,7 @@ export default async function StaffAppointmentsPage({ searchParams }: { searchPa
                     href="/staff/book"
                     className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-premium active:scale-95"
                 >
-                    <Calendar className="size-4" />
+                    <CalendarTodayOutlinedIcon className="size-4" />
                     Book for Patient
                 </Link>
             </div>

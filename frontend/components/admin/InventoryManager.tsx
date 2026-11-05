@@ -22,7 +22,13 @@ import {
     AlertDialogCancel,
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Search, Plus, Pencil, Trash2, Loader2, AlertTriangle, Package } from "lucide-react";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import { useRouter } from "next/navigation";
 import EmptyState from "@/components/shared/EmptyState";
 
@@ -160,7 +166,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                 </div>
                 <div className="flex gap-2 items-center">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                        <SearchOutlinedIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                         <Input
                             placeholder="Search items..."
                             value={search}
@@ -169,7 +175,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                         />
                     </div>
                     <Button onClick={openAdd} className="btn-brand border-0 gap-1.5 shadow-lg shadow-teal-500/20">
-                        <Plus className="size-4" />
+                        <AddOutlinedIcon className="size-4" />
                         Add Item
                     </Button>
                 </div>
@@ -201,7 +207,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                                     >
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-2">
-                                                <Package className={`size-4 ${isLow ? "text-amber-400" : "text-slate-400"}`} />
+                                                <Inventory2OutlinedIcon className={`size-4 ${isLow ? "text-amber-400" : "text-slate-400"}`} />
                                                 <span className="font-medium text-white">{item.itemName}</span>
                                             </div>
                                         </td>
@@ -214,7 +220,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                                         <td className="px-4 py-3 text-center">
                                             {isLow ? (
                                                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                                                    <AlertTriangle className="size-3" />
+                                                    <WarningAmberOutlinedIcon className="size-3" />
                                                     Low Stock
                                                 </span>
                                             ) : (
@@ -230,14 +236,14 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                                                     className="p-1.5 rounded-lg hover:bg-white/[0.06] text-slate-400 hover:text-white cursor-pointer transition-premium"
                                                     title="Edit"
                                                 >
-                                                    <Pencil className="size-4" />
+                                                    <EditOutlinedIcon className="size-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => setDeleteId(item.id)}
                                                     className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 cursor-pointer transition-premium"
                                                     title="Delete"
                                                 >
-                                                    <Trash2 className="size-4" />
+                                                    <DeleteOutlineOutlinedIcon className="size-4" />
                                                 </button>
                                             </div>
                                         </td>
@@ -248,7 +254,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                                 <tr>
                                     <td colSpan={5} className="py-0">
                                         <EmptyState
-                                            icon={Package}
+                                            icon={Inventory2OutlinedIcon}
                                             title="No Items Found"
                                             description={search ? "No items match your search." : "Add your first inventory item to start tracking stock levels."}
                                         />
@@ -265,7 +271,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                 <DialogContent className="sm:max-w-md bg-slate-900 border-white/[0.06] text-white">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <Package className="size-5 text-teal-400" />
+                            <Inventory2OutlinedIcon className="size-5 text-teal-400" />
                             {editItem ? "Edit Item" : "Add New Item"}
                         </DialogTitle>
                     </DialogHeader>
@@ -309,7 +315,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                             Cancel
                         </Button>
                         <Button onClick={handleSave} disabled={saving} className="btn-brand border-0">
-                            {saving ? <><Loader2 className="size-4 mr-2 animate-spin" /> Saving...</> : editItem ? "Update Item" : "Add Item"}
+                            {saving ? <><AutorenewOutlinedIcon className="size-4 mr-2 animate-spin" /> Saving...</> : editItem ? "Update Item" : "Add Item"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -320,7 +326,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <div className="mx-auto size-12 rounded-full bg-red-500/10 flex items-center justify-center mb-2">
-                            <AlertTriangle className="size-6 text-red-400" />
+                            <WarningAmberOutlinedIcon className="size-6 text-red-400" />
                         </div>
                         <AlertDialogTitle className="text-center">Delete Inventory Item</AlertDialogTitle>
                         <AlertDialogDescription className="text-center">
@@ -334,7 +340,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                             className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white border-0"
                             disabled={deleting}
                         >
-                            {deleting ? <><Loader2 className="size-4 mr-2 animate-spin" /> Deleting...</> : "Yes, Delete"}
+                            {deleting ? <><AutorenewOutlinedIcon className="size-4 mr-2 animate-spin" /> Deleting...</> : "Yes, Delete"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

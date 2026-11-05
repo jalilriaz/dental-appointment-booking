@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Loader2 } from "lucide-react";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -98,7 +99,7 @@ export default function CreateTreatmentPlan({ patientId, availableTreatments }: 
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button className="gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-xs transition-premium active:scale-95">
-                    <Plus className="size-4" />
+                    <AddOutlinedIcon className="size-4" />
                     New Treatment Plan
                 </Button>
             </DialogTrigger>
@@ -189,7 +190,7 @@ export default function CreateTreatmentPlan({ patientId, availableTreatments }: 
                         >
                             {isLoading ? (
                                 <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <AutorenewOutlinedIcon className="mr-2 h-4 w-4 animate-spin" />
                                     Creating...
                                 </>
                             ) : (

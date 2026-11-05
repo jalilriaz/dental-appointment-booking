@@ -8,13 +8,13 @@ const upperTeeth = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 
 const lowerTeeth = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
 
 const issueOptions = [
-    { value: "Caries", color: "bg-red-500", label: "🦷 Caries" },
-    { value: "Filling", color: "bg-blue-500", label: "🔵 Filling" },
-    { value: "Crown", color: "bg-amber-500", label: "👑 Crown" },
-    { value: "Extraction", color: "bg-rose-700", label: "✕ Extraction" },
-    { value: "RCT", color: "bg-purple-500", label: "💜 RCT" },
-    { value: "Missing", color: "bg-slate-600", label: "⬜ Missing" },
-    { value: "Healthy", color: "", label: "✓ Clear" },
+    { value: "Caries", color: "bg-red-500", label: "Caries" },
+    { value: "Filling", color: "bg-blue-500", label: "Filling" },
+    { value: "Crown", color: "bg-amber-500", label: "Crown" },
+    { value: "Extraction", color: "bg-rose-700", label: "Extraction" },
+    { value: "RCT", color: "bg-indigo-600", label: "Root Canal (RCT)" },
+    { value: "Missing", color: "bg-slate-600", label: "Missing" },
+    { value: "Healthy", color: "", label: "Clear / Healthy" },
 ] as const;
 
 type ToothIssue = typeof issueOptions[number]["value"];
@@ -25,7 +25,7 @@ const issueColorMap: Record<string, string> = {
     Filling: "bg-blue-500/80 border-blue-400 text-white",
     Crown: "bg-amber-500/80 border-amber-400 text-white",
     Extraction: "bg-rose-700/80 border-rose-500 text-white line-through",
-    RCT: "bg-purple-500/80 border-purple-400 text-white",
+    RCT: "bg-indigo-600/80 border-indigo-400 text-white",
     Missing: "bg-slate-700/80 border-slate-500 text-slate-400",
 };
 

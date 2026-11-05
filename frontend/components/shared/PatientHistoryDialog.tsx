@@ -2,11 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import {
-    Loader2, History, CalendarDays, Activity, CheckCircle2,
-    Sparkles, CreditCard, Banknote, Globe, Phone, FileText,
-    Clock, AlertCircle, ChevronRight, Hash
-} from "lucide-react";
+
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
+import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
+import TagOutlinedIcon from "@mui/icons-material/TagOutlined";
 import {
     Dialog,
     DialogContent,
@@ -151,14 +162,14 @@ export default function PatientHistoryDialog({
                                     </DialogTitle>
                                     {history?.patient?.patientCode && (
                                         <span className="text-[11px] font-mono bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                                            <Hash className="size-3" /> {history.patient.patientCode}
+                                            <TagOutlinedIcon className="size-3" /> {history.patient.patientCode}
                                         </span>
                                     )}
                                 </div>
                                 <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
                                     {history?.patient?.phone && (
                                         <span className="flex items-center gap-1 text-slate-600 font-medium">
-                                            <Phone className="size-3 text-slate-400" /> {history.patient.phone}
+                                            <PhoneOutlinedIcon className="size-3 text-slate-400" /> {history.patient.phone}
                                         </span>
                                     )}
                                     {history?.patient?.email && (
@@ -187,7 +198,7 @@ export default function PatientHistoryDialog({
                                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                             }`}
                         >
-                            <Sparkles className="size-3.5" />
+                            <AutoAwesomeOutlinedIcon className="size-3.5" />
                             Treatment Plans ({history?.plans?.length || 0})
                         </button>
                         <button
@@ -198,7 +209,7 @@ export default function PatientHistoryDialog({
                                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                             }`}
                         >
-                            <CalendarDays className="size-3.5" />
+                            <CalendarMonthOutlinedIcon className="size-3.5" />
                             Visits ({history?.appointments?.length || 0})
                         </button>
                         <button
@@ -209,7 +220,7 @@ export default function PatientHistoryDialog({
                                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                             }`}
                         >
-                            <CreditCard className="size-3.5" />
+                            <CreditCardOutlinedIcon className="size-3.5" />
                             Payment Ledger ({history?.allPayments?.length || 0})
                         </button>
                     </div>
@@ -219,7 +230,7 @@ export default function PatientHistoryDialog({
                 <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar bg-slate-50/50">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-16 text-slate-500">
-                            <Loader2 className="size-8 animate-spin mb-3 text-teal-600" />
+                            <AutorenewOutlinedIcon className="size-8 animate-spin mb-3 text-teal-600" />
                             <p className="text-sm font-medium">Loading clinical records & financial ledger...</p>
                         </div>
                     ) : error ? (
@@ -233,7 +244,7 @@ export default function PatientHistoryDialog({
                                 <div className="space-y-4">
                                     {(!history.plans || history.plans.length === 0) ? (
                                         <div className="text-center py-12 text-slate-500 text-sm bg-white rounded-xl border border-slate-200 shadow-xs">
-                                            <Sparkles className="size-8 text-slate-300 mx-auto mb-2" />
+                                            <AutoAwesomeOutlinedIcon className="size-8 text-slate-300 mx-auto mb-2" />
                                             No multi-session treatment plans found for this patient.
                                         </div>
                                     ) : (
@@ -375,7 +386,7 @@ export default function PatientHistoryDialog({
                                                                 </Badge>
                                                             </div>
                                                             <p className="text-xs text-slate-500 flex items-center gap-2">
-                                                                <Clock className="size-3 text-slate-400" />
+                                                                <AccessTimeOutlinedIcon className="size-3 text-slate-400" />
                                                                 {format(new Date(apt.startTime), "EEEE, MMM d, yyyy · h:mm a")}
                                                             </p>
                                                             {apt.clinicalNotes && apt.clinicalNotes.length > 0 && (
@@ -400,7 +411,7 @@ export default function PatientHistoryDialog({
                                 <div className="space-y-3">
                                     {(!history.allPayments || history.allPayments.length === 0) ? (
                                         <div className="text-center py-12 text-slate-500 text-sm bg-white rounded-xl border border-slate-200 shadow-xs">
-                                            <CreditCard className="size-8 text-slate-300 mx-auto mb-2" />
+                                            <CreditCardOutlinedIcon className="size-8 text-slate-300 mx-auto mb-2" />
                                             No payments recorded for this patient yet.
                                         </div>
                                     ) : (
@@ -409,7 +420,7 @@ export default function PatientHistoryDialog({
                                                 <div key={payment.id} className="p-3.5 flex items-center justify-between gap-3">
                                                     <div className="flex items-center gap-3">
                                                         <div className="size-9 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
-                                                            {payment.method === "CASH" ? <Banknote className="size-4" /> : payment.method === "CARD" ? <CreditCard className="size-4" /> : <Globe className="size-4" />}
+                                                            {payment.method === "CASH" ? <PaymentsOutlinedIcon className="size-4" /> : payment.method === "CARD" ? <CreditCardOutlinedIcon className="size-4" /> : <LanguageOutlinedIcon className="size-4" />}
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2">

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { Loader2, Clock, AlertCircle } from "lucide-react";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 
 import type { TimeSlot } from "@/lib/types";
 export type { TimeSlot };
@@ -71,7 +73,7 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
     if (!date) {
         return (
             <div className="flex items-center gap-2 p-3 text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl italic">
-                <Clock className="size-4 text-slate-400" />
+                <AccessTimeOutlinedIcon className="size-4 text-slate-400" />
                 Please select a date first
             </div>
         );
@@ -80,7 +82,7 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
     if (!treatmentId) {
         return (
             <div className="flex items-center gap-2 p-3 text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl italic">
-                <Clock className="size-4 text-slate-400" />
+                <AccessTimeOutlinedIcon className="size-4 text-slate-400" />
                 Please select a treatment first
             </div>
         );
@@ -89,7 +91,7 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
     if (isLoading) {
         return (
             <div className="flex items-center justify-center p-8 bg-slate-50 border border-slate-200 rounded-xl">
-                <Loader2 className="size-6 text-teal-600 animate-spin" />
+                <AutorenewOutlinedIcon className="size-6 text-teal-600 animate-spin" />
             </div>
         );
     }
@@ -97,7 +99,7 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
     if (error) {
         return (
             <div className="flex items-center gap-2 p-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl font-medium">
-                <AlertCircle className="size-4 shrink-0 text-amber-600" />
+                <ErrorOutlineOutlinedIcon className="size-4 shrink-0 text-amber-600" />
                 {error}
             </div>
         );

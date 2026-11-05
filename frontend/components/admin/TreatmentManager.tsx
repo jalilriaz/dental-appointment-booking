@@ -15,20 +15,18 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { formatPKR } from "@/lib/utils";
-import {
-    Plus,
-    Pencil,
-    Trash2,
-    Loader2,
-    Search,
-    Clock,
-    DollarSign,
-    ToggleLeft,
-    ToggleRight,
-    AlertTriangle,
-    Stethoscope,
-    Tag,
-} from "lucide-react";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
+import ToggleOffOutlinedIcon from "@mui/icons-material/ToggleOffOutlined";
+import ToggleOnOutlinedIcon from "@mui/icons-material/ToggleOnOutlined";
+import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
+import MedicalServicesOutlinedIcon from "@mui/icons-material/MedicalServicesOutlined";
+import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 
 import type { Treatment } from "@/lib/types";
 
@@ -224,7 +222,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
                     </p>
                 </div>
                 <Button onClick={openAddDialog} className="btn-brand border-0 shadow-lg shadow-teal-500/20 cursor-pointer">
-                    <Plus className="size-4 mr-2" />
+                    <AddOutlinedIcon className="size-4 mr-2" />
                     Add Treatment
                 </Button>
             </div>
@@ -232,7 +230,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
             {/* Search + Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                    <SearchOutlinedIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                     <Input
                         placeholder="Search treatments..."
                         value={search}
@@ -268,7 +266,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
                             <div className="flex items-start justify-between">
                                 <div className="flex items-start gap-3 flex-1 min-w-0">
                                     <div className={`p-2 rounded-lg shrink-0 ${t.isActive ? "bg-teal-500/15 text-teal-400" : "bg-white/[0.04] text-slate-500"}`}>
-                                        <Stethoscope className="size-5" />
+                                        <MedicalServicesOutlinedIcon className="size-5" />
                                     </div>
                                     <div className="min-w-0">
                                         <h3 className="font-semibold text-white truncate">{t.name}</h3>
@@ -288,13 +286,13 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
                             <div className="grid grid-cols-3 gap-3 pt-3 border-t border-white/[0.06]">
                                 <div>
                                     <div className="flex items-center gap-1 text-xs text-slate-400 mb-0.5">
-                                        <Clock className="size-3" /> Duration
+                                        <AccessTimeOutlinedIcon className="size-3" /> Duration
                                     </div>
                                     <p className="text-sm font-semibold text-white">{t.durationMin} min</p>
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-1 text-xs text-slate-400 mb-0.5">
-                                        <DollarSign className="size-3" /> Price
+                                        <AttachMoneyOutlinedIcon className="size-3" /> Price
                                     </div>
                                     {t.discountedPrice ? (
                                         <div>
@@ -318,7 +316,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
                                 onClick={() => openEditDialog(t)}
                                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-premium cursor-pointer"
                             >
-                                <Pencil className="size-3.5" /> Edit
+                                <EditOutlinedIcon className="size-3.5" /> Edit
                             </button>
                             <button
                                 onClick={() => toggleActive(t)}
@@ -326,18 +324,18 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
                                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 transition-premium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {togglingId === t.id ? (
-                                    <><Loader2 className="size-3.5 animate-spin" /> Updating...</>
+                                    <><AutorenewOutlinedIcon className="size-3.5 animate-spin" /> Updating...</>
                                 ) : t.isActive ? (
-                                    <><ToggleRight className="size-3.5" /> Deactivate</>
+                                    <><ToggleOnOutlinedIcon className="size-3.5" /> Deactivate</>
                                 ) : (
-                                    <><ToggleLeft className="size-3.5" /> Activate</>
+                                    <><ToggleOffOutlinedIcon className="size-3.5" /> Activate</>
                                 )}
                             </button>
                             <button
                                 onClick={() => openDeleteDialog(t)}
                                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-premium cursor-pointer"
                             >
-                                <Trash2 className="size-3.5" /> Delete
+                                <DeleteOutlineOutlinedIcon className="size-3.5" /> Delete
                             </button>
                         </div>
                     </div>
@@ -346,7 +344,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
 
             {filtered.length === 0 && (
                 <div className="text-center py-12 text-slate-400">
-                    <Stethoscope className="size-10 mx-auto mb-3 text-slate-600" />
+                    <MedicalServicesOutlinedIcon className="size-10 mx-auto mb-3 text-slate-600" />
                     <p className="font-medium text-white">No treatments found</p>
                     <p className="text-sm mt-1">
                         {search ? "Try a different search term." : "Add your first treatment to get started."}
@@ -367,7 +365,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
                     <div className="space-y-4 py-2">
                         {error && (
                             <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-300 flex items-center gap-2">
-                                <AlertTriangle className="size-4 shrink-0" />
+                                <WarningAmberOutlinedIcon className="size-4 shrink-0" />
                                 {error}
                             </div>
                         )}
@@ -410,7 +408,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
 
                         <div className="space-y-2">
                             <Label htmlFor="discountedPrice" className="flex items-center gap-1.5">
-                                <Tag className="size-3.5 text-emerald-400" />
+                                <LocalOfferOutlinedIcon className="size-3.5 text-emerald-400" />
                                 Discounted Price (PKR)
                                 <span className="text-xs text-slate-500 ml-1">optional</span>
                             </Label>
@@ -483,7 +481,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
                         <Button variant="outline" onClick={() => setDialogOpen(false)} className="border-slate-700 text-slate-200 hover:bg-white/[0.04]">Cancel</Button>
                         <Button onClick={handleSave} disabled={saving} className="btn-brand border-0">
                             {saving ? (
-                                <><Loader2 className="size-4 mr-2 animate-spin" /> Saving...</>
+                                <><AutorenewOutlinedIcon className="size-4 mr-2 animate-spin" /> Saving...</>
                             ) : editingTreatment ? (
                                 "Update Treatment"
                             ) : (
@@ -499,7 +497,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
                 <DialogContent className="sm:max-w-[420px] bg-slate-900 border-white/[0.06] text-white">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 text-red-600">
-                            <AlertTriangle className="size-5" />
+                            <WarningAmberOutlinedIcon className="size-5" />
                             Delete Treatment
                         </DialogTitle>
                         <DialogDescription>
@@ -510,7 +508,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
 
                     {error && (
                         <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-300 flex items-center gap-2">
-                            <AlertTriangle className="size-4 shrink-0" />
+                            <WarningAmberOutlinedIcon className="size-4 shrink-0" />
                             {error}
                         </div>
                     )}
@@ -530,7 +528,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
                             disabled={deleting}
                         >
                             {deleting ? (
-                                <><Loader2 className="size-4 mr-2 animate-spin" /> Deleting...</>
+                                <><AutorenewOutlinedIcon className="size-4 mr-2 animate-spin" /> Deleting...</>
                             ) : (
                                 "Delete Treatment"
                             )}

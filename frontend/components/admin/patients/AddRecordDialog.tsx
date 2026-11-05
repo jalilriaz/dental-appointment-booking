@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus } from "lucide-react";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import { useRouter } from "next/navigation";
 
 interface AddRecordDialogProps {
@@ -53,7 +54,7 @@ export default function AddRecordDialog({ patientId }: AddRecordDialogProps) {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button className="bg-emerald-600 hover:bg-emerald-700">
-                    <Plus className="mr-2 h-4 w-4" /> Add Record
+                    <AddOutlinedIcon className="mr-2 h-4 w-4" /> Add Record
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
@@ -116,7 +117,7 @@ export default function AddRecordDialog({ patientId }: AddRecordDialogProps) {
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading} className="bg-emerald-600">
-                            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {loading && <AutorenewOutlinedIcon className="mr-2 h-4 w-4 animate-spin" />}
                             Save Record
                         </Button>
                     </DialogFooter>

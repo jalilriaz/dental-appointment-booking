@@ -1,39 +1,130 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   LocationOnOutlined,
   AccessTimeOutlined,
   PhoneOutlined,
+  PhoneInTalkOutlined,
   WhatsApp,
   NearMeOutlined,
   CheckCircleOutlined,
-  ExpandMoreOutlined,
+  MedicalServicesOutlined,
+  CreditCardOutlined,
+  AssignmentOutlined,
+  DirectionsCarOutlined,
+  ElevatorOutlined,
+  ContentCopyOutlined,
+  CheckOutlined,
+  SendOutlined,
+  ShieldOutlined,
+  FlashOnOutlined,
+  SupportAgentOutlined,
 } from "@mui/icons-material";
 import { clinicInfo } from "@/app/constants/mockData";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import FaqSection from "@/components/FaqSection";
+import ContactHero from "@/components/ContactHero";
+import AppointmentCtaBanner from "@/components/AppointmentCtaBanner";
+import type { Treatment } from "@/lib/types";
 
-export default function ContactForm({ workingHours }: { workingHours: string }) {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+interface ContactFormProps {
+  workingHours: string;
+  treatments: Treatment[];
+}
+
+const QUICK_SYMPTOMS = [
+  { id: "toothache", label: "Acute Tooth Pain / Emergency", category: "Emergency" },
+  { id: "implant", label: "Dental Implants (Missing Tooth)", category: "Surgical" },
+  { id: "aligners", label: "Clear Aligners & Invisible Braces", category: "Orthodontics" },
+  { id: "veneers", label: "Porcelain Veneers & Smile Makeover", category: "Cosmetic" },
+  { id: "whitening", label: "Laser Teeth Whitening", category: "Cosmetic" },
+  { id: "rct", label: "Root Canal Treatment", category: "Restorative" },
+  { id: "scaling", label: "Ultrasonic Scaling & Polishing", category: "Preventive" },
+  { id: "wisdom", label: "Wisdom Tooth Extraction", category: "Oral Surgery" },
+];
+
+export default function ContactForm({ workingHours, treatments }: ContactFormProps) {
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [selectedSymptom, setSelectedSymptom] = useState<string>("Acute Tooth Pain / Emergency");
+  const [urgency, setUrgency] = useState<"urgent" | "soon" | "flexible">("urgent");
+  const [contactMethod, setContactMethod] = useState<"whatsapp" | "phone">("whatsapp");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [isOpenNow, setIsOpenNow] = useState(true);
 
-  const faqs = [
+  // Check live clinic open status in Pakistan Time (UTC+5)
+  useEffect(() => {
+    try {
+      const now = new Date();
+      const pktFormatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Karachi",
+        hour: "numeric",
+        hour12: false,
+        weekday: "short",
+      });
+      const parts = pktFormatter.formatToParts(now);
+      const hourPart = parts.find((p) => p.type === "hour");
+      const weekdayPart = parts.find((p) => p.type === "weekday");
+
+      const currentHour = hourPart ? parseInt(hourPart.value, 10) : 14;
+      const currentDay = weekdayPart ? weekdayPart.value : "Mon";
+
+      // Mon-Sat: 12:00 to 20:00 (8:00 PM)
+      const isWorkingDay = currentDay !== "Sun";
+      const isWorkingHour = currentHour >= 12 && currentHour < 20;
+
+      setIsOpenNow(isWorkingDay && isWorkingHour);
+    } catch {
+      setIsOpenNow(true);
+    }
+  }, []);
+
+  const handleCopyAddress = () => {
+    const fullAddress = `${clinicInfo.address}, 2nd Floor (Above D-Watson Chemist), F-10 Markaz, Islamabad, Pakistan`;
+    navigator.clipboard.writeText(fullAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitted(true);
+  };
+
+  const contactFaqs = [
     {
       question: "How do I reach Elite Dental Centre in F-10 Markaz, Islamabad?",
-      answer: "We are located at D-Watson Chemist Building, 2nd Floor, F-10 Markaz, Islamabad. Ample parking is available directly in front of the plaza with elevator access to the second floor.",
+      answer:
+        "We are located at D-Watson Chemist Building, 2nd Floor, Main Roundabout, F-10 Markaz, Islamabad. Elevator access is available directly from the ground floor lobby, and dedicated patient parking is located right in front of the plaza.",
+      icon: LocationOnOutlined,
     },
     {
-      question: "Do you provide same-day emergency dental appointments?",
-      answer: "Yes, we reserve dedicated daily emergency slots for severe acute toothache, broken crowns, dental abscesses, or facial trauma. Please call or WhatsApp our clinic line immediately.",
+      question: "Do you provide same-day emergency dental appointments in Islamabad?",
+      answer:
+        "Yes, Dr. Sheriyaar reserves daily priority slots for acute toothache, broken crowns, dental abscesses, or facial trauma. Please call our emergency hotline (+92 314 5475528) or WhatsApp us immediately for urgent triage.",
+      icon: MedicalServicesOutlined,
     },
     {
-      question: "What should I bring for my first consultation?",
-      answer: "Bring any recent OPG x-rays or dental history records if available, plus a list of current medical conditions or allergies so our surgeons can personalize your treatment safely.",
+      question: "What should I bring for my first clinical consultation?",
+      answer:
+        "Please bring any prior dental records, recent OPG x-rays if available, and a list of current medications or allergies so our clinical team can tailor a safe and comprehensive treatment plan.",
+      icon: AssignmentOutlined,
     },
     {
-      question: "Are installment payment plans available for expensive procedures?",
-      answer: "Yes! We offer flexible, milestone-based installment plans for orthodontic aligners, metal/ceramic braces, and full-mouth dental implant rehabilitations.",
+      question: "Are installment payment plans available for orthodontic or surgical procedures?",
+      answer:
+        "Yes! We offer flexible, milestone-based 0% interest installment plans for clear aligners, ceramic/metal braces, and multi-stage dental implant rehabilitations.",
+      icon: CreditCardOutlined,
+    },
+    {
+      question: "Is elevator and wheelchair accessibility available for elderly or injured patients?",
+      answer:
+        "Yes, our building features step-free street access with a modern elevator directly serving our 2nd-floor surgical suites. Wheelchair assistance can be requested at reception upon arrival.",
+      icon: ElevatorOutlined,
     },
   ];
 
@@ -41,199 +132,615 @@ export default function ContactForm({ workingHours }: { workingHours: string }) 
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <Navbar />
 
-      {/* Header */}
-      <section className="bg-slate-950 text-white py-16 lg:py-20 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="text-xs font-bold uppercase tracking-wider text-teal-400 bg-teal-950 border border-teal-800 px-3 py-1 rounded-full">
-            Direct Clinic Access
-          </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white mt-4 tracking-tight">
-            Contact Elite Dental Centre
-          </h1>
-          <p className="mt-4 text-slate-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            Have a question about a dental procedure, need a second opinion, or experiencing acute dental pain? Our reception team is available during clinic hours.
-          </p>
+      {/* 1. Vector Hero: "Simple Steps to a Healthier Smile" */}
+      <ContactHero />
+
+      {/* 2. Omnichannel Immediate Action Cards */}
+      <section className="relative -mt-8 z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1: Emergency Dental Hotline */}
+          <div className="rounded-3xl border border-rose-200/80 bg-white p-7 shadow-lg shadow-rose-950/5 relative overflow-hidden group hover:border-rose-400 transition-all duration-300">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 to-amber-500" />
+            <div className="flex items-center justify-between mb-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-rose-50 text-rose-700 border border-rose-200">
+                <FlashOnOutlined sx={{ fontSize: 14, color: "#e11d48" }} />
+                Priority Emergency
+              </span>
+              <div className="p-2.5 rounded-2xl bg-rose-50 text-rose-600 group-hover:scale-110 transition-transform">
+                <PhoneInTalkOutlined sx={{ fontSize: 24, color: "#e11d48" }} />
+              </div>
+            </div>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">Acute Toothache & Trauma</h3>
+            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+              Same-day priority emergency slot with Dr. Sheriyaar. Relief for severe nerve pain, cracked teeth, or swelling.
+            </p>
+            <div className="mt-5 pt-4 border-t border-slate-100">
+              <a
+                href={`tel:${clinicInfo.phone}`}
+                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-rose-600/20 active:scale-95 transition-all"
+              >
+                <PhoneOutlined sx={{ fontSize: 16 }} />
+                <span>Call Emergency Line: {clinicInfo.phone}</span>
+              </a>
+              <p className="text-[11px] text-center text-slate-600 font-semibold mt-2">
+                Fastest clinical response • Immediate advice
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: WhatsApp Visual Photo Triage */}
+          <div className="rounded-3xl border border-emerald-200/80 bg-white p-7 shadow-lg shadow-emerald-950/5 relative overflow-hidden group hover:border-emerald-400 transition-all duration-300">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500" />
+            <div className="flex items-center justify-between mb-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <WhatsApp sx={{ fontSize: 14, color: "#059669" }} />
+                Instant Consultation
+              </span>
+              <div className="p-2.5 rounded-2xl bg-emerald-50 text-emerald-600 group-hover:scale-110 transition-transform">
+                <WhatsApp sx={{ fontSize: 24, color: "#059669" }} />
+              </div>
+            </div>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">WhatsApp Photo Triage</h3>
+            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+              Send a photo or x-ray of your tooth to our clinical receptionist for instant preliminary guidance and cost estimates.
+            </p>
+            <div className="mt-5 pt-4 border-t border-slate-100">
+              <a
+                href={`https://wa.me/${clinicInfo.whatsapp}?text=Hello%20Dr.%20Sheriyaar%20team,%20I%20would%20like%20to%20inquire%20about%20a%20dental%20consultation.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
+              >
+                <WhatsApp sx={{ fontSize: 17 }} />
+                <span>Chat on WhatsApp</span>
+              </a>
+              <p className="text-[11px] text-center text-slate-600 font-semibold mt-2">
+                Typical reply time: 5 - 15 minutes
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Physical Clinic & Live Hours */}
+          <div className="rounded-3xl border border-teal-200/80 bg-white p-7 shadow-lg shadow-teal-950/5 relative overflow-hidden group hover:border-teal-400 transition-all duration-300">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-500 to-cyan-500" />
+            <div className="flex items-center justify-between mb-4">
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${
+                  isOpenNow
+                    ? "bg-teal-50 text-teal-700 border-teal-200"
+                    : "bg-amber-50 text-amber-700 border-amber-200"
+                }`}
+              >
+                <span className={`size-2 rounded-full ${isOpenNow ? "bg-teal-500 animate-pulse" : "bg-amber-500"}`} />
+                {isOpenNow ? "Clinic Open Now" : "Currently Closed"}
+              </span>
+              <div className="p-2.5 rounded-2xl bg-teal-50 text-teal-600 group-hover:scale-110 transition-transform">
+                <LocationOnOutlined sx={{ fontSize: 24, color: "#0d9488" }} />
+              </div>
+            </div>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">F-10 Markaz Clinic</h3>
+            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+              Above D-Watson Chemist, 2nd Floor (Elevator Access Available). Operating hours: {workingHours || "12:00 PM - 8:00 PM (Mon-Sat)"}.
+            </p>
+            <div className="mt-5 pt-4 border-t border-slate-100">
+              <a
+                href="https://www.google.com/maps/search/D-Watson+Chemist+F-10+Markaz+Islamabad"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-900 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-slate-900/20 active:scale-95 transition-all"
+              >
+                <NearMeOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} />
+                <span>Open in Google Maps</span>
+              </a>
+              <p className="text-[11px] text-center text-slate-600 font-semibold mt-2">
+                Elevator access • Front plaza parking
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Main Content Grid: Info & Contact Form */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid lg:grid-cols-12 gap-12">
-          {/* Left: Contact Info & Clinic Location Card */}
+      {/* 3. Main Interactive Grid: Landmark & Wayfinding Hub + Smart Triage Form */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        <div className="grid lg:grid-cols-12 gap-10 items-start">
+          {/* Left Column: Landmark & Accessibility Wayfinding */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xs space-y-6">
-              <h2 className="text-xl font-extrabold text-slate-950">Clinic Details</h2>
+            <div className="rounded-3xl border border-slate-200 bg-white p-7 sm:p-8 shadow-sm">
+              <div className="flex items-center gap-2 text-teal-600 text-xs font-bold uppercase tracking-wider mb-2">
+                <LocationOnOutlined sx={{ fontSize: 16 }} />
+                <span>Arrival & Wayfinding</span>
+              </div>
+              <h2 className="text-2xl font-black text-slate-950 tracking-tight">
+                Visiting Our Clinic
+              </h2>
+              <p className="text-xs text-slate-600 mt-1">
+                Centrally located in Islamabad&apos;s prime F-10 Markaz with step-free elevator access and hassle-free parking.
+              </p>
 
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 rounded-xl bg-teal-50 text-teal-700 shrink-0">
-                    <LocationOnOutlined sx={{ fontSize: 22, color: "#0d9488" }} />
+              {/* Wayfinding Feature List */}
+              <div className="mt-6 space-y-4">
+                {/* Landmark 1 */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
+                  <div className="p-2 rounded-xl bg-teal-50 text-teal-700 shrink-0 mt-0.5">
+                    <LocationOnOutlined sx={{ fontSize: 20, color: "#0d9488" }} />
                   </div>
                   <div>
-                    <h4 className="text-xs uppercase font-bold text-slate-400 tracking-wider">Address</h4>
-                    <p className="text-sm font-semibold text-slate-800 mt-0.5">{clinicInfo.address}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">2nd Floor, Elevator Access, Above D-Watson Chemist</p>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      Prominent Landmark
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Located in the iconic <strong>D-Watson Chemist Building</strong> at the main F-10 Markaz roundabout.
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 rounded-xl bg-teal-50 text-teal-700 shrink-0">
-                    <AccessTimeOutlined sx={{ fontSize: 22, color: "#0d9488" }} />
+                {/* Landmark 2 */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
+                  <div className="p-2 rounded-xl bg-teal-50 text-teal-700 shrink-0 mt-0.5">
+                    <ElevatorOutlined sx={{ fontSize: 20, color: "#0d9488" }} />
                   </div>
                   <div>
-                    <h4 className="text-xs uppercase font-bold text-slate-400 tracking-wider">Clinical Hours</h4>
-                    <p className="text-sm font-semibold text-slate-800 mt-0.5">{workingHours || "12:00 PM - 8:00 PM (Mon-Sat)"}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Sunday: On-call emergency coverage only</p>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      2nd Floor with Full Elevator Access
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      High-capacity elevator straight from ground lobby to 2nd-floor reception. Zero steps required; ideal for elderly, mobility-impaired, or post-surgical patients.
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 rounded-xl bg-teal-50 text-teal-700 shrink-0">
-                    <PhoneOutlined sx={{ fontSize: 22, color: "#0d9488" }} />
+                {/* Landmark 3 */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
+                  <div className="p-2 rounded-xl bg-teal-50 text-teal-700 shrink-0 mt-0.5">
+                    <DirectionsCarOutlined sx={{ fontSize: 20, color: "#0d9488" }} />
                   </div>
                   <div>
-                    <h4 className="text-xs uppercase font-bold text-slate-400 tracking-wider">Telephone</h4>
-                    <a href={`tel:${clinicInfo.phone}`} className="text-sm font-bold text-teal-700 hover:text-teal-800 mt-0.5 block">
-                      {clinicInfo.phone}
-                    </a>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      Patient Parking Bay
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Dedicated plaza frontage parking right in front of the building entrance, plus surrounding multi-bay parking with on-site security guards.
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 rounded-xl bg-teal-50 text-teal-700 shrink-0">
-                    <WhatsApp sx={{ fontSize: 22, color: "#059669" }} />
+                {/* Landmark 4 */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
+                  <div className="p-2 rounded-xl bg-teal-50 text-teal-700 shrink-0 mt-0.5">
+                    <NearMeOutlined sx={{ fontSize: 20, color: "#0d9488" }} />
                   </div>
                   <div>
-                    <h4 className="text-xs uppercase font-bold text-slate-400 tracking-wider">WhatsApp Consultation</h4>
-                    <a
-                      href={`https://wa.me/${clinicInfo.whatsapp}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-bold text-emerald-700 hover:text-emerald-800 mt-0.5 block"
-                    >
-                      Chat with Reception (+92 314 5475528)
-                    </a>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      Uber / Careem / Rideshare Drop-Off
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Set destination to &ldquo;D-Watson Chemist F-10 Markaz&rdquo;. The drop-off curb is just 10 meters from the building&apos;s main entrance.
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center gap-3">
-                <a
-                  href="https://www.google.com/maps/search/D-Watson+Chemist+F-10+Markaz+Islamabad"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider text-center flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  <NearMeOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} />
-                  <span>Open in Google Maps</span>
-                </a>
+              {/* Address Strip & Action Buttons */}
+              <div className="mt-6 pt-6 border-t border-slate-100">
+                <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-100/80 border border-slate-200">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                      Official Clinic Address
+                    </p>
+                    <p className="text-xs font-semibold text-slate-800 truncate mt-0.5">
+                      {clinicInfo.address}, 2nd Floor, Islamabad
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyAddress}
+                    className="shrink-0 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-teal-700 hover:border-teal-300 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {copied ? (
+                      <>
+                        <CheckOutlined sx={{ fontSize: 14, color: "#059669" }} />
+                        <span className="text-emerald-700">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <ContentCopyOutlined sx={{ fontSize: 14 }} />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                  <a
+                    href="https://www.google.com/maps/dir/?api=1&destination=D-Watson+Chemist+F-10+Markaz+Islamabad"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs text-center flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                  >
+                    <NearMeOutlined sx={{ fontSize: 16 }} />
+                    <span>Google Maps</span>
+                  </a>
+                  <a
+                    href="https://maps.apple.com/?daddr=33.6938,73.0113"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs text-center flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                  >
+                    <LocationOnOutlined sx={{ fontSize: 16 }} />
+                    <span>Apple Maps</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right: Message Dispatcher & FAQs */}
-          <div className="lg:col-span-7 space-y-8">
-            {/* Interactive Message Form */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
-              <h2 className="text-xl font-extrabold text-slate-950 mb-2">Send an Inquiry or Feedback</h2>
-              <p className="text-xs text-slate-500 mb-6">Our clinical receptionist responds within 2 business hours.</p>
+          {/* Right Column: Smart Clinical Inquiry & Consultation Dispatcher */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="rounded-3xl border border-slate-200 bg-white p-7 sm:p-10 shadow-sm relative">
+              <div className="flex items-center gap-2 text-teal-600 text-xs font-bold uppercase tracking-wider mb-2">
+                <SupportAgentOutlined sx={{ fontSize: 16 }} />
+                <span>Clinical Reception Dispatcher</span>
+              </div>
+              <h2 className="text-2xl font-black text-slate-950 tracking-tight">
+                Send an Inquiry to Dr. Sheriyaar
+              </h2>
+              <p className="text-xs text-slate-600 mt-1">
+                Tell us about your dental concern or preferred appointment date. Our senior clinical coordinator responds promptly.
+              </p>
 
               {formSubmitted ? (
-                <div className="p-6 rounded-xl bg-teal-50 border border-teal-200 text-center">
-                  <CheckCircleOutlined sx={{ fontSize: 40, color: "#0d9488" }} className="mx-auto mb-2" />
-                  <h4 className="text-base font-bold text-slate-900">Message Received</h4>
-                  <p className="text-xs text-slate-600 mt-1">Our receptionist will contact you via WhatsApp or phone shortly.</p>
+                <div className="mt-8 p-8 rounded-2xl bg-teal-50/70 border border-teal-200 text-center animate-fade-in">
+                  <div className="size-16 rounded-full bg-teal-600 text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-teal-600/30">
+                    <CheckCircleOutlined sx={{ fontSize: 36 }} />
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                    Inquiry Received Successfully!
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-md mx-auto leading-relaxed">
+                    Thank you, <strong>{fullName || "valued patient"}</strong>. Dr. Sheriyaar&apos;s receptionist has logged your concern for <strong>{selectedSymptom}</strong>. We will reach out to you via {contactMethod === "whatsapp" ? "WhatsApp" : "telephone"} at <strong>{phone}</strong> within 2 business hours.
+                  </p>
+
+                  <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <a
+                      href={`https://wa.me/${clinicInfo.whatsapp}?text=Hello%20Dr.%20Sheriyaar,%20I%20just%20submitted%20an%20inquiry%20regarding%20${encodeURIComponent(
+                        selectedSymptom
+                      )}.%20My%20name%20is%20${encodeURIComponent(fullName || "a patient")}.`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <WhatsApp sx={{ fontSize: 16 }} />
+                      <span>Follow-up on WhatsApp</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormSubmitted(false);
+                        setFullName("");
+                        setPhone("");
+                        setNotes("");
+                      }}
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                    >
+                      Send Another Inquiry
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setFormSubmitted(true);
-                  }}
-                  className="space-y-4"
-                >
+                <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+                  {/* Step 1: Quick Symptom Chips */}
+                  <div>
+                    <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2.5">
+                      1. Select Your Primary Concern or Treatment
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {QUICK_SYMPTOMS.map((item) => {
+                        const isSelected = selectedSymptom === item.label;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setSelectedSymptom(item.label)}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                              isSelected
+                                ? "bg-teal-600 text-white border-teal-600 shadow-sm shadow-teal-600/30 scale-102"
+                                : "bg-slate-50 text-slate-700 border-slate-200 hover:border-teal-300 hover:bg-teal-50/40"
+                            }`}
+                          >
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Step 2: Urgency Level */}
+                  <div>
+                    <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
+                      2. How Soon Do You Need Care?
+                    </label>
+                    <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setUrgency("urgent")}
+                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                          urgency === "urgent"
+                            ? "border-rose-500 bg-rose-50/60 text-rose-900 font-bold shadow-xs"
+                            : "border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-300 font-medium"
+                        }`}
+                      >
+                        <span className="text-xs block">Immediate / Today</span>
+                        <span className="text-[10px] text-slate-500 block mt-0.5">Emergency slot</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setUrgency("soon")}
+                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                          urgency === "soon"
+                            ? "border-teal-600 bg-teal-50/60 text-teal-900 font-bold shadow-xs"
+                            : "border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-300 font-medium"
+                        }`}
+                      >
+                        <span className="text-xs block">Within 48 Hours</span>
+                        <span className="text-[10px] text-slate-500 block mt-0.5">Next available</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setUrgency("flexible")}
+                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                          urgency === "flexible"
+                            ? "border-teal-600 bg-teal-50/60 text-teal-900 font-bold shadow-xs"
+                            : "border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-300 font-medium"
+                        }`}
+                      >
+                        <span className="text-xs block">Flexible</span>
+                        <span className="text-[10px] text-slate-500 block mt-0.5">Planning ahead</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Step 3: Contact Inputs */}
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-bold text-slate-700 uppercase">Your Name</label>
+                      <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                        Your Full Name <span className="text-rose-500">*</span>
+                      </label>
                       <input
                         required
                         type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
                         placeholder="e.g. Tariq Khan"
-                        className="w-full mt-1.5 px-3.5 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-teal-600"
+                        className="w-full mt-1.5 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-teal-600 bg-slate-50/50"
                       />
                     </div>
+
                     <div>
-                      <label className="text-xs font-bold text-slate-700 uppercase">Phone or WhatsApp</label>
+                      <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                        Phone or WhatsApp Number <span className="text-rose-500">*</span>
+                      </label>
                       <input
                         required
                         type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                         placeholder="0300 1234567"
-                        className="w-full mt-1.5 px-3.5 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-teal-600"
+                        className="w-full mt-1.5 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-teal-600 bg-slate-50/50"
                       />
                     </div>
                   </div>
 
+                  {/* Preferred Reply Method */}
                   <div>
-                    <label className="text-xs font-bold text-slate-700 uppercase">Treatment Interested In</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Teeth Whitening, Dental Implants, RCT"
-                      className="w-full mt-1.5 px-3.5 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-teal-600"
-                    />
+                    <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
+                      Preferred Reply Channel
+                    </label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+                        <input
+                          type="radio"
+                          name="channel"
+                          checked={contactMethod === "whatsapp"}
+                          onChange={() => setContactMethod("whatsapp")}
+                          className="accent-teal-600"
+                        />
+                        <span>WhatsApp Message (Recommended)</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+                        <input
+                          type="radio"
+                          name="channel"
+                          checked={contactMethod === "phone"}
+                          onChange={() => setContactMethod("phone")}
+                          className="accent-teal-600"
+                        />
+                        <span>Direct Telephone Call</span>
+                      </label>
+                    </div>
                   </div>
 
+                  {/* Notes / Symptoms Details */}
                   <div>
-                    <label className="text-xs font-bold text-slate-700 uppercase">Questions or Symptoms</label>
+                    <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                      Specific Symptoms or Questions (Optional)
+                    </label>
                     <textarea
                       rows={3}
-                      placeholder="Describe what you're looking for..."
-                      className="w-full mt-1.5 px-3.5 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-teal-600"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="e.g. Sharp pain when drinking cold water on lower right molar..."
+                      className="w-full mt-1.5 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-teal-600 bg-slate-50/50 resize-none"
                     />
                   </div>
 
+                  {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wider transition-all duration-200 shadow-md shadow-teal-600/25 active:scale-95 cursor-pointer"
+                    className="w-full py-3.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-black text-xs uppercase tracking-wider transition-all duration-200 shadow-lg shadow-teal-600/25 active:scale-95 cursor-pointer flex items-center justify-center gap-2"
                   >
-                    Submit Inquiry
+                    <SendOutlined sx={{ fontSize: 16 }} />
+                    <span>Submit Inquiry for Immediate Review</span>
                   </button>
+
+                  {/* Trust Micro-bar */}
+                  <div className="pt-2 flex flex-wrap items-center justify-center gap-6 text-[11px] text-slate-500 font-medium">
+                    <span className="flex items-center gap-1.5">
+                      <ShieldOutlined sx={{ fontSize: 14, color: "#0d9488" }} />
+                      Strict Medical Confidentiality
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircleOutlined sx={{ fontSize: 14, color: "#0d9488" }} />
+                      Direct Lead Surgeon Oversight
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <AccessTimeOutlined sx={{ fontSize: 14, color: "#0d9488" }} />
+                      Response Within 2 Hours
+                    </span>
+                  </div>
                 </form>
               )}
-            </div>
-
-            {/* Frequently Asked Questions */}
-            <div className="space-y-3">
-              <h3 className="text-base font-bold text-slate-900">Frequently Asked Questions</h3>
-              {faqs.map((faq, idx) => {
-                const isOpen = openFaq === idx;
-                return (
-                  <div
-                    key={idx}
-                    className="rounded-xl border border-slate-200 bg-white overflow-hidden transition-all duration-200"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setOpenFaq(isOpen ? null : idx)}
-                      className="w-full p-4 text-left flex items-center justify-between text-sm font-bold text-slate-800 hover:text-teal-700 cursor-pointer"
-                    >
-                      <span>{faq.question}</span>
-                      <ExpandMoreOutlined
-                        sx={{ fontSize: 20 }}
-                        className={`text-slate-400 transition-transform ${isOpen ? "rotate-180 text-teal-600" : ""}`}
-                      />
-                    </button>
-                    {isOpen && (
-                      <div className="px-4 pb-4 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
-                        {faq.answer}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>
       </section>
+
+      {/* 4. DEDICATED FULL-WIDTH INTERACTIVE GOOGLE MAP NAVIGATOR */}
+      <section className="w-full bg-white border-y border-slate-200 py-12 sm:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold tracking-wider uppercase mb-3">
+                <LocationOnOutlined sx={{ fontSize: 16, color: "#0d9488" }} />
+                <span>Interactive Geographic Location</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
+                Find Elite Dental Centre on Google Maps
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+                Above D-Watson Chemist, 2nd Floor, Main Roundabout, F-10 Markaz, Islamabad. Use the interactive map below to plan your driving route or zoom into our parking entrance.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=D-Watson+Chemist+F-10+Markaz+Islamabad"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-sm transition-all"
+              >
+                <NearMeOutlined sx={{ fontSize: 16 }} />
+                <span>Get Driving Directions</span>
+              </a>
+              <button
+                type="button"
+                onClick={handleCopyAddress}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                {copied ? <CheckOutlined sx={{ fontSize: 15, color: "#059669" }} /> : <ContentCopyOutlined sx={{ fontSize: 15 }} />}
+                <span>{copied ? "Copied" : "Copy Address"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Full-Width Map Window with Custom Floating Clinical Card */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative w-full rounded-3xl overflow-hidden border-2 border-slate-200/90 shadow-xl bg-slate-100">
+            {/* Top Toolbar */}
+            <div className="px-6 py-3.5 bg-slate-950 text-white flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="size-2.5 rounded-full bg-teal-400 animate-ping" />
+                <span className="size-2.5 rounded-full bg-teal-400 -ml-5" />
+                <span className="text-xs font-black uppercase tracking-wider text-white">
+                  Live Clinic Wayfinding Hub • F-10 Markaz Islamabad
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-400 flex items-center gap-4">
+                <span>GPS Coordinates: 33.6938° N, 73.0113° E</span>
+                <span className="hidden sm:inline text-teal-300 font-semibold">• 2nd Floor, Elevator Access</span>
+              </div>
+            </div>
+
+            {/* Embedded Full-Width Google Map */}
+            <div className="relative w-full h-[460px] sm:h-[540px]">
+              <iframe
+                title="Elite Dental Centre Islamabad - Full Width Map"
+                src="https://maps.google.com/maps?q=D-Watson+Chemist+F-10+Markaz+Islamabad&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                className="w-full h-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+
+              {/* Floating Clinical Location Pill (Bottom-Left) */}
+              <div className="absolute bottom-5 left-5 z-10 max-w-xs sm:max-w-sm rounded-2xl bg-white/95 backdrop-blur-md p-4 sm:p-5 shadow-2xl border border-slate-200 text-slate-900 pointer-events-auto">
+                <div className="flex items-start gap-3">
+                  <div className="p-2.5 rounded-xl bg-teal-600 text-white shrink-0 mt-0.5 shadow-md shadow-teal-600/30">
+                    <LocationOnOutlined sx={{ fontSize: 22 }} />
+                  </div>
+                  <div>
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-teal-50 text-teal-800 border border-teal-200 mb-1">
+                      Lead Surgeon Dr. Sheriyaar
+                    </span>
+                    <h4 className="text-sm font-black text-slate-950 tracking-tight">
+                      Elite Dental Centre
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-0.5 leading-relaxed font-medium">
+                      2nd Floor, D-Watson Chemist Building, Main Roundabout, F-10 Markaz.
+                    </p>
+                    <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center gap-2">
+                      <a
+                        href="https://www.google.com/maps/dir/?api=1&destination=D-Watson+Chemist+F-10+Markaz+Islamabad"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1"
+                      >
+                        <NearMeOutlined sx={{ fontSize: 14 }} />
+                        <span>Open Directions</span>
+                      </a>
+                      <span className="text-slate-300">•</span>
+                      <a
+                        href={`tel:${clinicInfo.phone}`}
+                        className="text-xs font-bold text-slate-700 hover:text-teal-700 flex items-center gap-1"
+                      >
+                        <PhoneOutlined sx={{ fontSize: 13 }} />
+                        <span>Call Reception</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Status Ribbon */}
+            <div className="px-6 py-2.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between text-[11px] text-slate-600">
+              <span className="flex items-center gap-1.5">
+                <ElevatorOutlined sx={{ fontSize: 14, color: "#0d9488" }} />
+                Step-free wheelchair & stretcher access via main lobby elevator
+              </span>
+              <span className="flex items-center gap-1.5">
+                <DirectionsCarOutlined sx={{ fontSize: 14, color: "#0d9488" }} />
+                Complimentary plaza parking for registered patients
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Unified FAQ Section */}
+      <section className="bg-white border-t border-slate-200">
+        <FaqSection
+          kicker="Help & Directions"
+          title="Frequently asked questions"
+          subtitle="Everything you need to know about reaching our F-10 Markaz facility, parking, emergency slots, and appointments."
+          items={contactFaqs}
+        />
+      </section>
+
+      {/* 6. Booking Banner with Modal Booking Flow */}
+      <AppointmentCtaBanner treatments={treatments} />
+
       <Footer />
     </div>
   );

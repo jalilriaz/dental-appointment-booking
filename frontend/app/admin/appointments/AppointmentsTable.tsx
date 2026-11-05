@@ -7,7 +7,27 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Filter, ChevronLeft, ChevronRight, Eye, RefreshCw, Trash2, Loader2, Calendar, Clock, X, CheckCircle2, UserX, AlertTriangle, CalendarX, Receipt, History, MessageSquareShare, CalendarDays, Sparkles } from "lucide-react";
+
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
+import ChevronLeftOutlinedIcon from "@mui/icons-material/ChevronLeftOutlined";
+import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import PersonOffOutlinedIcon from "@mui/icons-material/PersonOffOutlined";
+import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
+import EventBusyOutlinedIcon from "@mui/icons-material/EventBusyOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { PremiumLoader } from "@/components/ui/premium-loader";
@@ -158,7 +178,7 @@ function RescheduleDialog({
             <DialogContent className="sm:max-w-lg bg-white border-slate-200 text-slate-900 shadow-2xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-slate-900">
-                        <RefreshCw className="size-5 text-teal-600" />
+                        <RefreshOutlinedIcon className="size-5 text-teal-600" />
                         Reschedule Appointment
                     </DialogTitle>
                 </DialogHeader>
@@ -188,7 +208,7 @@ function RescheduleDialog({
                     {/* New date picker */}
                     <div>
                         <Label className="text-sm font-semibold text-slate-700 mb-2 block">
-                            <Calendar className="size-4 inline mr-1 text-teal-600" />
+                            <CalendarTodayOutlinedIcon className="size-4 inline mr-1 text-teal-600" />
                             Select New Date
                         </Label>
                         <DatePicker
@@ -205,7 +225,7 @@ function RescheduleDialog({
                     {selectedDate && (
                         <div>
                             <Label className="text-sm font-semibold text-slate-700 mb-2 block">
-                                <Clock className="size-4 inline mr-1 text-teal-600" />
+                                <AccessTimeOutlinedIcon className="size-4 inline mr-1 text-teal-600" />
                                 Select New Time
                                 <span className="font-normal text-slate-500 ml-2">
                                     ({appointment.treatment.durationMin} min appointment)
@@ -214,7 +234,7 @@ function RescheduleDialog({
 
                             {loadingSlots ? (
                                 <div className="flex items-center justify-center py-6">
-                                    <Loader2 className="size-5 animate-spin text-teal-600" />
+                                    <AutorenewOutlinedIcon className="size-5 animate-spin text-teal-600" />
                                     <span className="ml-2 text-sm text-slate-500">Loading slots...</span>
                                 </div>
                             ) : dayOff ? (
@@ -274,9 +294,9 @@ function RescheduleDialog({
                             className="bg-teal-600 hover:bg-teal-700 text-white font-semibold border-0"
                         >
                             {submitting ? (
-                                <><Loader2 className="mr-2 size-4 animate-spin" /> Rescheduling...</>
+                                <><AutorenewOutlinedIcon className="mr-2 size-4 animate-spin" /> Rescheduling...</>
                             ) : (
-                                <><RefreshCw className="mr-2 size-4" /> Confirm Reschedule</>
+                                <><RefreshOutlinedIcon className="mr-2 size-4" /> Confirm Reschedule</>
                             )}
                         </Button>
                     </div>
@@ -537,7 +557,7 @@ export default function AppointmentsTable({
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                         }`}
                     >
-                        <Sparkles className="size-3.5 text-teal-600" />
+                        <AutoAwesomeOutlinedIcon className="size-3.5 text-teal-600" />
                         <span>Active Schedule</span>
                         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                             timelineFilter === "all_active" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
@@ -574,7 +594,7 @@ export default function AppointmentsTable({
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                         }`}
                     >
-                        <CalendarDays className="size-3.5 text-slate-500" />
+                        <CalendarMonthOutlinedIcon className="size-3.5 text-slate-500" />
                         <span>Tomorrow</span>
                         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                             timelineFilter === "tomorrow" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
@@ -591,7 +611,7 @@ export default function AppointmentsTable({
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                         }`}
                     >
-                        <Clock className="size-3.5 text-slate-500" />
+                        <AccessTimeOutlinedIcon className="size-3.5 text-slate-500" />
                         <span>Upcoming</span>
                         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                             timelineFilter === "upcoming" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
@@ -608,7 +628,7 @@ export default function AppointmentsTable({
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                         }`}
                     >
-                        <History className="size-3.5 text-slate-500" />
+                        <HistoryOutlinedIcon className="size-3.5 text-slate-500" />
                         <span>Past & History</span>
                         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                             timelineFilter === "past" ? "bg-slate-100 text-slate-800 border border-slate-300" : "bg-slate-200/70 text-slate-600"
@@ -642,7 +662,7 @@ export default function AppointmentsTable({
                         onClick={() => setViewMode("calendar")}
                         className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${viewMode === "calendar" ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90" : "text-slate-600 hover:text-slate-900 font-medium"}`}
                     >
-                        <Calendar className="size-3.5" />
+                        <CalendarTodayOutlinedIcon className="size-3.5" />
                         Calendar
                     </button>
                 </div>
@@ -652,7 +672,7 @@ export default function AppointmentsTable({
             <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-xs">
                 <div className="flex flex-wrap gap-3">
                     <div className="relative flex-1 min-w-[200px]">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                        <SearchOutlinedIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                         <Input placeholder="Search patients, treatments, phone..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-10 h-10 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 rounded-xl" />
                     </div>
                     <select
@@ -667,7 +687,7 @@ export default function AppointmentsTable({
                     </select>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1"><Calendar className="size-3 text-teal-600" /> Date:</span>
+                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1"><CalendarTodayOutlinedIcon className="size-3 text-teal-600" /> Date:</span>
                     <DatePicker
                         value={dateFrom}
                         onChange={(val) => { setDateFrom(val); setPage(1); }}
@@ -686,12 +706,12 @@ export default function AppointmentsTable({
                             onClick={clearAllFilters}
                             className="ml-auto text-xs text-slate-500 hover:text-red-600 flex items-center gap-1 transition-colors font-semibold"
                         >
-                            <X className="size-3" /> Clear all
+                            <CloseOutlinedIcon className="size-3" /> Clear all
                         </button>
                     )}
                 </div>
                 <div className="flex flex-wrap gap-2 items-center">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1"><Filter className="size-3 text-teal-600" /> Status:</span>
+                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1"><FilterListOutlinedIcon className="size-3 text-teal-600" /> Status:</span>
                     {["SCHEDULED", "RESCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"].map((s) => {
                         const isSelected = statusFilter.includes(s);
                         let activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
@@ -772,17 +792,17 @@ export default function AppointmentsTable({
                                                                     </span>
                                                                 ) : bucket === "tomorrow" ? (
                                                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-300 shadow-2xs">
-                                                                        <CalendarDays className="size-3.5" />
+                                                                        <CalendarMonthOutlinedIcon className="size-3.5" />
                                                                         TOMORROW
                                                                     </span>
                                                                 ) : bucket === "upcoming" ? (
                                                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-800 border border-sky-300">
-                                                                        <Clock className="size-3.5" />
+                                                                        <AccessTimeOutlinedIcon className="size-3.5" />
                                                                         UPCOMING
                                                                     </span>
                                                                 ) : (
                                                                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
-                                                                        <History className="size-3" />
+                                                                        <HistoryOutlinedIcon className="size-3" />
                                                                         PAST RECORD
                                                                     </span>
                                                                 )}
@@ -803,7 +823,7 @@ export default function AppointmentsTable({
                                                         {apt.patient?.name || "Unknown"}
                                                         {(apt.patient?.noShowCount ?? 0) > 0 && (
                                                             <span className="inline-flex items-center gap-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-700 border border-red-200" title={`${apt.patient?.noShowCount} previous No-Shows`}>
-                                                                <AlertTriangle className="size-3" />
+                                                                <WarningAmberOutlinedIcon className="size-3" />
                                                                 {apt.patient?.noShowCount} No-Show
                                                             </span>
                                                         )}
@@ -824,7 +844,7 @@ export default function AppointmentsTable({
                                                 <td className="px-4 py-3 text-slate-700">
                                                     <div className="flex items-center gap-2">
                                                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 font-bold text-sm tracking-tight shadow-xs">
-                                                            <Clock className="size-3.5 text-teal-600" />
+                                                            <AccessTimeOutlinedIcon className="size-3.5 text-teal-600" />
                                                             {formatTime(start)}
                                                         </span>
                                                         <span className="text-[11px] font-semibold text-slate-600 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">
@@ -854,10 +874,10 @@ export default function AppointmentsTable({
                                                 <td className="px-4 py-3">
                                                     <div className="flex gap-1">
                                                         <button onClick={() => setDetailId(apt.id)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer transition-premium" title="View Details">
-                                                            <Eye className="size-4" />
+                                                            <VisibilityOutlinedIcon className="size-4" />
                                                         </button>
                                                         <button onClick={() => apt.patient?.id && setHistoryPatientId(apt.patient.id)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 cursor-pointer transition-premium" title="Patient History">
-                                                            <History className="size-4" />
+                                                            <HistoryOutlinedIcon className="size-4" />
                                                         </button>
                                                         {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
                                                             <>
@@ -876,7 +896,7 @@ export default function AppointmentsTable({
                                                                         title="Check Out — Mark as Completed"
                                                                         disabled={checkingOutId === apt.id}
                                                                     >
-                                                                        {checkingOutId === apt.id ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+                                                                        {checkingOutId === apt.id ? <AutorenewOutlinedIcon className="size-4 animate-spin" /> : <CheckCircleOutlineOutlinedIcon className="size-4" />}
                                                                     </button>
                                                                 )}
                                                                 <button
@@ -884,14 +904,14 @@ export default function AppointmentsTable({
                                                                     className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 cursor-pointer transition-premium"
                                                                     title="Mark as No Show"
                                                                 >
-                                                                    <UserX className="size-4" />
+                                                                    <PersonOffOutlinedIcon className="size-4" />
                                                                 </button>
                                                                 <button
                                                                     onClick={() => setRescheduleApt(apt)}
                                                                     className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 cursor-pointer transition-premium"
                                                                     title="Reschedule"
                                                                 >
-                                                                    <RefreshCw className="size-4" />
+                                                                    <RefreshOutlinedIcon className="size-4" />
                                                                 </button>
                                                                 <button
                                                                     onClick={() => setConfirmCancelId(apt.id)}
@@ -899,7 +919,7 @@ export default function AppointmentsTable({
                                                                     title="Cancel"
                                                                     disabled={cancellingId === apt.id}
                                                                 >
-                                                                    {cancellingId === apt.id ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+                                                                    {cancellingId === apt.id ? <AutorenewOutlinedIcon className="size-4 animate-spin" /> : <DeleteOutlineOutlinedIcon className="size-4" />}
                                                                 </button>
                                                             </>
                                                         )}
@@ -919,14 +939,14 @@ export default function AppointmentsTable({
                                                                     className="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600 cursor-pointer transition-premium"
                                                                     title="Send WhatsApp Precautions"
                                                                 >
-                                                                    <MessageSquareShare className="size-4" />
+                                                                    <ChatBubbleOutlineOutlinedIcon className="size-4" />
                                                                 </button>
                                                                 <button
                                                                     onClick={() => setReceiptApt(apt)}
                                                                     className="p-1.5 rounded-lg hover:bg-teal-50 text-teal-600 cursor-pointer transition-premium"
                                                                     title="Download Receipt"
                                                                 >
-                                                                    <Receipt className="size-4" />
+                                                                    <ReceiptLongOutlinedIcon className="size-4" />
                                                                 </button>
                                                             </>
                                                         )}
@@ -937,7 +957,7 @@ export default function AppointmentsTable({
                                     );
                                 })}
                                 {paged.length === 0 && (
-                                    <tr><td colSpan={6} className="py-0"><EmptyState icon={CalendarX} title="No Appointments Found" description="No appointments match your current filters. Try adjusting your search or status filter." /></td></tr>
+                                    <tr><td colSpan={6} className="py-0"><EmptyState icon={EventBusyOutlinedIcon} title="No Appointments Found" description="No appointments match your current filters. Try adjusting your search or status filter." /></td></tr>
                                 )}
                             </tbody>
                         </table>
@@ -965,7 +985,7 @@ export default function AppointmentsTable({
                         {totalPages > 1 && (
                             <div className="flex gap-1">
                                 <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)} className="border-slate-200 text-slate-700 hover:bg-slate-100 cursor-pointer">
-                                    <ChevronLeft className="size-4" />
+                                    <ChevronLeftOutlinedIcon className="size-4" />
                                 </Button>
                                 {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => (
                                     <Button key={i} variant={page === i + 1 ? "default" : "outline"} size="sm" onClick={() => setPage(i + 1)} className={`cursor-pointer ${page === i + 1 ? "bg-teal-600 hover:bg-teal-700 text-white font-semibold border-0" : "border-slate-200 text-slate-700 hover:bg-slate-100"}`}>
@@ -973,7 +993,7 @@ export default function AppointmentsTable({
                                     </Button>
                                 ))}
                                 <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="border-slate-200 text-slate-700 hover:bg-slate-100 cursor-pointer">
-                                    <ChevronRight className="size-4" />
+                                    <ChevronRightOutlinedIcon className="size-4" />
                                 </Button>
                             </div>
                         )}
@@ -1031,7 +1051,7 @@ export default function AppointmentsTable({
                 <AlertDialogContent className="bg-white border-slate-200 text-slate-900 shadow-2xl">
                     <AlertDialogHeader>
                         <div className="mx-auto size-12 rounded-full bg-red-50 border border-red-200 flex items-center justify-center mb-2">
-                            <AlertTriangle className="size-6 text-red-600" />
+                            <WarningAmberOutlinedIcon className="size-6 text-red-600" />
                         </div>
                         <AlertDialogTitle className="text-center text-slate-900">Cancel Appointment</AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-slate-600">
@@ -1055,7 +1075,7 @@ export default function AppointmentsTable({
                 <AlertDialogContent className="bg-white border-slate-200 text-slate-900 shadow-2xl">
                     <AlertDialogHeader>
                         <div className="mx-auto size-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-2">
-                            <AlertTriangle className="size-6 text-amber-600" />
+                            <WarningAmberOutlinedIcon className="size-6 text-amber-600" />
                         </div>
                         <AlertDialogTitle className="text-center text-slate-900">Retroactive Check Out Warning</AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-slate-600">

@@ -9,7 +9,9 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
-import { Printer, Download, Receipt } from "lucide-react";
+import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import { formatPKR } from "@/lib/utils";
 
 
@@ -87,7 +89,7 @@ export default function ReceiptDialog({
             <DialogContent className="sm:max-w-[420px] bg-white border-slate-200 text-slate-900 shadow-2xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-slate-900">
-                        <Receipt className="size-5 text-teal-600" />
+                        <ReceiptLongOutlinedIcon className="size-5 text-teal-600" />
                         Payment Receipt
                     </DialogTitle>
                 </DialogHeader>
@@ -171,7 +173,7 @@ export default function ReceiptDialog({
                         Close
                     </Button>
                     <Button onClick={handlePrint} className="bg-teal-600 hover:bg-teal-700 text-white font-semibold border-0 gap-2 shadow-xs">
-                        <Printer className="size-4" />
+                        <PrintOutlinedIcon className="size-4" />
                         Print Receipt
                     </Button>
                 </DialogFooter>

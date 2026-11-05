@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquare } from "lucide-react";
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import { Button } from "@/components/ui/button";
 import SendPrecautionsModal from "@/components/shared/SendPrecautionsModal";
 
@@ -31,10 +31,10 @@ export default function SendPrecautionsButton({
                 size={size}
                 variant="outline"
                 onClick={() => setOpen(true)}
-                className={`text-xs gap-1.5 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 active:scale-95 transition-premium ${className}`}
+                className={`text-xs gap-1.5 text-emerald-700 border-emerald-300 hover:bg-emerald-50 active:scale-95 transition-premium ${className}`}
                 title="Send Post-Treatment Precautions to WhatsApp"
             >
-                <MessageSquare className="size-3.5" />
+                <ChatBubbleOutlineOutlinedIcon className="size-3.5" />
                 <span>WhatsApp Precautions</span>
             </Button>
 

@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Download, CalendarIcon, DollarSign, TrendingUp, Activity, Users, ArrowUp, ArrowDown } from "lucide-react";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
+import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
+import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import ArrowUpwardOutlinedIcon from "@mui/icons-material/ArrowUpwardOutlined";
+import ArrowDownwardOutlinedIcon from "@mui/icons-material/ArrowDownwardOutlined";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid, ComposedChart, Line 
 } from "recharts";
@@ -14,7 +21,7 @@ const CATEGORY_COLORS = {
   Cosmetic: "#0ea5e9",      // Sky Blue
   Restorative: "#f59e0b",   // Amber
   General: "#10b981",       // Emerald
-  Consultations: "#8b5cf6"  // Violet
+  Consultations: "#0284c7"  // Steel Blue
 };
 
 // AWS Cost Explorer Inspired Palette for Treatments (Expanded for 18+ services)
@@ -24,7 +31,7 @@ const SERVICE_COLORS = [
   "#14b8a6", // Teal
   "#f59e0b", // Amber
   "#3b82f6", // Blue
-  "#8b5cf6", // Violet
+  "#0284c7", // Steel Blue
   "#10b981", // Emerald
   "#f43f5e", // Rose
   "#06b6d4", // Cyan
@@ -35,12 +42,12 @@ const SERVICE_COLORS = [
   "#d946ef", // Fuchsia
   "#ef4444", // Red
   "#22c55e", // Green
-  "#a855f7", // Purple
+  "#0f766e", // Deep Teal
   "#f472b6", // Light Pink
   "#2dd4bf", // Light Teal
   "#fbbf24", // Light Amber
   "#60a5fa", // Light Blue
-  "#c084fc", // Light Violet
+  "#38bdf8", // Light Sky
 ];
 
 export default function RevenueClient({ initialData }: { initialData: any }) {
@@ -207,7 +214,7 @@ export default function RevenueClient({ initialData }: { initialData: any }) {
       <div className="glass-card p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 border-l-teal-500">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 text-slate-300 bg-slate-800/50 px-3 py-2 rounded-lg border border-slate-700">
-            <CalendarIcon className="size-4 text-teal-400" />
+            <CalendarTodayOutlinedIcon className="size-4 text-teal-400" />
             <select 
               className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer outline-none"
               value={dateRange}
@@ -246,7 +253,7 @@ export default function RevenueClient({ initialData }: { initialData: any }) {
           disabled={loading || !data?.rawDataForExport?.length}
           className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg border border-slate-600 transition-colors disabled:opacity-50"
         >
-          <Download className="size-4 text-emerald-400" />
+          <DownloadOutlinedIcon className="size-4 text-emerald-400" />
           <span className="text-sm font-medium">Export to CSV</span>
         </button>
       </div>
@@ -282,7 +289,7 @@ export default function RevenueClient({ initialData }: { initialData: any }) {
         </div>
       ) : !data || data.monthlyChartData.length === 0 ? (
         <div className="glass-card h-64 flex flex-col items-center justify-center text-center rounded-xl border border-slate-800">
-            <CalendarIcon className="size-10 text-slate-500 mb-3" />
+            <CalendarTodayOutlinedIcon className="size-10 text-slate-500 mb-3" />
             <h3 className="text-lg font-medium text-white">No revenue data found</h3>
             <p className="text-sm text-slate-400 mt-1">There are no completed appointments for this date range.</p>
         </div>
@@ -293,7 +300,7 @@ export default function RevenueClient({ initialData }: { initialData: any }) {
                 <div className="glass-card rounded-xl p-5 border-l-4 border-l-emerald-500">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-medium text-slate-400 uppercase">Collected ({getLabel()})</p>
-                        <DollarSign className="size-4 text-emerald-400" />
+                        <AttachMoneyOutlinedIcon className="size-4 text-emerald-400" />
                     </div>
                     <p className="text-2xl font-bold text-emerald-400 mt-2">{formatPKR(filteredTotal)}</p>
                     <p className="text-[10px] text-slate-500 mt-1">
@@ -303,7 +310,7 @@ export default function RevenueClient({ initialData }: { initialData: any }) {
                 <div className="glass-card rounded-xl p-5 border-l-4 border-l-blue-400">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-medium text-slate-400 uppercase">Projected</p>
-                        <TrendingUp className="size-4 text-blue-400" />
+                        <TrendingUpOutlinedIcon className="size-4 text-blue-400" />
                     </div>
                     <p className="text-2xl font-bold text-blue-400 mt-2">{formatPKR(totalProjected)}</p>
                     <p className="text-[10px] text-slate-500 mt-1">
@@ -313,7 +320,7 @@ export default function RevenueClient({ initialData }: { initialData: any }) {
                 <div className="glass-card rounded-xl p-5 border-l-4 border-l-indigo-400">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-medium text-slate-400 uppercase">Avg. Per Visit ({getLabel()})</p>
-                        <Activity className="size-4 text-indigo-400" />
+                        <ShowChartOutlinedIcon className="size-4 text-indigo-400" />
                     </div>
                     <p className="text-2xl font-bold text-indigo-400 mt-2">{formatPKR(filteredAvg)}</p>
                     <p className="text-[10px] text-slate-500 mt-1">
@@ -323,7 +330,7 @@ export default function RevenueClient({ initialData }: { initialData: any }) {
                 <div className="glass-card rounded-xl p-5 border-l-4 border-l-amber-400">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-medium text-slate-400 uppercase">Discounts ({getLabel()})</p>
-                        <Users className="size-4 text-amber-400" />
+                        <PeopleAltOutlinedIcon className="size-4 text-amber-400" />
                     </div>
                     <p className="text-2xl font-bold text-amber-400 mt-2">{formatPKR(filteredDiscount)}</p>
                     <p className="text-[10px] text-slate-500 mt-1">
@@ -347,9 +354,9 @@ export default function RevenueClient({ initialData }: { initialData: any }) {
                   {momData && (
                     <span className={`px-2.5 py-1 rounded-full text-sm font-semibold flex items-center gap-1.5 ${momData.isPositive ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-rose-500/15 text-rose-400 border border-rose-500/20"}`}>
                       {momData.isPositive ? (
-                        <ArrowUp className="size-4" />
+                        <ArrowUpwardOutlinedIcon className="size-4" />
                       ) : (
-                        <ArrowDown className="size-4" />
+                        <ArrowDownwardOutlinedIcon className="size-4" />
                       )}
                       {momData.value}% vs {momData.prevMonthLabel}
                     </span>

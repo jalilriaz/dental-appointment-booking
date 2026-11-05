@@ -57,7 +57,7 @@ export const teamMembers = [
         role: "General Doctor",
         experience: "12 years",
         qualification: "BDS, RDS",
-        image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=400&auto=format&fit=crop",
+        image: "/images/dr_sheriyaar.jpg",
     },
 
 ];

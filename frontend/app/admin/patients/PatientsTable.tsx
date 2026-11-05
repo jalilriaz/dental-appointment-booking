@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Phone, ChevronLeft, ChevronRight } from "lucide-react";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import ChevronLeftOutlinedIcon from "@mui/icons-material/ChevronLeftOutlined";
+import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 
@@ -61,7 +63,7 @@ export default function PatientsTable({ patients }: { patients: PatientRow[] }) 
                                     <td className="px-6 py-4 text-slate-600 font-medium">
                                         {p.phone && (
                                             <span className="flex items-center gap-1.5 text-xs">
-                                                <Phone className="size-3 text-teal-600" /> {p.phone}
+                                                <PhoneOutlinedIcon className="size-3 text-teal-600" /> {p.phone}
                                             </span>
                                         )}
                                     </td>
@@ -90,7 +92,7 @@ export default function PatientsTable({ patients }: { patients: PatientRow[] }) 
                         <p className="text-sm font-medium text-slate-600">Showing {(page - 1) * perPage + 1}-{Math.min(page * perPage, patients.length)} of {patients.length}</p>
                         <div className="flex gap-1.5">
                             <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)} className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer">
-                                <ChevronLeft className="size-4" />
+                                <ChevronLeftOutlinedIcon className="size-4" />
                             </Button>
                             {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => (
                                 <Button key={i} variant={page === i + 1 ? "default" : "outline"} size="sm" onClick={() => setPage(i + 1)} className={`cursor-pointer rounded-lg ${page === i + 1 ? "bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-xs border-0" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-medium"}`}>
@@ -98,7 +100,7 @@ export default function PatientsTable({ patients }: { patients: PatientRow[] }) 
                                 </Button>
                             ))}
                             <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer">
-                                <ChevronRight className="size-4" />
+                                <ChevronRightOutlinedIcon className="size-4" />
                             </Button>
                         </div>
                     </div>

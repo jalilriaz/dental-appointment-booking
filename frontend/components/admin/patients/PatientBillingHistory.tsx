@@ -2,15 +2,13 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import {
-    CreditCard,
-    DollarSign,
-    Calendar,
-    CheckCircle2,
-    Clock,
-    ChevronDown,
-    ChevronUp,
-} from "lucide-react";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
+import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
+import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
 import { Badge } from "@/components/ui/badge";
 import RecordPayment from "@/components/admin/patients/RecordPayment";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,7 +59,7 @@ export default function PatientBillingHistory({ treatments }: PatientBillingHist
         return (
             <Card className="bg-white border border-slate-200/90 rounded-2xl shadow-xs">
                 <CardContent className="py-8 text-center text-slate-500">
-                    <CreditCard className="size-10 mx-auto mb-3 opacity-40 text-slate-400" />
+                    <CreditCardOutlinedIcon className="size-10 mx-auto mb-3 opacity-40 text-slate-400" />
                     <p className="font-medium">No billing history available.</p>
                 </CardContent>
             </Card>
@@ -89,7 +87,7 @@ export default function PatientBillingHistory({ treatments }: PatientBillingHist
                                         ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                                         : "bg-teal-50 text-teal-600 border-teal-100"
                                         }`}>
-                                        {pt.status === "FULLY_PAID" ? <CheckCircle2 className="size-6" /> : <DollarSign className="size-6" />}
+                                        {pt.status === "FULLY_PAID" ? <CheckCircleOutlineOutlinedIcon className="size-6" /> : <AttachMoneyOutlinedIcon className="size-6" />}
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -106,7 +104,7 @@ export default function PatientBillingHistory({ treatments }: PatientBillingHist
                                             )}
                                         </h3>
                                         <p className="text-sm text-slate-500 font-medium flex items-center gap-2 mt-1">
-                                            <Calendar className="size-3.5 text-teal-600" />
+                                            <CalendarTodayOutlinedIcon className="size-3.5 text-teal-600" />
                                             Started {format(new Date(pt.startDate), "MMMM d, yyyy")}
                                         </p>
                                     </div>
@@ -131,7 +129,7 @@ export default function PatientBillingHistory({ treatments }: PatientBillingHist
                                         </p>
                                     </div>
                                     <div className="ml-2 text-slate-400">
-                                        {isExpanded ? <ChevronUp className="size-5" /> : <ChevronDown className="size-5" />}
+                                        {isExpanded ? <KeyboardArrowUpOutlinedIcon className="size-5" /> : <KeyboardArrowDownOutlinedIcon className="size-5" />}
                                     </div>
                                 </div>
                             </div>
@@ -162,7 +160,7 @@ export default function PatientBillingHistory({ treatments }: PatientBillingHist
                             <div className="border-t border-slate-200/90 bg-slate-50/60 animate-in slide-in-from-top-2">
                                 <div className="p-6">
                                     <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                        <Clock className="size-4 text-teal-600" /> Payment History
+                                        <AccessTimeOutlinedIcon className="size-4 text-teal-600" /> Payment History
                                     </h4>
                                     {pt.payments.length === 0 ? (
                                         <p className="text-sm text-slate-500 italic">No payments recorded yet.</p>

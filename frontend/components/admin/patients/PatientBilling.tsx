@@ -1,6 +1,8 @@
 "use client";
 
-import { DollarSign, TrendingUp, CreditCard } from "lucide-react";
+import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
+import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import { cn, formatPKR, formatDate } from "@/lib/utils";
 
 interface PatientBillingProps {
@@ -41,7 +43,7 @@ export default function PatientBilling({ appointments }: PatientBillingProps) {
             <div className="grid grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
                     <div className="flex items-center gap-2 mb-1">
-                        <DollarSign className="size-4 text-blue-400" />
+                        <AttachMoneyOutlinedIcon className="size-4 text-blue-400" />
                         <span className="text-xs font-semibold text-blue-400 uppercase">Total Billed</span>
                     </div>
                     <p className="text-xl font-bold text-white">{formatPKR(totalBilled)}</p>
@@ -49,7 +51,7 @@ export default function PatientBilling({ appointments }: PatientBillingProps) {
                 </div>
                 <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                     <div className="flex items-center gap-2 mb-1">
-                        <CreditCard className="size-4 text-emerald-400" />
+                        <CreditCardOutlinedIcon className="size-4 text-emerald-400" />
                         <span className="text-xs font-semibold text-emerald-400 uppercase">Total Paid</span>
                     </div>
                     <p className="text-xl font-bold text-white">{formatPKR(totalPaid)}</p>
@@ -62,7 +64,7 @@ export default function PatientBilling({ appointments }: PatientBillingProps) {
                         : "bg-slate-500/10 border-slate-500/20"
                 )}>
                     <div className="flex items-center gap-2 mb-1">
-                        <TrendingUp className={cn("size-4", totalDue > 0 ? "text-red-400" : "text-slate-400")} />
+                        <TrendingUpOutlinedIcon className={cn("size-4", totalDue > 0 ? "text-red-400" : "text-slate-400")} />
                         <span className={cn("text-xs font-semibold uppercase", totalDue > 0 ? "text-red-400" : "text-slate-400")}>
                             Balance Due
                         </span>

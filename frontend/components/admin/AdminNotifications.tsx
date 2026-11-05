@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, Check } from "lucide-react";
+import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -58,7 +59,7 @@ export default function AdminNotifications() {
     if (!mounted) {
         return (
             <Button variant="ghost" size="icon" className="relative text-slate-400 hover:text-teal-400 hover:bg-white/[0.04] rounded-full w-10 h-10">
-                <Bell className="size-5" />
+                <NotificationsNoneOutlinedIcon className="size-5" />
             </Button>
         );
     }
@@ -67,7 +68,7 @@ export default function AdminNotifications() {
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative text-slate-400 hover:text-teal-400 hover:bg-white/[0.04] rounded-full w-10 h-10">
-                    <Bell className="size-5" />
+                    <NotificationsNoneOutlinedIcon className="size-5" />
                     {unreadCount > 0 && (
                         <span className="absolute top-2 right-2 size-2.5 bg-red-500 rounded-full border-2 border-slate-900" />
                     )}
@@ -130,7 +131,7 @@ export default function AdminNotifications() {
                                                 onClick={() => markAsRead(notification.id)}
                                                 title="Mark as read"
                                             >
-                                                <Check className="size-3" />
+                                                <CheckOutlinedIcon className="size-3" />
                                             </Button>
                                         )}
                                     </div>
@@ -139,7 +140,7 @@ export default function AdminNotifications() {
                         </div>
                     ) : (
                         <div className="p-8 text-center text-slate-500">
-                            <Bell className="size-8 mx-auto mb-3 text-slate-600 opacity-50" />
+                            <NotificationsNoneOutlinedIcon className="size-8 mx-auto mb-3 text-slate-600 opacity-50" />
                             <p className="text-sm">No notifications yet</p>
                         </div>
                     )}

@@ -21,11 +21,12 @@ import {
 } from "@mui/icons-material";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import FaqSection from "@/components/FaqSection";
 import BookingForm from "@/components/BookingForm";
 import { clinicInfo } from "@/app/constants/mockData";
 import Link from "next/link";
 import Image from "next/image";
-import { formatPKR, getTreatmentImage } from "@/lib/utils";
+import { formatPKR, formatPriceRange, getTreatmentImage } from "@/lib/utils";
 import { getTreatmentExpectations } from "@/lib/treatmentDetails";
 
 export async function generateMetadata({
@@ -266,18 +267,18 @@ export default async function ServiceDetailPage({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
                     <div>
                       <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">
-                        Transparent Clinical Fee
+                        Estimated Fee Range
                       </span>
                       <div className="flex items-baseline gap-2 mt-0.5">
                         <span className="text-3xl sm:text-4xl font-black text-[#0B1528] font-sans">
-                          {formatPKR(treatment.price)}
+                          {formatPriceRange(treatment.price, (treatment as any).maxPrice)}
                         </span>
                         <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
-                          All-Inclusive
+                          Varies by Case
                         </span>
                       </div>
                       <span className="text-xs text-slate-500 block mt-1">
-                        Includes sterilization kit, diagnostics & postoperative guidance
+                        Includes sterilization kit, diagnostics & postoperative follow-up
                       </span>
                     </div>
 
@@ -532,31 +533,18 @@ export default async function ServiceDetailPage({
           </div>
         </section>
 
-        {/* 6. PROCEDURAL FAQS ACCORDION */}
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
-          <div className="text-center mb-10">
-            <span className="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-              Patient Guidance
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0B1528] mt-3 tracking-tight">
-              Frequently Asked Questions About {treatment.name}
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            {detailData.faqs.map((faq, idx) => (
-              <div key={idx} className="p-6 rounded-3xl border border-slate-200 bg-white shadow-2xs">
-                <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2.5">
-                  <HelpOutlineOutlined sx={{ fontSize: 18, color: "#0d9488" }} />
-                  <span>{faq.question}</span>
-                </h3>
-                <p className="text-xs text-slate-600 mt-2.5 pl-7 leading-relaxed">
-                  {faq.answer}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* 6. PROCEDURAL FAQS ACCORDION (UNIFIED FAQ DESIGN) */}
+        <div className="bg-white border-t border-slate-200 mt-16">
+          <FaqSection
+            kicker="Patient Guidance"
+            title={`Frequently Asked Questions About ${treatment.name}`}
+            subtitle={`Here is everything you need to know about preparation, clinical recovery, and expected longevity for ${treatment.name} at Elite Dental.`}
+            items={detailData.faqs.map((faq) => ({
+              question: faq.question,
+              answer: faq.answer,
+            }))}
+          />
+        </div>
 
         {/* 7. INSTANT APPOINTMENT SCHEDULING (Anchor for #book-slot) */}
         <section id="book-slot" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 scroll-mt-20">

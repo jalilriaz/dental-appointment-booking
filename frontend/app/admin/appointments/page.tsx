@@ -3,7 +3,7 @@ import { Suspense } from "react"
 import AppointmentsTable from "./AppointmentsTable"
 import { AppointmentsSkeleton } from "@/components/LoadingSpinner"
 import Link from "next/link"
-import { CalendarPlus } from "lucide-react"
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined"
 
 import { startOfDay, endOfDay } from "date-fns"
 import { expirePastAppointments } from "@/lib/appointment-status"
@@ -86,7 +86,7 @@ export default async function AdminAppointmentsPage({
           href="/admin/walk-in"
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold transition-all shadow-xs cursor-pointer mt-3 sm:mt-0 self-start sm:self-auto"
         >
-          <CalendarPlus className="size-4" />
+          <EventAvailableOutlinedIcon className="size-4" />
           Book Appointment
         </Link>
       </div>

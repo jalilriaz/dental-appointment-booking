@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, User, Clock, Shield, Loader2 } from "lucide-react";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -153,7 +159,7 @@ export default function StaffManager({ initialStaff }: { initialStaff: any[] }) 
                     <p className="text-sm text-slate-400">Manage doctors, receptionists, and their access.</p>
                 </div>
                 <Button onClick={() => handleOpenDialog()} className="btn-brand border-0 shadow-lg shadow-teal-500/20 cursor-pointer">
-                    <Plus className="size-4 mr-2" />
+                    <AddOutlinedIcon className="size-4 mr-2" />
                     Add Staff
                 </Button>
             </div>
@@ -227,7 +233,7 @@ export default function StaffManager({ initialStaff }: { initialStaff: any[] }) 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
                         <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} className="bg-red-600 hover:bg-red-700">
-                            {isDeleting ? (<><Loader2 className="size-4 mr-2 animate-spin" /> Deleting...</>) : "Delete"}
+                            {isDeleting ? (<><AutorenewOutlinedIcon className="size-4 mr-2 animate-spin" /> Deleting...</>) : "Delete"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -238,10 +244,10 @@ export default function StaffManager({ initialStaff }: { initialStaff: any[] }) 
                     <div key={s.id} className="glass-card rounded-xl p-6 hover:border-white/[0.1] transition-premium relative group">
                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button variant="ghost" size="icon" className="size-8 cursor-pointer" onClick={() => handleOpenDialog(s)}>
-                                <Pencil className="size-4 text-slate-500" />
+                                <EditOutlinedIcon className="size-4 text-slate-500" />
                             </Button>
                             <Button variant="ghost" size="icon" className="size-8 hover:text-red-600 cursor-pointer" onClick={() => setDeleteId(s.id)}>
-                                <Trash2 className="size-4" />
+                                <DeleteOutlineOutlinedIcon className="size-4" />
                             </Button>
                         </div>
 
@@ -250,7 +256,7 @@ export default function StaffManager({ initialStaff }: { initialStaff: any[] }) 
                                 {(s.name || "S").charAt(0)}
                                 {s.role === "ADMIN" && (
                                     <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-1 rounded-full border-2 border-slate-900" title="Admin">
-                                        <Shield className="size-3" />
+                                        <SecurityOutlinedIcon className="size-3" />
                                     </div>
                                 )}
                             </div>
@@ -264,11 +270,11 @@ export default function StaffManager({ initialStaff }: { initialStaff: any[] }) 
 
                         <div className="space-y-2 text-sm text-slate-300">
                             <div className="flex items-center gap-2">
-                                <User className="size-3.5 text-slate-400" />
+                                <PersonOutlineOutlinedIcon className="size-3.5 text-slate-400" />
                                 <span className="truncate" title={s.email || ""}>{s.email || "No Email"}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <User className="size-3.5 text-slate-400" />
+                                <PersonOutlineOutlinedIcon className="size-3.5 text-slate-400" />
                                 <span className="truncate">{s.phone}</span>
                             </div>
                         </div>

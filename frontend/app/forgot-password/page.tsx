@@ -5,7 +5,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, ArrowLeft, Mail } from "lucide-react";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -40,35 +42,32 @@ export default function ForgotPasswordPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-background relative overflow-hidden p-4">
-            {/* Glow orbs */}
-            <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-3xl" />
-
-            <div className="w-full max-w-md animate-fade-in-up relative">
-                <div className="glass-card rounded-2xl p-8">
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 relative overflow-hidden p-4">
+            <div className="w-full max-w-md relative">
+                <div className="bg-white border border-slate-200/80 shadow-xl rounded-2xl p-8 text-slate-900">
                     <div className="text-center mb-6">
-                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal-500/10 border border-teal-500/20">
-                            <Mail className="h-6 w-6 text-teal-400" />
+                        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-teal-50 border border-teal-200 shadow-xs">
+                            <EmailOutlinedIcon className="size-6 text-teal-600" />
                         </div>
-                        <h1 className="text-2xl font-bold text-white">Forgot Password?</h1>
-                        <p className="text-sm text-slate-400 mt-1">
-                            Enter your email address and we&apos;ll send you a link to reset your password.
+                        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Forgot Password?</h1>
+                        <p className="text-xs text-slate-500 mt-1 font-medium">
+                            Enter your registered email address and we&apos;ll send you a secure link to reset your password.
                         </p>
                     </div>
 
                     {status === "success" ? (
                         <div className="text-center space-y-4">
-                            <div className="p-4 bg-teal-500/10 text-teal-300 border border-teal-500/20 rounded-lg text-sm">
+                            <div className="p-4 bg-teal-50 text-teal-800 border border-teal-200 rounded-xl text-xs font-semibold">
                                 {message}
                             </div>
-                            <Button asChild className="w-full border-white/10 text-slate-300 hover:bg-white/[0.04]" variant="outline">
+                            <Button asChild className="w-full border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold h-10" variant="outline">
                                 <Link href="/login">Back to Login</Link>
                             </Button>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-slate-300">Email Address</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="email" className="text-slate-700 text-xs font-semibold">Email Address</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -77,28 +76,28 @@ export default function ForgotPasswordPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                     disabled={status === "loading"}
-                                    className="h-11 bg-white/[0.04] border-white/10 text-white placeholder:text-slate-500 focus:border-teal-500/50 focus:ring-teal-500/20"
+                                    className="h-10 bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-xs focus:border-teal-600"
                                 />
                             </div>
 
                             {status === "error" && (
-                                <div className="text-sm text-red-300 bg-red-500/10 border border-red-500/20 p-2 rounded">
+                                <div className="text-xs text-red-700 bg-red-50 border border-red-200 p-2.5 rounded-lg font-medium">
                                     {message}
                                 </div>
                             )}
 
                             <Button
                                 type="submit"
-                                className="w-full h-11 gradient-primary-h text-white border-0 shadow-lg shadow-teal-500/20 hover:shadow-xl hover:shadow-teal-500/25 active:scale-[0.98] transition-premium"
+                                className="w-full h-10 btn-brand border-0 text-white shadow-md shadow-teal-600/20 active:scale-[0.98] transition-all text-xs font-semibold cursor-pointer"
                                 disabled={status === "loading"}
                             >
-                                {status === "loading" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {status === "loading" && <AutorenewOutlinedIcon className="mr-2 size-4 animate-spin" />}
                                 {status === "loading" ? "Sending Link..." : "Send Reset Link"}
                             </Button>
 
-                            <Button asChild variant="link" className="w-full text-slate-400 hover:text-teal-400">
-                                <Link href="/login" className="flex items-center gap-2">
-                                    <ArrowLeft className="h-4 w-4" /> Back to Login
+                            <Button asChild variant="link" className="w-full text-slate-500 hover:text-teal-700 text-xs font-medium cursor-pointer">
+                                <Link href="/login" className="flex items-center justify-center gap-1.5">
+                                    <ArrowBackOutlinedIcon className="size-3.5" /> Back to Login
                                 </Link>
                             </Button>
                         </form>

@@ -462,3 +462,115 @@ input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
 .stagger-4 { animation-delay: 0.20s; }
 .stagger-5 { animation-delay: 0.25s; }
 .stagger-6 { animation-delay: 0.30s; }
+
+/* ─── FAQ Orbital Revolving Animations ──────────────────────── */
+@keyframes orbit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-counter-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-orbit-slow {
+  animation: orbit-spin 28s linear infinite;
+}
+
+.animate-orbit-reverse {
+  animation: orbit-counter-spin 36s linear infinite;
+}
+
+.animate-counter-rotate-slow {
+  animation: orbit-counter-spin 28s linear infinite;
+}
+
+.animate-counter-rotate-reverse {
+  animation: orbit-spin 36s linear infinite;
+}
+
+.hover-pause:hover .animate-orbit-slow,
+.hover-pause:hover .animate-orbit-reverse,
+.hover-pause:hover .animate-counter-rotate-slow,
+.hover-pause:hover .animate-counter-rotate-reverse {
+  animation-play-state: paused;
+}
+
+
+/* ─── FAQ Orbital Floating Icon Animations ─────────────────── */
+@keyframes float-badge-1 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(4deg);
+  }
+}
+
+@keyframes float-badge-2 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(12px) rotate(-4deg);
+  }
+}
+
+@keyframes float-badge-3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-6px, -10px) scale(1.08);
+  }
+}
+
+@keyframes float-badge-4 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(6px, -10px) scale(1.05);
+  }
+}
+
+@keyframes tooth-float-3d {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateY(-8px) rotate(-6deg) scale(1.05);
+  }
+  75% {
+    transform: translateY(6px) rotate(5deg) scale(0.98);
+  }
+}
+
+.animate-float-1 {
+  animation: float-badge-1 4.2s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: float-badge-2 5.0s ease-in-out infinite;
+}
+
+.animate-float-3 {
+  animation: float-badge-3 4.6s ease-in-out infinite;
+}
+
+.animate-float-4 {
+  animation: float-badge-4 5.4s ease-in-out infinite;
+}
+
+.animate-tooth-float {
+  animation: tooth-float-3d 5.5s ease-in-out infinite;
+}

@@ -10,6 +10,16 @@ export function formatPKR(amount: number) {
   return `Rs. ${amount.toLocaleString("en-PK")}`;
 }
 
+/** Formats a pricing range in PKR (e.g. "Rs. 90,000 – 110,000") accounting for case complexity variations */
+export function formatPriceRange(minPrice: number, maxPrice?: number | null): string {
+  const minFormatted = minPrice.toLocaleString("en-PK");
+  if (!maxPrice || maxPrice <= minPrice) {
+    const calculatedMax = Math.round((minPrice * 1.25) / 500) * 500;
+    return `Rs. ${minFormatted} – ${calculatedMax.toLocaleString("en-PK")}`;
+  }
+  return `Rs. ${minFormatted} – ${maxPrice.toLocaleString("en-PK")}`;
+}
+
 /** Format a date string/Date to a human-readable date. */
 export function formatDate(
   date: string | Date,

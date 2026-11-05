@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Loader2, DollarSign } from "lucide-react";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -89,7 +91,7 @@ export default function RecordPayment({ treatmentPlanId, treatmentName, remainin
                     variant="outline"
                     className="gap-2 bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 font-semibold rounded-xl shadow-xs transition-premium"
                 >
-                    <DollarSign className="size-4" />
+                    <AttachMoneyOutlinedIcon className="size-4" />
                     Record Payment
                 </Button>
             </DialogTrigger>
@@ -160,7 +162,7 @@ export default function RecordPayment({ treatmentPlanId, treatmentName, remainin
                         >
                             {isLoading ? (
                                 <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <AutorenewOutlinedIcon className="mr-2 h-4 w-4 animate-spin" />
                                     Recording...
                                 </>
                             ) : (

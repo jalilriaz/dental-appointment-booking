@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, Loader2 } from "lucide-react";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea"; // Assuming you have this, otherwise use Input
@@ -156,7 +160,7 @@ export default function ServiceManager({
                     <p className="text-sm text-slate-500">Manage your clinic's offerings.</p>
                 </div>
                 <Button onClick={() => handleOpenDialog()} className="btn-brand border-0 shadow-lg shadow-teal-500/20">
-                    <Plus className="size-4 mr-2" />
+                    <AddOutlinedIcon className="size-4 mr-2" />
                     Add Service
                 </Button>
             </div>
@@ -307,13 +311,13 @@ export default function ServiceManager({
                                                             className="size-8"
                                                             onClick={() => handleOpenDialog(t)}
                                                         >
-                                                            <Pencil className="size-4 text-slate-500" />
+                                                            <EditOutlinedIcon className="size-4 text-slate-500" />
                                                         </Button>
 
                                                         <AlertDialog>
                                                             <AlertDialogTrigger asChild>
                                                                 <Button variant="ghost" size="icon" className="size-8 hover:text-red-600">
-                                                                    <Trash2 className="size-4" />
+                                                                    <DeleteOutlineOutlinedIcon className="size-4" />
                                                                 </Button>
                                                             </AlertDialogTrigger>
                                                             <AlertDialogContent>
@@ -326,7 +330,7 @@ export default function ServiceManager({
                                                                 <AlertDialogFooter>
                                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                                                     <AlertDialogAction onClick={() => handleDelete(t.id)} disabled={isDeleting} className="bg-red-600 hover:bg-red-700">
-                                                                        {isDeleting ? (<><Loader2 className="size-4 mr-2 animate-spin" /> Deleting...</>) : "Delete"}
+                                                                        {isDeleting ? (<><AutorenewOutlinedIcon className="size-4 mr-2 animate-spin" /> Deleting...</>) : "Delete"}
                                                                     </AlertDialogAction>
                                                                 </AlertDialogFooter>
                                                             </AlertDialogContent>

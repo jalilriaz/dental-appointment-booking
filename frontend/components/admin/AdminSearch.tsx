@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Loader2, User, Calendar } from "lucide-react";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -63,7 +66,7 @@ export default function AdminSearch() {
     return (
         <div ref={containerRef} className="relative hidden sm:block">
             <div className="flex items-center gap-2 bg-white/[0.04] px-3 py-2 rounded-lg border border-white/10 w-64 focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-500/50 transition-all">
-                {loading ? <Loader2 className="size-4 animate-spin text-teal-400" /> : <Search className="size-4 text-slate-400" />}
+                {loading ? <AutorenewOutlinedIcon className="size-4 animate-spin text-teal-400" /> : <SearchOutlinedIcon className="size-4 text-slate-400" />}
                 <input
                     type="text"
                     placeholder="Search patients, staff..."
@@ -92,7 +95,7 @@ export default function AdminSearch() {
                                             "size-8 rounded-full flex items-center justify-center shrink-0",
                                             result.type === 'user' ? "bg-blue-500/15 text-blue-400" : "bg-teal-500/15 text-teal-400"
                                         )}>
-                                            {result.type === 'user' ? <User className="size-4" /> : <Calendar className="size-4" />}
+                                            {result.type === 'user' ? <PersonOutlineOutlinedIcon className="size-4" /> : <CalendarTodayOutlinedIcon className="size-4" />}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium text-white truncate">{result.title}</p>
