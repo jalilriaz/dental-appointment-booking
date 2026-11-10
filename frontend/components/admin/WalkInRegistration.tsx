@@ -358,8 +358,8 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                             </div>
                                             <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500 mt-0.5">
                                                 {p.phone && <span className="flex items-center gap-1 font-medium"><PhoneOutlinedIcon className="size-3 text-teal-600" />{p.phone}</span>}
-                                                <span>{p._count.appointments} visit{p._count.appointments !== 1 ? "s" : ""}</span>
-                                                {p.appointments[0] && (
+                                                <span>{(p._count?.appointments ?? p.appointments?.length ?? 0)} visit{(p._count?.appointments ?? p.appointments?.length ?? 0) !== 1 ? "s" : ""}</span>
+                                                {p.appointments?.[0] && (
                                                     <span className="hidden sm:inline">Last: {formatDate(p.appointments[0].startTime, "short")}</span>
                                                 )}
                                             </div>
@@ -447,7 +447,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                                         {history.patient.phone && <span className="flex items-center gap-1"><PhoneOutlinedIcon className="size-3" />{history.patient.phone}</span>}
                                         {history.patient.email && <span className="truncate">{history.patient.email}</span>}
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-0.5">{history.appointments.length} appointment{history.appointments.length !== 1 ? "s" : ""} on record</p>
+                                    <p className="text-xs text-slate-500 mt-0.5">{(history.appointments?.length || 0)} appointment{(history.appointments?.length || 0) !== 1 ? "s" : ""} on record</p>
                                 </div>
                             </div>
                             <div className="flex gap-2 self-end sm:self-auto shrink-0">
@@ -582,14 +582,14 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
                             <h4 className="text-sm font-bold text-slate-900">Treatment History</h4>
                             <p className="text-xs text-slate-500 mt-0.5 font-medium">Past appointments with clinical notes</p>
                         </div>
-                        {history.appointments.length === 0 ? (
+                        {!history.appointments || history.appointments.length === 0 ? (
                             <div className="p-8 text-center">
                                 <AssignmentOutlinedIcon className="size-10 text-slate-400 mx-auto mb-3" />
                                 <p className="text-sm text-slate-500 font-medium">No medical history yet</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-slate-100">
-                                {history.appointments.map(apt => (
+                                {(history.appointments || []).map(apt => (
                                     <div key={apt.id} className="px-4 sm:px-5 py-3 sm:py-4">
                                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
                                             <div className="flex items-center gap-3">

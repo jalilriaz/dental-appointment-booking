@@ -4,7 +4,7 @@ import { fetchApi } from "@/lib/api-client";
 import { useState } from "react";
 import { toast } from "sonner";
 import { checkoutAppointment } from "@/app/actions/billing";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import {
   CheckCircleOutlineOutlined,
@@ -55,6 +55,7 @@ export default function TodayAppointments({
   title?: string;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [checkoutApt, setCheckoutApt] = useState<TodayAppointment | null>(null);
   const [amountValue, setAmountValue] = useState("");
@@ -128,6 +129,7 @@ export default function TodayAppointments({
       }
 
       refetch();
+      queryClient.invalidateQueries({ queryKey: ["staff-reception-dashboard"] });
       router.refresh();
     } catch {
       toast.error("Update Failed", { description: "Something went wrong. Please try again." });

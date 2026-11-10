@@ -20,7 +20,8 @@ import { usePathname } from "next/navigation";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Services & Treatments", href: "/services" },
-  { label: "Our Clinic & Doctor", href: "/about" },
+  { label: "Our Doctors", href: "/doctors" },
+  { label: "Our Clinic", href: "/about" },
   { label: "Contact & Location", href: "/contact" },
 ];
 
