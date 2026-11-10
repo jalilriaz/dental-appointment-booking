@@ -1,6 +1,6 @@
 const clinicInfo = {
     phone: "+92 314 5475528",
-    address: "F-10 Markaz, Islamabad, Pakistan",
+    address: "Office #6, 1st Floor, Doctors Plaza, 6 Markaz Rd (Next to IDC), G-8 Markaz, Islamabad, 44220",
 };
 
 export interface PrecautionInfo {

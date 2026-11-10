@@ -8,6 +8,9 @@
     "dev:backend": "pnpm --filter backend dev",
     "build": "turbo run build",
     "start": "pnpm --filter frontend start",
+    "db:clean": "pnpm --filter backend run db:clean",
+    "db:seed": "pnpm --filter backend run prisma:seed",
+    "db:feed": "pnpm --filter backend run db:feed",
     "lint": "turbo run lint"
   },
   "devDependencies": {

@@ -31,6 +31,92 @@ const walkInSchema = z.object({
     }
 });
 
+// GET /api/admin/dashboard - Executive practice telemetry
+router.get('/dashboard', requireAuth, requireRole('ADMIN'), async (_req: Request, res: Response) => {
+    try {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const todayEnd = new Date(todayStart.getTime() + 86400000);
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const [
+            totalPatients,
+            totalAppointments,
+            appointmentsToday,
+            completedAppointments,
+            cancelledAppointments,
+            upcomingAppointments,
+            realizedRevenueAgg,
+            projectedRevenueAgg,
+            monthlyRealizedAgg,
+            todayAppts,
+            recentAppointments,
+        ] = await Promise.all([
+            prisma.user.count({ where: { role: 'PATIENT' } }),
+            prisma.appointment.count(),
+            prisma.appointment.count({
+                where: {
+                    startTime: { gte: todayStart, lt: todayEnd },
+                    status: { not: 'CANCELLED' },
+                },
+            }),
+            prisma.appointment.count({ where: { status: 'COMPLETED' } }),
+            prisma.appointment.count({ where: { status: 'CANCELLED' } }),
+            prisma.appointment.count({
+                where: { startTime: { gte: now }, status: 'SCHEDULED' },
+            }),
+            prisma.appointment.aggregate({
+                _sum: { amountPaid: true },
+                where: { status: 'COMPLETED' },
+            }),
+            prisma.appointment.aggregate({
+                _sum: { price: true },
+                where: { status: { in: ['SCHEDULED', 'COMPLETED'] } },
+            }),
+            prisma.appointment.aggregate({
+                _sum: { amountPaid: true },
+                where: { status: 'COMPLETED', startTime: { gte: monthStart } },
+            }),
+            prisma.appointment.findMany({
+                where: {
+                    startTime: { gte: todayStart, lt: todayEnd },
+                    status: { not: 'CANCELLED' },
+                },
+                include: {
+                    patient: { select: { name: true, phone: true, medicalAlerts: true } },
+                    treatment: { select: { name: true, durationMin: true, price: true } },
+                },
+                orderBy: { startTime: 'asc' },
+            }),
+            prisma.appointment.findMany({
+                take: 8,
+                orderBy: { startTime: 'desc' },
+                include: {
+                    patient: { select: { name: true, phone: true } },
+                    treatment: { select: { name: true, price: true, category: true } },
+                },
+            }),
+        ]);
+
+        return res.json({
+            totalPatients,
+            totalAppointments,
+            appointmentsToday,
+            completedAppointments,
+            cancelledAppointments,
+            upcomingAppointments,
+            realizedRevenue: realizedRevenueAgg._sum.amountPaid || 0,
+            projectedRevenue: projectedRevenueAgg._sum.price || 0,
+            monthRevenue: monthlyRealizedAgg._sum.amountPaid || 0,
+            todayAppointments: todayAppts,
+            recentAppointments,
+        });
+    } catch (error) {
+        console.error('Admin dashboard telemetry error:', error);
+        return res.status(500).json({ error: 'Failed to fetch admin dashboard telemetry' });
+    }
+});
+
 // GET /api/admin/search - Global admin search
 router.get('/search', requireAuth, requireRole('ADMIN'), async (req: Request, res: Response) => {
     try {
@@ -123,6 +209,9 @@ router.get('/walk-in/search', requireAuth, requireRole('ADMIN', 'STAFF'), async 
                     patientCode: true,
                     medicalAlerts: true,
                     createdAt: true,
+                    _count: {
+                        select: { appointments: true },
+                    },
                     appointments: {
                         select: {
                             id: true,

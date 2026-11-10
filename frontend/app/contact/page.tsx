@@ -5,16 +5,16 @@ import { ALL_TREATMENTS } from "@/lib/treatmentsData";
 import prisma from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Contact & Location | Elite Dental Centre Islamabad (F-10 Markaz)",
+  title: "Contact & Location | Elite Dental Centre Islamabad (G-8 Markaz)",
   description:
-    "Visit Elite Dental Centre at F-10 Markaz, Islamabad. Book with Lead Dental Surgeon Dr. Sheriyaar, get same-day emergency relief, or call +92 314 5475528. 2nd Floor, D-Watson Chemist Building, elevator access & dedicated parking.",
+    "Visit Elite Dental Centre at Doctors Plaza, 1st Floor, Office #6, 6 Markaz Rd (next to IDC), G-8 Markaz, Islamabad. Book with Lead Dental Surgeon Dr. Sheriyaar, get same-day emergency relief, or call +92 314 5475528.",
   alternates: {
     canonical: "https://elitedental.pk/contact",
   },
   openGraph: {
     title: "Contact & Location | Elite Dental Centre Islamabad",
     description:
-      "Elite Dental Centre in F-10 Markaz, Islamabad. 2nd Floor D-Watson Chemist Building, elevator access, ample parking, and same-day dental emergency care with Dr. Sheriyaar.",
+      "Elite Dental Centre in G-8 Markaz, Islamabad. Doctors Plaza, 1st Floor, Office #6, next to IDC, elevator access, ample parking, and same-day dental emergency care with Dr. Sheriyaar.",
     url: "https://elitedental.pk/contact",
     type: "website",
   },
@@ -64,18 +64,18 @@ export default async function ContactPage() {
       "paymentAccepted": "Cash, Credit Card, Bank Transfer, Online Transfer",
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "D-Watson Chemist Building, 2nd Floor, Main Roundabout, F-10 Markaz",
+        "streetAddress": "Office #6, 1st Floor, Doctors Plaza, 6 Markaz Rd, Next to Islamabad Diagnostic Centre (IDC), G-8 Markaz, G-8/2",
         "addressLocality": "Islamabad",
         "addressRegion": "Islamabad Capital Territory",
-        "postalCode": "44000",
+        "postalCode": "44220",
         "addressCountry": "PK"
       },
       "geo": {
         "@type": "GeoCoordinates",
-        "latitude": 33.6938,
-        "longitude": 73.0113
+        "latitude": 33.6922,
+        "longitude": 73.0423
       },
-      "hasMap": "https://maps.google.com/maps?q=D-Watson+Chemist+F-10+Markaz+Islamabad",
+      "hasMap": "https://maps.google.com/maps?q=Doctors+Plaza,+6+Markaz+Rd,+next+to+Islamabad+Diagnostic+Centre,+G-8+Markaz,+Islamabad",
       "openingHoursSpecification": [
         {
           "@type": "OpeningHoursSpecification",
@@ -97,10 +97,10 @@ export default async function ContactPage() {
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "How do I reach Elite Dental Centre in F-10 Markaz, Islamabad?",
+          "name": "How do I reach Elite Dental Centre in G-8 Markaz, Islamabad?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "We are located at D-Watson Chemist Building, 2nd Floor, Main Roundabout, F-10 Markaz, Islamabad. Elevator access is available directly from the ground floor lobby, and dedicated patient parking is located right in front of the plaza."
+            "text": "We are located at Office #6, 1st Floor, Doctors Plaza, 6 Markaz Rd, next to Islamabad Diagnostic Centre (IDC), G-8 Markaz, G-8/2, Islamabad. Dedicated parking is located in front of the plaza."
           }
         },
         {

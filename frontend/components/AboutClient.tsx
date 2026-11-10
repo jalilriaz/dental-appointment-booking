@@ -286,7 +286,7 @@ export default function AboutClient({ treatments }: AboutClientProps) {
               Tour Our Clinical Operatory Suites
             </h2>
             <p className="text-slate-600 mt-3 text-base leading-relaxed">
-              Explore our purpose-built surgical suites in F-10 Markaz, engineered to comply with strict European Class-B sterilization protocols and modern patient ergonomic care.
+              Explore our purpose-built surgical suites in G-8 Markaz (Doctors Plaza, next to IDC), engineered to comply with strict European Class-B sterilization protocols and modern patient ergonomic care.
             </p>
           </div>
 
@@ -371,7 +371,7 @@ export default function AboutClient({ treatments }: AboutClientProps) {
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-bold block">Location</span>
-                    <span className="text-xs font-bold text-slate-800">F-10 Markaz Islamabad</span>
+                    <span className="text-xs font-bold text-slate-800">G-8 Markaz Islamabad</span>
                   </div>
                   <Link
                     href="/#book"
@@ -419,7 +419,7 @@ export default function AboutClient({ treatments }: AboutClientProps) {
                   Seamless Arrival & Check-In
                 </h3>
                 <p className="text-xs text-slate-600 mt-2.5 leading-relaxed font-normal">
-                  Enjoy dedicated building parking and elevator access in F-10 Markaz. Fast digital iPad registration with zero lobby waiting queues.
+                  Enjoy dedicated building parking and elevator access in G-8 Markaz. Fast digital iPad registration with zero lobby waiting queues.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-teal-800">
@@ -574,7 +574,7 @@ export default function AboutClient({ treatments }: AboutClientProps) {
                     Schedule Consultation with Dr. Sheriyaar
                   </h3>
                   <p className="text-xs text-slate-500 font-medium">
-                    Elite Dental Centre • F-10 Markaz Islamabad
+                    Elite Dental Centre • G-8 Markaz Islamabad
                   </p>
                 </div>
               </div>

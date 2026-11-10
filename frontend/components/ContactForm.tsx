@@ -84,7 +84,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
   }, []);
 
   const handleCopyAddress = () => {
-    const fullAddress = `${clinicInfo.address}, 2nd Floor (Above D-Watson Chemist), F-10 Markaz, Islamabad, Pakistan`;
+    const fullAddress = `Office #6, 1st Floor, Doctors Plaza, 6 Markaz Rd, Next to Islamabad Diagnostic Centre (IDC), G-8 Markaz, G-8/2, Islamabad, 44220`;
     navigator.clipboard.writeText(fullAddress);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -97,9 +97,9 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
 
   const contactFaqs = [
     {
-      question: "How do I reach Elite Dental Centre in F-10 Markaz, Islamabad?",
+      question: "How do I reach Elite Dental Centre in G-8 Markaz, Islamabad?",
       answer:
-        "We are located at D-Watson Chemist Building, 2nd Floor, Main Roundabout, F-10 Markaz, Islamabad. Elevator access is available directly from the ground floor lobby, and dedicated patient parking is located right in front of the plaza.",
+        "We are located at Office #6, 1st Floor, Doctors Plaza, 6 Markaz Rd, directly next to Islamabad Diagnostic Centre (IDC), G-8 Markaz, Islamabad. Elevator access is available directly from the lobby, with ample street and plaza parking.",
       icon: LocationOnOutlined,
     },
     {
@@ -223,14 +223,14 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                   <LocationOnOutlined sx={{ fontSize: 22 }} />
                 </div>
               </div>
-              <h3 className="text-lg font-black text-[#0B1528] tracking-tight">F-10 Markaz Clinic</h3>
+              <h3 className="text-lg font-black text-[#0B1528] tracking-tight">G-8 Markaz Clinic</h3>
               <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                Above D-Watson Chemist, 2nd Floor (Elevator Access Available). Operating hours: {workingHours || "12:00 PM - 8:00 PM (Mon-Sat)"}.
+                Doctors Plaza, 1st Floor, Office #6 (Next to IDC). Operating hours: {workingHours || "12:00 PM - 8:00 PM (Mon-Sat)"}.
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-slate-100">
               <a
-                href="https://www.google.com/maps/search/D-Watson+Chemist+F-10+Markaz+Islamabad"
+                href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full h-11 inline-flex items-center justify-center gap-2 px-4 rounded-xl bg-[#0B1528] hover:bg-slate-800 text-white font-extrabold text-xs uppercase tracking-wider shadow-md shadow-slate-900/15 active:scale-[0.98] transition-all cursor-pointer"
@@ -260,7 +260,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                 Visiting Our Clinic
               </h2>
               <p className="text-xs text-slate-600 mt-1">
-                Centrally located in Islamabad&apos;s prime F-10 Markaz with step-free elevator access and hassle-free parking.
+                Centrally located in Islamabad&apos;s G-8 Markaz at Doctors Plaza, right next to Islamabad Diagnostic Centre (IDC).
               </p>
 
               {/* Wayfinding Feature List */}
@@ -275,7 +275,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                       Prominent Landmark
                     </h4>
                     <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                      Located in the iconic <strong>D-Watson Chemist Building</strong> at the main F-10 Markaz roundabout.
+                      Located in <strong>Doctors Plaza (1st Floor, Office #6)</strong> on 6 Markaz Rd, directly adjacent to <strong>Islamabad Diagnostic Centre (IDC)</strong>.
                     </p>
                   </div>
                 </div>
@@ -320,7 +320,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                       Uber / Careem / Rideshare Drop-Off
                     </h4>
                     <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                      Set destination to &ldquo;D-Watson Chemist F-10 Markaz&rdquo;. The drop-off curb is just 10 meters from the building&apos;s main entrance.
+                      Set destination to &ldquo;Doctors Plaza G-8 Markaz&rdquo; or &ldquo;Islamabad Diagnostic Centre (IDC) G-8&rdquo;. Drop-off is right at the building entrance.
                     </p>
                   </div>
                 </div>
@@ -334,7 +334,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                       Official Clinic Address
                     </p>
                     <p className="text-xs font-semibold text-slate-800 truncate mt-0.5">
-                      {clinicInfo.address}, 2nd Floor, Islamabad
+                      {clinicInfo.address}
                     </p>
                   </div>
                   <button
@@ -358,7 +358,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
 
                 <div className="grid grid-cols-2 gap-3 mt-3">
                   <a
-                    href="https://www.google.com/maps/dir/?api=1&destination=D-Watson+Chemist+F-10+Markaz+Islamabad"
+                    href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs text-center flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
@@ -367,7 +367,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                     <span>Google Maps</span>
                   </a>
                   <a
-                    href="https://maps.apple.com/?daddr=33.6938,73.0113"
+                    href="https://maps.apple.com/?daddr=33.6922,73.0423"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs text-center flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
@@ -625,13 +625,13 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                 Find Elite Dental Centre on Google Maps
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
-                Above D-Watson Chemist, 2nd Floor, Main Roundabout, F-10 Markaz, Islamabad. Use the interactive map below to plan your driving route or zoom into our parking entrance.
+                Doctors Plaza, 1st Floor, Office #6, 6 Markaz Rd, next to Islamabad Diagnostic Centre (IDC), G-8 Markaz, Islamabad. Use the interactive map below to plan your driving route.
               </p>
             </div>
 
             <div className="flex items-center gap-3 shrink-0">
               <a
-                href="https://www.google.com/maps/dir/?api=1&destination=D-Watson+Chemist+F-10+Markaz+Islamabad"
+                href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-sm transition-all"
@@ -660,12 +660,12 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                 <span className="size-2.5 rounded-full bg-teal-400 animate-ping" />
                 <span className="size-2.5 rounded-full bg-teal-400 -ml-5" />
                 <span className="text-xs font-black uppercase tracking-wider text-white">
-                  Live Clinic Wayfinding Hub • F-10 Markaz Islamabad
+                  Live Clinic Wayfinding Hub • G-8 Markaz Islamabad
                 </span>
               </div>
               <div className="text-[11px] text-slate-400 flex items-center gap-4">
-                <span>GPS Coordinates: 33.6938° N, 73.0113° E</span>
-                <span className="hidden sm:inline text-teal-300 font-semibold">• 2nd Floor, Elevator Access</span>
+                <span>GPS Coordinates: 33.6922° N, 73.0423° E</span>
+                <span className="hidden sm:inline text-teal-300 font-semibold">• 1st Floor, Doctors Plaza</span>
               </div>
             </div>
 
@@ -673,7 +673,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
             <div className="relative w-full h-[460px] sm:h-[540px]">
               <iframe
                 title="Elite Dental Centre Islamabad - Full Width Map"
-                src="https://maps.google.com/maps?q=D-Watson+Chemist+F-10+Markaz+Islamabad&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?q=Doctors+Plaza,+6+Markaz+Rd,+next+to+Islamabad+Diagnostic+Centre,+G-8+Markaz,+Islamabad&t=&z=16&ie=UTF8&iwloc=&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -693,11 +693,11 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                       Elite Dental Centre
                     </h4>
                     <p className="text-xs text-slate-600 mt-0.5 leading-relaxed font-medium">
-                      2nd Floor, D-Watson Chemist Building, Main Roundabout, F-10 Markaz.
+                      Office #6, 1st Floor, Doctors Plaza, next to Islamabad Diagnostic Centre (IDC), G-8 Markaz.
                     </p>
                     <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center gap-2">
                       <a
-                        href="https://www.google.com/maps/dir/?api=1&destination=D-Watson+Chemist+F-10+Markaz+Islamabad"
+                        href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1"
@@ -739,7 +739,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
         <FaqSection
           kicker="Help & Directions"
           title="Frequently asked questions"
-          subtitle="Everything you need to know about reaching our F-10 Markaz facility, parking, emergency slots, and appointments."
+          subtitle="Everything you need to know about reaching our G-8 Markaz facility, parking, emergency slots, and appointments."
           items={contactFaqs}
         />
       </section>

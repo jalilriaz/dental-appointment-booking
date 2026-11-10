@@ -5,6 +5,7 @@ import Link from "next/link";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import ChevronLeftOutlinedIcon from "@mui/icons-material/ChevronLeftOutlined";
 import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 
@@ -82,6 +83,17 @@ export default function PatientsTable({ patients }: { patients: PatientRow[] }) 
                                     </td>
                                 </tr>
                             ))}
+                            {paged.length === 0 && (
+                                <tr>
+                                    <td colSpan={5} className="py-12 text-center">
+                                        <div className="flex flex-col items-center justify-center space-y-2 text-slate-500">
+                                            <PeopleAltOutlinedIcon sx={{ fontSize: 40 }} className="text-slate-300" />
+                                            <p className="font-semibold text-slate-800 text-sm">No Patients Registered Yet</p>
+                                            <p className="text-xs text-slate-500 max-w-sm">Patient records will automatically appear here once patients book an appointment or are registered at reception.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
