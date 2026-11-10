@@ -14,6 +14,23 @@ import {
     generateWhatsAppDeepLink,
     dispatchN8nPrecautionsWebhook,
 } from '../lib/precautions';
+import { ALL_TREATMENTS } from '../lib/treatmentsData';
+
+async function resolveTreatment(treatmentId?: string) {
+    if (!treatmentId) return null;
+    let treatment = await prisma.treatment.findUnique({
+        where: { id: treatmentId },
+    });
+    if (!treatment) {
+        const mock = ALL_TREATMENTS.find((t) => t.id === treatmentId);
+        if (mock) {
+            treatment = await prisma.treatment.findFirst({
+                where: { name: { equals: mock.name, mode: 'insensitive' } },
+            });
+        }
+    }
+    return treatment;
+}
 
 const router = Router();
 
@@ -66,10 +83,7 @@ router.get('/availability', async (req: Request, res: Response) => {
 
         let treatmentDuration = 30;
         if (treatmentId) {
-            const treatment = await prisma.treatment.findUnique({
-                where: { id: treatmentId },
-                select: { durationMin: true },
-            });
+            const treatment = await resolveTreatment(treatmentId);
             if (treatment) treatmentDuration = treatment.durationMin;
         }
 
@@ -302,9 +316,7 @@ router.post('/', optionalAuth, async (req: Request, res: Response) => {
             });
         }
 
-        const treatment = await prisma.treatment.findUnique({
-            where: { id: treatmentId },
-        });
+        const treatment = await resolveTreatment(treatmentId);
         if (!treatment) {
             return res.status(404).json({ error: 'Treatment not found' });
         }
@@ -389,7 +401,7 @@ router.post('/', optionalAuth, async (req: Request, res: Response) => {
                     startTime,
                     endTime,
                     patientId: finalPatientId,
-                    treatmentId,
+                    treatmentId: treatment.id,
                     status: 'SCHEDULED',
                     bookedBy,
                     price: treatment.price,

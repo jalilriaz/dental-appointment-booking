@@ -1,0 +1,21 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: dental-backend:latest
+    container_name: dental-backend
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: "4000"
+      DATABASE_URL: "postgresql://loadex:postgres123@host.docker.internal:5432/elitedental"
+      JWT_SECRET_KEY: "elite-dental-secure-jwt-secret-key-change-in-prod"
+      FRONTEND_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      N8N_SECRET_KEY: "elite-dental-n8n-bot-secret-key-2026"
+      N8N_WEBHOOK_URL: "http://host.docker.internal:5678/webhook/elite-dental-precautions"
+      LOG_LEVEL: "info"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

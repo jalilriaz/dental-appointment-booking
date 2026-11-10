@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { requireAuth, requireRole } from '../middleware/auth.middleware';
+import { ALL_TREATMENTS } from '../lib/treatmentsData';
 
 const router = Router();
 
@@ -21,10 +22,19 @@ router.get('/', async (_req: Request, res: Response) => {
 // GET /api/treatments/:id - Fetch single treatment
 router.get('/:id', async (req: Request, res: Response) => {
     try {
-        const treatment = await prisma.treatment.findUnique({
+        let treatment = await prisma.treatment.findUnique({
             where: { id: req.params.id },
             include: { _count: { select: { appointments: true } } },
         });
+        if (!treatment) {
+            const mock = ALL_TREATMENTS.find((t) => t.id === req.params.id);
+            if (mock) {
+                treatment = await prisma.treatment.findFirst({
+                    where: { name: { equals: mock.name, mode: 'insensitive' } },
+                    include: { _count: { select: { appointments: true } } },
+                });
+            }
+        }
         if (!treatment) {
             return res.status(404).json({ error: 'Treatment not found' });
         }
