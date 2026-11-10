@@ -11,6 +11,7 @@ export interface Treatment {
     name: string;
     durationMin: number;
     price: number;
+    maxPrice?: number | null;
     discountedPrice?: number | null;
     description?: string | null;
     instructions?: string | null;

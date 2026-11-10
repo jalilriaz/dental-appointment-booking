@@ -37,7 +37,7 @@ import {
 } from "@mui/icons-material";
 
 import { TimeSlotSelector, TimeSlot } from "@/components/ui/time-slot-selector"
-import { formatPKR } from "@/lib/utils"
+import { formatPKR, formatPriceRange } from "@/lib/utils"
 import type { Treatment } from "@/lib/types"
 
 // Define Zod Schema for the Booking Form
@@ -261,17 +261,21 @@ export default function BookingForm({
         {steps.map((s, i) => (
           <div key={s.num} className="flex items-center">
             <div
-              className={`flex items-center gap-2.5 font-bold ${
-                step >= s.num ? "text-teal-700" : "text-slate-400"
+              className={`flex items-center gap-2.5 transition-colors ${
+                step === s.num
+                  ? "text-[#0B1528] font-black"
+                  : step > s.num
+                  ? "text-teal-700 font-extrabold"
+                  : "text-slate-400 font-bold"
               }`}
             >
               <div
-                className={`size-9 rounded-full flex items-center justify-center text-xs font-black border-2 transition-all ${
+                className={`size-9 rounded-full flex items-center justify-center text-xs font-black transition-all ${
                   step > s.num
-                    ? "bg-teal-600 text-white border-teal-600 shadow-md shadow-teal-600/20"
+                    ? "bg-teal-700 text-white shadow-sm"
                     : step === s.num
-                    ? "border-teal-600 text-teal-700 bg-teal-50 shadow-sm"
-                    : "border-slate-300 text-slate-400 bg-white"
+                    ? "bg-teal-600 text-white shadow-md shadow-teal-600/30 scale-105 ring-4 ring-teal-50"
+                    : "border-2 border-slate-300 text-slate-400 bg-slate-50"
                 }`}
               >
                 {step > s.num ? <CheckCircleOutlineIcon sx={{ fontSize: 18 }} /> : s.num}
@@ -280,7 +284,7 @@ export default function BookingForm({
             </div>
             {i < 2 && (
               <div
-                className={`w-6 sm:w-14 h-0.5 mx-2.5 rounded-full ${
+                className={`w-6 sm:w-14 h-1 mx-2.5 rounded-full transition-colors ${
                   step > s.num ? "bg-teal-600" : "bg-slate-200"
                 }`}
               />
@@ -348,7 +352,7 @@ export default function BookingForm({
                             return next;
                           });
                         }}
-                        className="w-full flex items-center gap-2.5 px-4 py-3 bg-slate-50/90 hover:bg-slate-100/90 transition-all cursor-pointer text-left"
+                        className="w-full flex items-center gap-2.5 px-4 py-3 bg-slate-50/90 hover:bg-teal-50/40 border-b border-slate-100 transition-all cursor-pointer text-left"
                       >
                         {isCollapsed ? (
                           <ChevronRightIcon sx={{ fontSize: 18, color: "#64748b" }} />
@@ -356,10 +360,10 @@ export default function BookingForm({
                           <ExpandMoreIcon sx={{ fontSize: 20, color: "#0d9488" }} />
                         )}
                         <IconComponent sx={{ fontSize: 18, color: "#0d9488" }} />
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                        <span className="text-xs font-black uppercase tracking-wider text-slate-900">
                           {group.label}
                         </span>
-                        <span className="ml-auto text-xs text-slate-600 font-bold bg-slate-200/80 px-2 py-0.5 rounded-full font-mono">
+                        <span className="ml-auto text-xs text-teal-800 font-bold bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full font-mono">
                           {group.treatments.length}
                         </span>
                       </button>
@@ -376,28 +380,40 @@ export default function BookingForm({
                                 onClick={() => {
                                   setValue("treatmentId", t.id, { shouldValidate: true });
                                 }}
-                                className={`w-full p-4 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
+                                className={`w-full p-4 rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between ${
                                   isSelected
-                                    ? "bg-teal-50/60 border-teal-500 shadow-sm ring-1 ring-teal-500/30"
-                                    : "bg-white border-slate-200/70 hover:border-teal-300 hover:bg-slate-50/40"
+                                    ? "bg-teal-50/70 border-2 border-teal-600 shadow-md shadow-teal-600/15 ring-2 ring-teal-600/20"
+                                    : "bg-white border border-slate-200/80 hover:border-teal-400 hover:bg-teal-50/20 shadow-2xs"
                                 }`}
                               >
                                 <div className="flex items-start justify-between gap-4 w-full">
                                   <div>
-                                    <h4 className="font-extrabold text-slate-950 text-sm">
-                                      {t.name}
-                                    </h4>
-                                    <p className="text-xs text-slate-500 mt-1 line-clamp-1">
+                                    <div className="flex items-center gap-2">
+                                      <h4 className={`text-sm font-black ${isSelected ? "text-teal-950" : "text-slate-950"}`}>
+                                        {t.name}
+                                      </h4>
+                                      {isSelected && (
+                                        <span className="px-2 py-0.5 rounded-full bg-teal-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-2xs">
+                                          <CheckCircleOutlineIcon sx={{ fontSize: 12 }} /> Selected
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-1 line-clamp-1 font-normal">
                                       {t.description || "Certified procedural protocol"}
                                     </p>
-                                    <div className="flex items-center gap-1.5 mt-2 text-xs font-mono text-slate-400">
-                                      <AccessTimeIcon sx={{ fontSize: 14 }} />
+                                    <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-slate-500">
+                                      <AccessTimeIcon sx={{ fontSize: 14, color: "#0d9488" }} />
                                       <span>{t.durationMin} min</span>
                                     </div>
                                   </div>
                                   <div className="text-right shrink-0">
-                                    <span className="text-sm font-black text-teal-800">
-                                      {formatPKR(t.price)}
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                      Transparent Fee
+                                    </span>
+                                    <span className="text-sm sm:text-base font-black text-teal-700">
+                                      {t.maxPrice && t.maxPrice > t.price
+                                        ? formatPriceRange(t.price, t.maxPrice)
+                                        : formatPKR(t.price)}
                                     </span>
                                   </div>
                                 </div>
@@ -421,22 +437,29 @@ export default function BookingForm({
       {/* Step 2: Date & Time */}
       {step === 2 && (
         <div className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs p-6 space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-teal-50/90 via-teal-50/40 to-cyan-50/30 border border-teal-200">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md">
+              <span className="text-[10px] font-black uppercase tracking-wider text-white bg-teal-600 px-2.5 py-0.5 rounded-full shadow-2xs">
                 Selected Treatment
               </span>
-              <h3 className="font-extrabold text-slate-950 text-lg mt-1.5">
+              <h3 className="font-black text-slate-950 text-base sm:text-lg mt-1.5">
                 {selectedTreatment?.name}
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5 font-mono">
-                {selectedTreatment?.durationMin} min • {selectedTreatment ? formatPKR(selectedTreatment.price) : ""}
+              <p className="text-xs text-slate-600 mt-0.5 font-medium">
+                {selectedTreatment?.durationMin} min •{" "}
+                <span className="font-bold text-teal-700">
+                  {selectedTreatment
+                    ? selectedTreatment.maxPrice && selectedTreatment.maxPrice > selectedTreatment.price
+                      ? formatPriceRange(selectedTreatment.price, selectedTreatment.maxPrice)
+                      : formatPKR(selectedTreatment.price)
+                    : ""}
+                </span>
               </p>
             </div>
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="text-xs font-bold text-teal-700 hover:text-teal-800 underline cursor-pointer"
+              className="px-3.5 py-1.5 rounded-lg bg-white border border-teal-200 text-xs font-bold text-teal-700 hover:bg-teal-50 shadow-2xs transition-colors cursor-pointer"
             >
               Change
             </button>
@@ -565,12 +588,12 @@ export default function BookingForm({
       )}
 
       {/* Navigation Buttons */}
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex items-center justify-between pt-5 border-t border-slate-100">
         {step > 1 ? (
           <button
             type="button"
             onClick={prevStep}
-            className="px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs uppercase tracking-wider hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-6 py-3 rounded-full border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-extrabold text-xs uppercase tracking-wider hover:bg-slate-50 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <ArrowBackIcon sx={{ fontSize: 16 }} />
             <span>Back</span>
@@ -583,7 +606,7 @@ export default function BookingForm({
           <button
             type="button"
             onClick={nextStep}
-            className="px-7 py-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-md shadow-teal-600/30 transition-transform active:scale-95 flex items-center gap-1.5 cursor-pointer"
+            className="px-8 py-3.5 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-teal-600/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
           >
             <span>Next</span>
             <ArrowForwardIcon sx={{ fontSize: 16 }} />
@@ -592,12 +615,12 @@ export default function BookingForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-3.5 rounded-xl bg-slate-950 hover:bg-teal-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-slate-950/20 transition-all active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-70"
+            className="px-9 py-3.5 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-black text-xs uppercase tracking-wider shadow-xl shadow-teal-600/35 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-70"
           >
             {isSubmitting ? (
               <CircularProgress size={16} color="inherit" />
             ) : (
-              <CalendarMonthIcon sx={{ fontSize: 18, color: "#2dd4bf" }} />
+              <CalendarMonthIcon sx={{ fontSize: 18, color: "#ffffff" }} />
             )}
             <span>{isSubmitting ? "Booking..." : "Confirm & Reserve Slot"}</span>
           </button>

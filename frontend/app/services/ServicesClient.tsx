@@ -976,9 +976,9 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
         >
           <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
             {/* Dialog Header */}
-            <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-100 shrink-0">
+            <div className="flex items-center justify-between px-6 py-4.5 bg-gradient-to-r from-teal-50/80 via-white to-cyan-50/30 border-b border-slate-100 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center">
+                <div className="size-10 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-md shadow-teal-600/25">
                   <CalendarMonthOutlined sx={{ fontSize: 22 }} />
                 </div>
                 <div>
@@ -997,7 +997,7 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
               <button
                 type="button"
                 onClick={closeBookingModal}
-                className="size-9 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition-colors cursor-pointer"
+                className="size-9 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Close dialog"
               >
                 <Close sx={{ fontSize: 20 }} />
