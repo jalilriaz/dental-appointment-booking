@@ -120,7 +120,7 @@ export default async function AdminDashboard() {
               Clinical Operations Hub
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-              Live practice metrics, daily patient schedule, and procedural ledger for Dr. Sheriyaar at F-10 Markaz Islamabad.
+              Live practice metrics, daily patient schedule, and procedural ledger for Dr. Sheriyaar at G-8 Markaz Islamabad.
             </p>
           </div>
 

@@ -1,6 +1,6 @@
 const getPb = async () => {
     try {
-        const response = await fetch('https://www.google.com/maps/search/D-Watson+Chemist+F-10+Markaz+Islamabad');
+        const response = await fetch('https://www.google.com/maps/search/Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad');
         const text = await response.text();
         // Look for the pb string in the HTML
         // Usually it's something like "https://www.google.com/maps/embed?pb=..."

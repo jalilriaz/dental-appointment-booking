@@ -19,13 +19,13 @@ import prisma from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Our Clinic & Doctor | Elite Dental Centre Islamabad",
   description:
-    "Meet Dr. Sheriyaar, PMDC-registered Lead Dental Surgeon at Elite Dental Centre, F-10 Markaz Islamabad. Explore our 3D CBCT imaging bay, Class-B sterilization, and patient-first care.",
+    "Meet Dr. Sheriyaar, PMDC-registered Lead Dental Surgeon at Elite Dental Centre, G-8 Markaz Islamabad (Doctors Plaza, next to IDC). Explore our 3D CBCT imaging bay, Class-B sterilization, and patient-first care.",
   alternates: {
     canonical: "https://elitedental.pk/about",
   },
   openGraph: {
     title: "Our Clinic & Doctor | Elite Dental Centre Islamabad",
-    description: "PMDC-registered Lead Dental Surgeon Dr. Sheriyaar, European Class-B sterilization, and 3D CBCT diagnostics in F-10 Markaz, Islamabad.",
+    description: "PMDC-registered Lead Dental Surgeon Dr. Sheriyaar, European Class-B sterilization, and 3D CBCT diagnostics in G-8 Markaz, Islamabad.",
     url: "https://elitedental.pk/about",
     type: "website",
   },
@@ -53,8 +53,8 @@ const aboutFaqs = [
     icon: SupportAgentOutlined,
   },
   {
-    question: "Where is Elite Dental Centre located and is elevator parking available?",
-    answer: "We are situated in the heart of Islamabad at D-Watson Chemist Building, 2nd Floor, F-10 Markaz. Ample street and plaza parking is available directly at the entrance with elevator access to our clinical suites.",
+    question: "Where is Elite Dental Centre located and is parking available?",
+    answer: "We are situated at Office #6, 1st Floor, Doctors Plaza, 6 Markaz Rd, directly next to Islamabad Diagnostic Centre (IDC), G-8 Markaz, G-8/2, Islamabad. Ample street and plaza parking is available with elevator access to our clinical suites.",
     icon: LocationOnOutlined,
   },
 ];

@@ -62,7 +62,7 @@ interface DailyTrendItem {
   completed: number;
 }
 
-interface HourlySlotItem {
+interface HourlySlotItem { 
   hour: string;
   count: number;
   active: boolean;
@@ -428,7 +428,7 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
               <p className="text-[10px] text-slate-400 font-medium">Avg Procedure</p>
             </div>
             <div>
-              <p className="text-xs font-black text-teal-700 font-sans">F-10 Hub</p>
+              <p className="text-xs font-black text-teal-700 font-sans">G-8 Hub</p>
               <p className="text-[10px] text-slate-400 font-medium">Operatory 1</p>
             </div>
           </div>

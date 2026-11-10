@@ -36,10 +36,11 @@ import { formatPKR, getTreatmentImage } from "@/lib/utils";
 export const metadata = {
   title: "Elite Dental Centre | Islamabad's Premier Cosmetic & Implant Clinic",
   description:
-    "Leading dental clinic in F-10 Markaz, Islamabad. Advanced dental implants, laser teeth whitening, ceramic braces, and gentle root canal treatments by licensed oral surgeons.",
+    "Leading dental clinic in G-8 Markaz, Islamabad (Doctors Plaza, Next to IDC). Advanced dental implants, laser teeth whitening, ceramic braces, and gentle root canal treatments by licensed oral surgeons.",
   keywords: [
     "dental clinic islamabad",
-    "dentist f-10 markaz",
+    "dentist g-8 markaz",
+    "doctors plaza g-8 dental",
     "teeth whitening islamabad",
     "dental implants pakistan",
     "braces islamabad",
@@ -717,10 +718,10 @@ export default async function LandingPage() {
                     Visit Our Clinic
                   </span>
                   <h2 className="text-3xl sm:text-4xl font-black text-[#0B1528] mt-3 tracking-tight font-sans">
-                    Conveniently Located in F-10 Markaz, Islamabad
+                    Conveniently Located in G-8 Markaz, Islamabad
                   </h2>
                   <p className="text-slate-600 mt-2 text-sm leading-relaxed">
-                    Centrally positioned with dedicated patient parking and state-of-the-art operatory suites designed for patient comfort.
+                    Centrally positioned at Doctors Plaza (1st Floor, Office #6, next to IDC) with dedicated patient parking and modern surgical suites.
                   </p>
                 </div>
 
@@ -729,9 +730,18 @@ export default async function LandingPage() {
                     <div className="p-2.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 shrink-0">
                       <LocationOnOutlined sx={{ fontSize: 20 }} />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Address</h4>
                       <p className="text-sm font-bold text-slate-900 mt-0.5">{clinicInfo.address}</p>
+                      <a
+                        href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 hover:text-teal-800 mt-1.5"
+                      >
+                        <span>Open Directions on Google Maps</span>
+                        <span aria-hidden="true">→</span>
+                      </a>
                     </div>
                   </div>
 
@@ -765,7 +775,7 @@ export default async function LandingPage() {
                 <div className="relative h-80 sm:h-96 rounded-3xl overflow-hidden border border-slate-200 shadow-md">
                   <iframe
                     title="Elite Dental Centre Islamabad Location Map"
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13279.791550993952!2d73.0039233!3d33.6938173!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38dfbe6b7d5f0b4d%3A0x6b4c1a5e1d4d1234!2sF-10%20Markaz%20Islamabad!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s"
+                    src="https://maps.google.com/maps?q=Doctors+Plaza,+6+Markaz+Rd,+next+to+Islamabad+Diagnostic+Centre,+G-8+Markaz,+Islamabad&t=&z=16&ie=UTF8&iwloc=&output=embed"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}

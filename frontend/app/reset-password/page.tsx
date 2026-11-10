@@ -330,7 +330,7 @@ export default function ResetPasswordPage() {
             <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 space-y-0.5">
               <div className="flex items-center gap-1 text-teal-400 text-xs font-black">
                 <LocationOnOutlined sx={{ fontSize: 14 }} />
-                <span>F-10 Markaz</span>
+                <span>G-8 Markaz</span>
               </div>
               <p className="text-[10px] text-slate-400">Islamabad Dental Centre</p>
             </div>
@@ -396,7 +396,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <p className="text-center text-[11px] text-slate-400 font-medium mt-6">
-          Elite Dental Clinic · F-10 Markaz Islamabad · Staff & Administration Security
+          Elite Dental Clinic · G-8 Markaz Islamabad · Staff & Administration Security
         </p>
       </div>
     </div>

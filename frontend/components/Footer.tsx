@@ -70,11 +70,22 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-slate-400 max-w-sm leading-relaxed text-xs">
-              Center of Advanced Implantology and Aesthetic Dentistry in F-10 Markaz, Islamabad. Dedicated to evidence-based practice, biological tooth preservation, and patient comfort.
+              Center of Advanced Implantology and Aesthetic Dentistry in G-8 Markaz, Islamabad. Dedicated to evidence-based practice, biological tooth preservation, and patient comfort.
             </p>
-            <div className="flex items-center gap-2 text-slate-400 text-xs">
-              <LocationOnOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} />
-              <span>{clinicInfo.address}</span>
+            <div className="space-y-1.5 text-slate-400 text-xs">
+              <div className="flex items-start gap-2">
+                <LocationOnOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} className="shrink-0 mt-0.5" />
+                <span>{clinicInfo.address}</span>
+              </div>
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-teal-400 hover:text-teal-300 font-bold text-[11px] ml-6 transition-colors"
+              >
+                <span>View Pin on Google Maps</span>
+                <span aria-hidden="true">→</span>
+              </a>
             </div>
           </div>
 

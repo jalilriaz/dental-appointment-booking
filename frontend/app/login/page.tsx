@@ -196,9 +196,9 @@ function LoginForm() {
             <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 space-y-0.5">
               <div className="flex items-center gap-1 text-teal-400 text-xs font-black">
                 <LocationOnOutlined sx={{ fontSize: 14 }} />
-                <span>F-10 Markaz</span>
+                <span>G-8 Markaz</span>
               </div>
-              <p className="text-[10px] text-slate-400">2nd Floor (Elevator Access)</p>
+              <p className="text-[10px] text-slate-400">1st Floor (Doctors Plaza)</p>
             </div>
           </div>
 

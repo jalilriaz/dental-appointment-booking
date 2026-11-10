@@ -150,7 +150,7 @@ export default function StaffSidebar({ open, onClose }: { open: boolean; onClose
                 <VerifiedUserOutlined sx={{ fontSize: 11, color: "#0d9488" }} />
               </div>
               <span className="text-[10px] text-slate-500 font-medium block truncate">
-                On Duty · F-10 Markaz
+                On Duty · G-8 Markaz
               </span>
             </div>
           </div>

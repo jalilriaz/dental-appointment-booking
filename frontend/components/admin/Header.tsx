@@ -96,7 +96,7 @@ export default function Header({ onMenuClick, label = "Admin" }: HeaderProps) {
                 {label} Portal
               </span>
               <span className="text-[10px] text-teal-700 font-bold uppercase tracking-wider leading-tight mt-0.5">
-                F-10 Clinical Suite
+                G-8 Clinical Suite
               </span>
             </div>
           </div>

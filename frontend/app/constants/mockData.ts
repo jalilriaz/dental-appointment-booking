@@ -4,13 +4,13 @@
 export const clinicInfo = {
     name: "Elite Dental Centre",
     tagline: "Your Smile, Our Passion",
-    address: "F-10 Markaz, Islamabad, Pakistan",
+    address: "Office #6, 1st Floor, Doctors Plaza, 6 Markaz Rd, Next to Islamabad Diagnostic Centre (IDC), G-8 Markaz, G-8/2, Islamabad, 44220",
     phone: "+92-314-5475528",
     email: "info@elitedental.com",
     workingHours: "12:00 PM - 8:00 PM (Mon-Sat)",
     // sundayHours: "2:00 PM - 8:00 PM (Sunday)",
     sundayHours: "Sunday - Closed",
-    mapUrl: "https://maps.google.com/?q=Rawalpindi+Medical+Plaza",
+    mapUrl: "https://maps.google.com/?q=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad",
     whatsapp: "923145475528",
 };
 

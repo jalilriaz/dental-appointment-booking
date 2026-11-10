@@ -25,14 +25,14 @@ import prisma from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Meet Our Doctors & Specialists | Elite Dental Centre Islamabad",
   description:
-    "Meet Dr. Sheriyaar, PMDC-registered Lead Dental Surgeon & Implantologist, and our consultant dental specialists at Elite Dental Centre, F-10 Markaz, Islamabad.",
+    "Meet Dr. Sheriyaar, PMDC-registered Lead Dental Surgeon & Implantologist, and our consultant dental specialists at Elite Dental Centre, G-8 Markaz, Islamabad.",
   alternates: {
     canonical: "https://elitedental.pk/doctors",
   },
   openGraph: {
     title: "Meet Our Doctors & Specialists | Elite Dental Centre Islamabad",
     description:
-      "Direct personalized care by Dr. Sheriyaar (12+ years experience) and specialized dental consultants in F-10 Markaz Islamabad.",
+      "Direct personalized care by Dr. Sheriyaar (12+ years experience) and specialized dental consultants in G-8 Markaz Islamabad.",
     url: "https://elitedental.pk/doctors",
     type: "website",
   },
@@ -362,7 +362,7 @@ export default async function DoctorsPage() {
                 &ldquo;Every patient is treated directly by our specialist surgeons — no assistants doing surgical work.&rdquo;
               </h2>
               <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
-                At Elite Dental Centre in F-10 Markaz Islamabad, we reject assembly-line dentistry. Dr. Sheriyaar and our consultant panel provide unhurried, gentle, and digitally guided treatment designed for your comfort and lifelong dental health.
+                At Elite Dental Centre in G-8 Markaz Islamabad, we reject assembly-line dentistry. Dr. Sheriyaar and our consultant panel provide unhurried, gentle, and digitally guided treatment designed for your comfort and lifelong dental health.
               </p>
             </div>
           </div>
