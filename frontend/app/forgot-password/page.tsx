@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -20,7 +21,7 @@ export default function ForgotPasswordPage() {
         setMessage("");
 
         try {
-            const res = await fetch("/api/auth/forgot-password", {
+            const res = await fetchApi("/api/auth/forgot-password", {
                 method: "POST",
                 body: JSON.stringify({ email }),
                 headers: { "Content-Type": "application/json" },

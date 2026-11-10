@@ -137,102 +137,108 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
 
       {/* 2. Omnichannel Immediate Action Cards */}
       <section className="relative -mt-8 z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {/* Card 1: Emergency Dental Hotline */}
-          <div className="rounded-3xl border border-rose-200/80 bg-white p-7 shadow-lg shadow-rose-950/5 relative overflow-hidden group hover:border-rose-400 transition-all duration-300">
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 to-amber-500" />
-            <div className="flex items-center justify-between mb-4">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-rose-50 text-rose-700 border border-rose-200">
-                <FlashOnOutlined sx={{ fontSize: 14, color: "#e11d48" }} />
-                Priority Emergency
-              </span>
-              <div className="p-2.5 rounded-2xl bg-rose-50 text-rose-600 group-hover:scale-110 transition-transform">
-                <PhoneInTalkOutlined sx={{ fontSize: 24, color: "#e11d48" }} />
+          <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-lg shadow-teal-950/5 hover:shadow-xl hover:shadow-teal-900/10 hover:border-teal-400/80 transition-all duration-300 relative overflow-hidden flex flex-col justify-between group">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-500 to-teal-700" />
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wider uppercase bg-teal-50 text-teal-800 border border-teal-200/80">
+                  <FlashOnOutlined sx={{ fontSize: 13, color: "#0d9488" }} />
+                  Priority Emergency
+                </span>
+                <div className="size-11 rounded-2xl bg-teal-50 border border-teal-200/60 text-teal-700 flex items-center justify-center group-hover:scale-105 group-hover:bg-teal-600 group-hover:text-white transition-all">
+                  <PhoneInTalkOutlined sx={{ fontSize: 22 }} />
+                </div>
               </div>
+              <h3 className="text-lg font-black text-[#0B1528] tracking-tight">Acute Toothache & Trauma</h3>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                Same-day priority emergency slot with Dr. Sheriyaar. Relief for severe nerve pain, cracked teeth, or swelling.
+              </p>
             </div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight">Acute Toothache & Trauma</h3>
-            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-              Same-day priority emergency slot with Dr. Sheriyaar. Relief for severe nerve pain, cracked teeth, or swelling.
-            </p>
-            <div className="mt-5 pt-4 border-t border-slate-100">
+            <div className="mt-6 pt-4 border-t border-slate-100">
               <a
                 href={`tel:${clinicInfo.phone}`}
-                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-rose-600/20 active:scale-95 transition-all"
+                className="w-full h-11 inline-flex items-center justify-center gap-2 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-md shadow-teal-600/20 active:scale-[0.98] transition-all cursor-pointer"
               >
                 <PhoneOutlined sx={{ fontSize: 16 }} />
                 <span>Call Emergency Line: {clinicInfo.phone}</span>
               </a>
-              <p className="text-[11px] text-center text-slate-600 font-semibold mt-2">
+              <p className="text-[11px] text-center text-slate-400 font-medium mt-2.5">
                 Fastest clinical response • Immediate advice
               </p>
             </div>
           </div>
 
           {/* Card 2: WhatsApp Visual Photo Triage */}
-          <div className="rounded-3xl border border-emerald-200/80 bg-white p-7 shadow-lg shadow-emerald-950/5 relative overflow-hidden group hover:border-emerald-400 transition-all duration-300">
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500" />
-            <div className="flex items-center justify-between mb-4">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <WhatsApp sx={{ fontSize: 14, color: "#059669" }} />
-                Instant Consultation
-              </span>
-              <div className="p-2.5 rounded-2xl bg-emerald-50 text-emerald-600 group-hover:scale-110 transition-transform">
-                <WhatsApp sx={{ fontSize: 24, color: "#059669" }} />
+          <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-lg shadow-teal-950/5 hover:shadow-xl hover:shadow-teal-900/10 hover:border-teal-400/80 transition-all duration-300 relative overflow-hidden flex flex-col justify-between group">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-500 to-teal-700" />
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wider uppercase bg-teal-50 text-teal-800 border border-teal-200/80">
+                  <WhatsApp sx={{ fontSize: 13, color: "#0d9488" }} />
+                  Instant Consultation
+                </span>
+                <div className="size-11 rounded-2xl bg-teal-50 border border-teal-200/60 text-teal-700 flex items-center justify-center group-hover:scale-105 group-hover:bg-teal-600 group-hover:text-white transition-all">
+                  <WhatsApp sx={{ fontSize: 22 }} />
+                </div>
               </div>
+              <h3 className="text-lg font-black text-[#0B1528] tracking-tight">WhatsApp Photo Triage</h3>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                Send a photo or x-ray of your tooth to our clinical receptionist for instant preliminary guidance and cost estimates.
+              </p>
             </div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight">WhatsApp Photo Triage</h3>
-            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-              Send a photo or x-ray of your tooth to our clinical receptionist for instant preliminary guidance and cost estimates.
-            </p>
-            <div className="mt-5 pt-4 border-t border-slate-100">
+            <div className="mt-6 pt-4 border-t border-slate-100">
               <a
                 href={`https://wa.me/${clinicInfo.whatsapp}?text=Hello%20Dr.%20Sheriyaar%20team,%20I%20would%20like%20to%20inquire%20about%20a%20dental%20consultation.`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
+                className="w-full h-11 inline-flex items-center justify-center gap-2 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-md shadow-teal-600/20 active:scale-[0.98] transition-all cursor-pointer"
               >
                 <WhatsApp sx={{ fontSize: 17 }} />
                 <span>Chat on WhatsApp</span>
               </a>
-              <p className="text-[11px] text-center text-slate-600 font-semibold mt-2">
+              <p className="text-[11px] text-center text-slate-400 font-medium mt-2.5">
                 Typical reply time: 5 - 15 minutes
               </p>
             </div>
           </div>
 
           {/* Card 3: Physical Clinic & Live Hours */}
-          <div className="rounded-3xl border border-teal-200/80 bg-white p-7 shadow-lg shadow-teal-950/5 relative overflow-hidden group hover:border-teal-400 transition-all duration-300">
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-500 to-cyan-500" />
-            <div className="flex items-center justify-between mb-4">
-              <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${
-                  isOpenNow
-                    ? "bg-teal-50 text-teal-700 border-teal-200"
-                    : "bg-amber-50 text-amber-700 border-amber-200"
-                }`}
-              >
-                <span className={`size-2 rounded-full ${isOpenNow ? "bg-teal-500 animate-pulse" : "bg-amber-500"}`} />
-                {isOpenNow ? "Clinic Open Now" : "Currently Closed"}
-              </span>
-              <div className="p-2.5 rounded-2xl bg-teal-50 text-teal-600 group-hover:scale-110 transition-transform">
-                <LocationOnOutlined sx={{ fontSize: 24, color: "#0d9488" }} />
+          <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-lg shadow-teal-950/5 hover:shadow-xl hover:shadow-teal-900/10 hover:border-teal-400/80 transition-all duration-300 relative overflow-hidden flex flex-col justify-between group">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-600 to-[#0B1528]" />
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wider uppercase border ${
+                    isOpenNow
+                      ? "bg-teal-50 text-teal-800 border-teal-200/80"
+                      : "bg-slate-100 text-slate-700 border-slate-200"
+                  }`}
+                >
+                  <span className={`size-2 rounded-full ${isOpenNow ? "bg-teal-500 animate-pulse" : "bg-slate-400"}`} />
+                  {isOpenNow ? "Clinic Open Now" : "Currently Closed"}
+                </span>
+                <div className="size-11 rounded-2xl bg-teal-50 border border-teal-200/60 text-teal-700 flex items-center justify-center group-hover:scale-105 group-hover:bg-[#0B1528] group-hover:text-white transition-all">
+                  <LocationOnOutlined sx={{ fontSize: 22 }} />
+                </div>
               </div>
+              <h3 className="text-lg font-black text-[#0B1528] tracking-tight">F-10 Markaz Clinic</h3>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                Above D-Watson Chemist, 2nd Floor (Elevator Access Available). Operating hours: {workingHours || "12:00 PM - 8:00 PM (Mon-Sat)"}.
+              </p>
             </div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight">F-10 Markaz Clinic</h3>
-            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-              Above D-Watson Chemist, 2nd Floor (Elevator Access Available). Operating hours: {workingHours || "12:00 PM - 8:00 PM (Mon-Sat)"}.
-            </p>
-            <div className="mt-5 pt-4 border-t border-slate-100">
+            <div className="mt-6 pt-4 border-t border-slate-100">
               <a
                 href="https://www.google.com/maps/search/D-Watson+Chemist+F-10+Markaz+Islamabad"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-900 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-slate-900/20 active:scale-95 transition-all"
+                className="w-full h-11 inline-flex items-center justify-center gap-2 px-4 rounded-xl bg-[#0B1528] hover:bg-slate-800 text-white font-extrabold text-xs uppercase tracking-wider shadow-md shadow-slate-900/15 active:scale-[0.98] transition-all cursor-pointer"
               >
                 <NearMeOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} />
                 <span>Open in Google Maps</span>
               </a>
-              <p className="text-[11px] text-center text-slate-600 font-semibold mt-2">
+              <p className="text-[11px] text-center text-slate-400 font-medium mt-2.5">
                 Elevator access • Front plaza parking
               </p>
             </div>

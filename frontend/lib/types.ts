@@ -3,6 +3,24 @@
 // defining local copies. Keep in sync with Prisma schema.
 
 
+// ─── Feedback ────────────────────────────────────────────
+
+export interface FeedbackItem {
+    id: string;
+    name: string;
+    email?: string;
+    rating: number;
+    comment: string;
+    treatmentName?: string;
+    date: string;
+    source: "Google" | "Website" | "Verified Patient";
+    clinicResponse?: {
+        responder: string;
+        date: string;
+        message: string;
+    };
+}
+
 // ─── Treatment ───────────────────────────────────────────
 
 /** Full Treatment record — matches Prisma `Treatment` model. */

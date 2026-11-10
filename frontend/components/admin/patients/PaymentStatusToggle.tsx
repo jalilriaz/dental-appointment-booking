@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ export default function PaymentStatusToggle({ appointmentId, initialStatus }: Pa
         setLoading(true);
         const newStatus = status === "PAID" ? "UNPAID" : "PAID";
         try {
-            const res = await fetch(`/api/appointments/${appointmentId}/payment`, {
+            const res = await fetchApi(`/api/appointments/${appointmentId}/payment`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ paymentStatus: newStatus }),

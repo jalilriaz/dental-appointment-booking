@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState, useEffect } from "react";
 
@@ -59,7 +60,7 @@ export default function SendPrecautionsModal({
         setLoadingPreview(true);
         setN8nError(null);
         try {
-            const res = await fetch(`/api/appointments/${id}/send-precautions`);
+            const res = await fetchApi(`/api/appointments/${id}/send-precautions`, { credentials: "include" });
             const data = await res.json();
             if (res.ok && data.success) {
                 setMessage(data.message);
@@ -83,8 +84,9 @@ export default function SendPrecautionsModal({
         setN8nError(null);
 
         try {
-            const res = await fetch(`/api/appointments/${appointmentId}/send-precautions`, {
+            const res = await fetchApi(`/api/appointments/${appointmentId}/send-precautions`, {
                 method: "POST",
+                credentials: "include",
                 headers: { "Content-Type": "application/json" },
             });
             const data = await res.json();

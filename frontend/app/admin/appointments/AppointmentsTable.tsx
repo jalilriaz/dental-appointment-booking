@@ -31,6 +31,7 @@ import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { PremiumLoader } from "@/components/ui/premium-loader";
+import { fetchApi } from "@/lib/api-client";
 import ClinicalNoteDialog from "@/components/admin/ClinicalNoteDialog";
 import ReceiptDialog from "@/components/admin/ReceiptDialog";
 import PatientHistoryDialog from "@/components/shared/PatientHistoryDialog";
@@ -105,7 +106,7 @@ function RescheduleDialog({
                 treatmentId: appointment.treatment?.id || "",
                 excludeAppointmentId: appointment.id,
             });
-            const res = await fetch(`/api/appointments/availability?${params}`);
+            const res = await fetchApi(`/api/appointments/availability?${params}`);
             const data = await res.json();
             if (data.dayOff) {
                 setDayOff(true);
@@ -152,9 +153,8 @@ function RescheduleDialog({
         setSubmitting(true);
         setError("");
         try {
-            const res = await fetch(`/api/appointments/${appointment.id}/reschedule`, {
+            const res = await fetchApi(`/api/appointments/${appointment.id}/reschedule`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ date: selectedDate, time: selectedTime }),
             });
             const data = await res.json();
@@ -481,9 +481,8 @@ export default function AppointmentsTable({
         setCancellingId(aptId);
         setConfirmCancelId(null);
         try {
-            const res = await fetch(`/api/appointments/${aptId}/reschedule`, {
+            const res = await fetchApi(`/api/appointments/${aptId}/reschedule`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ cancel: true }),
             });
             setAppointments((prev) =>
@@ -500,9 +499,8 @@ export default function AppointmentsTable({
     async function handleStatusChange(aptId: string, status: string, amountPaid?: number, discount?: number) {
         setCheckingOutId(aptId);
         try {
-            const res = await fetch(`/api/appointments/${aptId}/status`, {
+            const res = await fetchApi(`/api/appointments/${aptId}/status`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     status,
                     amountPaid: status === "COMPLETED" ? (amountPaid ?? 0) : undefined,

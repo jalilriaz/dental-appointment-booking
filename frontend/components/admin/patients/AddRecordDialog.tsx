@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,7 @@ export default function AddRecordDialog({ patientId }: AddRecordDialogProps) {
         setLoading(true);
 
         try {
-            const res = await fetch("/api/medical-records", {
+            const res = await fetchApi("/api/medical-records", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...formData, patientId }),

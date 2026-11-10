@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -66,7 +67,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
             const formData = new FormData();
             formData.append("file", file);
 
-            const res = await fetch("/api/upload", {
+            const res = await fetchApi("/api/upload", {
                 method: "POST",
                 body: formData,
             });
@@ -139,7 +140,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
             const url = isEdit ? `/api/treatments/${editingTreatment.id}` : "/api/treatments";
             const method = isEdit ? "PUT" : "POST";
 
-            const res = await fetch(url, {
+            const res = await fetchApi(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -179,7 +180,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
         setError("");
 
         try {
-            const res = await fetch(`/api/treatments/${deletingTreatment.id}`, { method: "DELETE" });
+            const res = await fetchApi(`/api/treatments/${deletingTreatment.id}`, { method: "DELETE" });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Failed to delete");
 
@@ -195,7 +196,7 @@ export default function TreatmentManager({ initialTreatments }: { initialTreatme
     async function toggleActive(t: Treatment) {
         setTogglingId(t.id);
         try {
-            const res = await fetch(`/api/treatments/${t.id}`, {
+            const res = await fetchApi(`/api/treatments/${t.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ isActive: !t.isActive }),

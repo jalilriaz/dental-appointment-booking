@@ -1010,6 +1010,7 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
                 key={selectedTreatmentId || "default"}
                 treatments={treatments as any}
                 defaultTreatmentId={selectedTreatmentId || undefined}
+                onSuccess={closeBookingModal}
               />
             </div>
           </div>

@@ -26,7 +26,8 @@ const publicApiRoutes = [
     "/api/treatments", // Public for website
     "/api/contact",
     "/api/bot",
-    "/api/cron"
+    "/api/cron",
+    "/api/feedback"
 ];
 
 function isPublicApiRoute(pathname: string, method?: string) {
@@ -42,9 +43,24 @@ function applySecurityHeaders(response: NextResponse) {
     response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
     response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), browsing-topics=()");
     // TODO: Implement strict Next.js CSP nonces to replace 'unsafe-inline'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    const allowedConnectOrigins = [
+        "'self'",
+        backendUrl,
+        "http://localhost:4000",
+        "http://127.0.0.1:4000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        "ws:",
+        "wss:",
+    ].filter(Boolean).join(" ");
+
+    // TODO: Implement strict Next.js CSP nonces to replace 'unsafe-inline'
     response.headers.set(
         "Content-Security-Policy",
-        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data: https:; frame-src 'self' https://www.google.com https://maps.google.com https://www.openstreetmap.org; frame-ancestors 'none';"
+        `default-src 'self'; connect-src ${allowedConnectOrigins}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data: https:; frame-src 'self' https://www.google.com https://maps.google.com https://www.openstreetmap.org; frame-ancestors 'none';`
     );
     return response;
 }
@@ -82,10 +98,13 @@ export default async function middleware(request: NextRequest) {
             return applySecurityHeaders(response);
         }
 
-        // We will append these headers to the final response later
-        request.headers.set("x-ratelimit-limit", headers["X-RateLimit-Limit"]);
-        request.headers.set("x-ratelimit-remaining", headers["X-RateLimit-Remaining"]);
-        request.headers.set("x-ratelimit-reset", headers["X-RateLimit-Reset"]);
+        // Forward all API requests to the standalone Express backend (via Next.js rewrites)
+        // Express backend handles route-level authentication, roles, and validation.
+        const response = NextResponse.next();
+        response.headers.set("X-RateLimit-Limit", headers["X-RateLimit-Limit"]);
+        response.headers.set("X-RateLimit-Remaining", headers["X-RateLimit-Remaining"]);
+        response.headers.set("X-RateLimit-Reset", headers["X-RateLimit-Reset"]);
+        return applySecurityHeaders(response);
     }
 
     const isProtectedUI = protectedUIRoutes.some((route) => pathname.startsWith(route));

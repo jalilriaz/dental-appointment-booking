@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState, useEffect } from "react";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
@@ -26,7 +27,7 @@ export default function AdminNotifications() {
 
     const fetchNotifications = async () => {
         try {
-            const res = await fetch("/api/notifications");
+            const res = await fetchApi("/api/notifications", { credentials: "include" });
             if (res.ok) {
                 const data = await res.json();
                 setNotifications(data.notifications || []);
@@ -47,7 +48,7 @@ export default function AdminNotifications() {
 
     const markAsRead = async (id: string) => {
         try {
-            await fetch(`/api/notifications/${id}`, { method: "PATCH" });
+            await fetchApi(`/api/notifications/${id}`, { method: "PATCH", credentials: "include" });
             // Optimistic update
             setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));

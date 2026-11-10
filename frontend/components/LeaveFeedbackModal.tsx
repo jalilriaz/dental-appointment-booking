@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import React, { useState } from "react";
 import {
@@ -11,7 +12,7 @@ import {
   EmailOutlined,
   MedicalServicesOutlined,
 } from "@mui/icons-material";
-import { FeedbackItem } from "@/app/api/feedback/route";
+import { FeedbackItem } from "@/lib/types";
 
 interface LeaveFeedbackModalProps {
   isOpen: boolean;
@@ -64,8 +65,9 @@ export default function LeaveFeedbackModal({
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/feedback", {
+      const res = await fetchApi("/api/feedback", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),

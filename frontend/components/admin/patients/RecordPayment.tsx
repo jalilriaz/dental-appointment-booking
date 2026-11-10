@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -51,7 +52,7 @@ export default function RecordPayment({ treatmentPlanId, treatmentName, remainin
 
         try {
             setIsLoading(true);
-            const res = await fetch(`/api/patient-treatments/${treatmentPlanId}/payments`, {
+            const res = await fetchApi(`/api/patient-treatments/${treatmentPlanId}/payments`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

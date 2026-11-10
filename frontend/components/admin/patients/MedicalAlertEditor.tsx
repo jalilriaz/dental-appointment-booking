@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -32,7 +33,7 @@ export default function MedicalAlertEditor({ patientId, initialAlerts }: Medical
     async function handleSave() {
         setSaving(true);
         try {
-            const res = await fetch(`/api/patients/${patientId}`, {
+            const res = await fetchApi(`/api/patients/${patientId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ medicalAlerts: value.trim() }),

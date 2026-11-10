@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
@@ -122,7 +123,7 @@ export default function PatientHistoryDialog({
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch(`/api/patients/${patientId}/history`);
+                const res = await fetchApi(`/api/patients/${patientId}/history`, { credentials: "include" });
                 if (!res.ok) throw new Error("Failed to fetch patient history");
                 const data = await res.json();
                 setHistory(data);

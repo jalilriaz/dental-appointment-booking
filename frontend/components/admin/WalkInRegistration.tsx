@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState, useEffect, useCallback, FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -194,7 +195,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
         try {
             const params = new URLSearchParams({ page: String(page) });
             if (q.length >= 2) params.set("q", q);
-            const res = await fetch(`/api/admin/walk-in/search?${params}`);
+            const res = await fetchApi(`/api/admin/walk-in/search?${params}`);
             const data = await res.json();
             setResults(data.patients || []);
             setTotalPages(data.totalPages || 1);
@@ -233,7 +234,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
         setShowBooking(false);
         setError(null);
         try {
-            const res = await fetch(`/api/patients/${patientId}/history`);
+            const res = await fetchApi(`/api/patients/${patientId}/history`);
             const data = await res.json();
             setHistory(data);
         } catch {
@@ -250,7 +251,7 @@ function RegisteredPatientTab({ treatments, onSuccess }: {
         setBooking(true);
         setError(null);
         try {
-            const res = await fetch("/api/admin/walk-in", {
+            const res = await fetchApi("/api/admin/walk-in", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -691,7 +692,7 @@ function NewPatientTab({ treatments, onSuccess }: {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch("/api/admin/walk-in", {
+            const res = await fetchApi("/api/admin/walk-in", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

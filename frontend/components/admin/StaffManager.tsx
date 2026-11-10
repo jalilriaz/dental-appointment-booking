@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -111,7 +112,7 @@ export default function StaffManager({ initialStaff }: { initialStaff: any[] }) 
             const url = editingStaff ? `/api/staff/${editingStaff.id}` : "/api/staff";
             const method = editingStaff ? "PUT" : "POST";
 
-            const res = await fetch(url, {
+            const res = await fetchApi(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
@@ -136,7 +137,7 @@ export default function StaffManager({ initialStaff }: { initialStaff: any[] }) 
         if (!deleteId) return;
         setIsDeleting(true);
         try {
-            const res = await fetch(`/api/staff/${deleteId}`, { method: "DELETE" });
+            const res = await fetchApi(`/api/staff/${deleteId}`, { method: "DELETE" });
             if (!res.ok) throw new Error("Failed to delete");
 
             setStaffList((prev) => prev.filter((s) => s.id !== deleteId));

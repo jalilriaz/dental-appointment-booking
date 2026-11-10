@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -93,7 +94,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
             };
 
             if (editItem) {
-                const res = await fetch(`/api/inventory/${editItem.id}`, {
+                const res = await fetchApi(`/api/inventory/${editItem.id}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(body),
@@ -106,7 +107,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
                     toast.error("Failed to update");
                 }
             } else {
-                const res = await fetch("/api/inventory", {
+                const res = await fetchApi("/api/inventory", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(body),
@@ -132,7 +133,7 @@ export default function InventoryManager({ initialItems }: { initialItems: Inven
         if (!deleteId) return;
         setDeleting(true);
         try {
-            const res = await fetch(`/api/inventory/${deleteId}`, { method: "DELETE" });
+            const res = await fetchApi(`/api/inventory/${deleteId}`, { method: "DELETE" });
             if (res.ok) {
                 setItems(prev => prev.filter(i => i.id !== deleteId));
                 toast.success("Item deleted");

@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -82,8 +83,9 @@ export default function ClinicalNoteDialog({
         setSuccess(false);
 
         try {
-            const res = await fetch(`/api/appointments/${appointmentId}/notes`, {
+            const res = await fetchApi(`/api/appointments/${appointmentId}/notes`, {
                 method: "POST",
+                credentials: "include",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     diagnosis: diagnosis.trim() || null,

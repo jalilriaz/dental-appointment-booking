@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -61,7 +62,7 @@ export default function CreateTreatmentPlan({ patientId, availableTreatments }: 
 
         try {
             setIsLoading(true);
-            const res = await fetch("/api/patient-treatments", {
+            const res = await fetchApi("/api/patient-treatments", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

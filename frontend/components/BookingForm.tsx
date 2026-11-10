@@ -39,6 +39,7 @@ import {
 import { TimeSlotSelector, TimeSlot } from "@/components/ui/time-slot-selector"
 import { formatPKR, formatPriceRange } from "@/lib/utils"
 import type { Treatment } from "@/lib/types"
+import { fetchApi } from "@/lib/api-client"
 
 // Define Zod Schema for the Booking Form
 const bookingSchema = z.object({
@@ -82,6 +83,7 @@ interface BookingFormProps {
   }
   returnUrl?: string
   defaultTreatmentId?: string
+  onSuccess?: () => void
 }
 
 // ─── Treatment Category Grouping with MUI Icons ─────────────────────────
@@ -125,11 +127,18 @@ export default function BookingForm({
   newPatientData,
   returnUrl = "/",
   defaultTreatmentId = "",
+  onSuccess,
 }: BookingFormProps) {
   const router = useRouter()
   const [step, setStep] = useState(defaultTreatmentId ? 2 : 1)
   const [searchQuery, setSearchQuery] = useState("")
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
+  const [bookingSuccess, setBookingSuccess] = useState<{
+    treatmentName: string;
+    date: string;
+    time: string;
+    patientName: string;
+  } | null>(null)
 
   // React Hook Form Setup
   const {
@@ -223,9 +232,8 @@ export default function BookingForm({
         payload.patientId = patientId;
       }
 
-      const res = await fetch("/api/appointments", {
+      const res = await fetchApi("/api/appointments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -235,10 +243,25 @@ export default function BookingForm({
         throw new Error(resData.error || "Failed to book appointment");
       }
 
-      toast.success("Appointment booked successfully!");
+      toast.success("Appointment reserved successfully!");
+      setBookingSuccess({
+        treatmentName: selectedTreatment?.name || "Dental Treatment",
+        date: data.date,
+        time: data.time,
+        patientName: (data.isGuest && data.guestName) ? data.guestName : "Patient",
+      });
       reset();
-      router.push(returnUrl);
-      router.refresh();
+
+      setTimeout(() => {
+        setBookingSuccess(null);
+        setStep(1);
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push(returnUrl);
+          router.refresh();
+        }
+      }, 2500);
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
     }
@@ -253,6 +276,61 @@ export default function BookingForm({
   const inputClasses =
     "w-full h-11 px-3.5 rounded-xl border border-slate-300 text-slate-900 bg-white placeholder:text-slate-400 focus:border-teal-600 focus:ring-1 focus:ring-teal-500/20 focus:outline-none text-sm transition-all";
   const errorClasses = "text-rose-500 text-xs mt-1 font-medium";
+
+  if (bookingSuccess) {
+    return (
+      <div className="py-8 px-4 text-center flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300">
+        <div className="size-16 rounded-full bg-teal-50 border-2 border-teal-500 text-teal-600 flex items-center justify-center mb-4 shadow-lg shadow-teal-500/10">
+          <CheckCircleOutlineIcon sx={{ fontSize: 36 }} />
+        </div>
+        <h3 className="text-xl sm:text-2xl font-black text-[#0B1528] tracking-tight">
+          Appointment Reserved!
+        </h3>
+        <p className="text-sm text-slate-500 mt-1 max-w-sm">
+          Thank you, <span className="font-bold text-slate-800">{bookingSuccess.patientName}</span>. Your slot has been secured.
+        </p>
+
+        {/* Appointment summary card */}
+        <div className="w-full max-w-sm mt-5 bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left space-y-2.5">
+          <div className="flex items-center gap-2.5 text-xs text-slate-700">
+            <MedicalServicesIcon sx={{ fontSize: 18, color: "#0D9488" }} />
+            <div>
+              <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Treatment</span>
+              <span className="font-extrabold text-[#0B1528]">{bookingSuccess.treatmentName}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 text-xs text-slate-700 pt-2 border-t border-slate-200/70">
+            <CalendarMonthIcon sx={{ fontSize: 18, color: "#0D9488" }} />
+            <div>
+              <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Date & Time</span>
+              <span className="font-extrabold text-[#0B1528]">{bookingSuccess.date} at {bookingSuccess.time}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 p-3 rounded-xl bg-teal-50 border border-teal-200/60 max-w-sm text-[12px] text-teal-800 font-medium">
+          A confirmation SMS and WhatsApp message has been dispatched to your phone number.
+        </div>
+
+        <Button
+          type="button"
+          onClick={() => {
+            setBookingSuccess(null);
+            setStep(1);
+            if (onSuccess) {
+              onSuccess();
+            } else {
+              router.push(returnUrl);
+              router.refresh();
+            }
+          }}
+          className="mt-6 px-8 h-11 bg-teal-600 hover:bg-teal-700 text-white font-extrabold rounded-xl shadow-md shadow-teal-600/20 active:scale-95 transition-all cursor-pointer"
+        >
+          Done
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

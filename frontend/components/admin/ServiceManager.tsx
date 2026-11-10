@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -105,7 +106,7 @@ export default function ServiceManager({
                 : "/api/treatments";
             const method = editingTreatment ? "PUT" : "POST";
 
-            const res = await fetch(url, {
+            const res = await fetchApi(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -139,7 +140,7 @@ export default function ServiceManager({
     const handleDelete = async (id: string) => {
         setIsDeleting(true);
         try {
-            const res = await fetch(`/api/treatments/${id}`, { method: "DELETE" });
+            const res = await fetchApi(`/api/treatments/${id}`, { method: "DELETE" });
             if (!res.ok) throw new Error("Failed to delete");
             setTreatments((prev) => prev.filter((t) => t.id !== id));
             toast.success("Service Deleted", { description: "The service has been removed." });

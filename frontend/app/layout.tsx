@@ -25,13 +25,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className="font-sans antialiased bg-slate-50 text-slate-900 selection:bg-teal-500 selection:text-white">
+      <body
+        suppressHydrationWarning
+        className="font-sans antialiased bg-slate-50 text-slate-900 selection:bg-teal-500 selection:text-white"
+      >
         <Providers>
           {children}
           <Toaster

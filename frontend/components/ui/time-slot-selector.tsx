@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
+import { fetchApi } from "@/lib/api-client";
 
 import type { TimeSlot } from "@/lib/types";
 export type { TimeSlot };
@@ -37,7 +38,7 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
                     treatmentId,
                 });
 
-                const response = await fetch(`/api/appointments/availability?${searchParams.toString()}`);
+                const response = await fetchApi(`/api/appointments/availability?${searchParams.toString()}`);
                 if (!response.ok) {
                     throw new Error("Failed to fetch available time slots");
                 }

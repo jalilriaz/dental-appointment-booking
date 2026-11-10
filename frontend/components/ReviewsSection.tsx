@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import React, { useState, useEffect } from "react";
 import {
@@ -11,7 +12,7 @@ import {
   VerifiedOutlined,
 } from "@mui/icons-material";
 import LeaveFeedbackModal from "./LeaveFeedbackModal";
-import { FeedbackItem } from "@/app/api/feedback/route";
+import { FeedbackItem } from "@/lib/types";
 
 const INITIAL_REVIEWS: FeedbackItem[] = [
   {
@@ -130,7 +131,7 @@ export default function ReviewsSection() {
   useEffect(() => {
     async function fetchReviews() {
       try {
-        const res = await fetch("/api/feedback");
+        const res = await fetchApi("/api/feedback", { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           if (data?.reviews && Array.isArray(data.reviews) && data.reviews.length > 0) {

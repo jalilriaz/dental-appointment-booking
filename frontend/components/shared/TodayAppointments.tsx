@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -65,7 +66,7 @@ export default function TodayAppointments({
   const { data: appointments = initialAppointments, refetch } = useQuery({
     queryKey: ["today-appointments"],
     queryFn: async () => {
-      const res = await fetch("/api/appointments/today");
+      const res = await fetchApi("/api/appointments/today", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch today's appointments");
       const json = await res.json();
       return json.appointments as TodayAppointment[];
@@ -112,8 +113,9 @@ export default function TodayAppointments({
           setPrecautionsApt(checkoutApt);
         }
       } else {
-        const res = await fetch(`/api/appointments/${id}/status`, {
+        const res = await fetchApi(`/api/appointments/${id}/status`, {
           method: "PATCH",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status }),
         });

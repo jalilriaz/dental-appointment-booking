@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -55,7 +56,7 @@ function ResetPasswordForm() {
         setMessage("");
 
         try {
-            const res = await fetch("/api/auth/reset-password", {
+            const res = await fetchApi("/api/auth/reset-password", {
                 method: "POST",
                 body: JSON.stringify({ token, password }),
                 headers: { "Content-Type": "application/json" },

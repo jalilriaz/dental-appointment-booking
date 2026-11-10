@@ -590,7 +590,7 @@ export default function AboutClient({ treatments }: AboutClientProps) {
 
             {/* Dialog Body with Full BookingForm */}
             <div className="p-4 sm:p-6 overflow-y-auto flex-1">
-              <BookingForm treatments={treatments} />
+              <BookingForm treatments={treatments} onSuccess={closeBooking} />
             </div>
           </div>
         </div>

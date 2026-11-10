@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState, useEffect, useRef } from "react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
@@ -32,7 +33,7 @@ export default function AdminSearch() {
             if (query.trim().length >= 2) {
                 setLoading(true);
                 try {
-                    const res = await fetch(`/api/admin/search?q=${encodeURIComponent(query)}`);
+                    const res = await fetchApi(`/api/admin/search?q=${encodeURIComponent(query)}`, { credentials: "include" });
                     if (res.ok) {
                         const data = await res.json();
                         setResults(data.results || []);

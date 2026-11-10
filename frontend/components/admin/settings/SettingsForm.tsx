@@ -1,4 +1,5 @@
 "use client";
+import { fetchApi } from "@/lib/api-client";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -45,7 +46,7 @@ export default function SettingsForm({ initialSettings, googleCalendarConnected 
         setLoading(true);
 
         try {
-            const res = await fetch("/api/settings", {
+            const res = await fetchApi("/api/settings", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

@@ -142,7 +142,7 @@ export default function AppointmentCtaBanner({ treatments }: AppointmentCtaBanne
 
             {/* Dialog Body with Full BookingForm */}
             <div className="p-4 sm:p-6 overflow-y-auto flex-1">
-              <BookingForm treatments={treatments} />
+              <BookingForm treatments={treatments} onSuccess={() => setIsDialogOpen(false)} />
             </div>
           </div>
         </div>
