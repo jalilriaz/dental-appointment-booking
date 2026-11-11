@@ -55,7 +55,7 @@ interface AppointmentItem {
   patient: PatientInfo | null;
   treatment: { name: string; durationMin: number; price: number };
 }
-
+ 
 interface DailyTrendItem {
   day: string;
   count: number;
@@ -418,10 +418,20 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
           </div>
 
           {/* Micro Stat Footers */}
-          <div className="pt-3 border-t border-slate-100 grid grid-cols-3 text-center">
-            <div>
-              <p className="text-xs font-black text-slate-900">Dr. Sheriyaar</p>
-              <p className="text-[10px] text-slate-400 font-medium">Head Surgeon</p>
+          <div className="pt-3 border-t border-slate-100 grid grid-cols-3 text-center items-center">
+            <div className="flex items-center gap-2 justify-center">
+              <div className="relative size-8 rounded-xl overflow-hidden ring-1 ring-teal-500/30 shrink-0 bg-slate-900">
+                <Image
+                  src="/images/dr_sheriyaar.jpg"
+                  alt="Dr. Sheriyaar"
+                  fill
+                  className="object-cover object-top"
+                />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="text-xs font-black text-slate-900 truncate">Dr. Sheriyaar</p>
+                <p className="text-[10px] text-slate-400 font-medium">Head Surgeon</p>
+              </div>
             </div>
             <div>
               <p className="text-xs font-black text-slate-900">60 Min</p>
@@ -629,69 +639,70 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
             </div>
           </div>
 
-          {/* Doctors on Duty / Live Operatories */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xs overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
+          {/* Doctors on Duty / Live Operatories - Soft Clinical Mint Secondary Background */}
+          <div className="rounded-3xl bg-teal-50/70 border border-teal-200/90 shadow-2xs overflow-hidden relative">
+            <div className="px-6 py-4 border-b border-teal-200/70 bg-teal-100/50 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MedicalServicesOutlined sx={{ fontSize: 18, color: "#0D9488" }} />
-                <h3 className="text-sm font-extrabold text-slate-900">Doctors on Duty</h3>
+                <h3 className="text-sm font-extrabold text-teal-950 tracking-tight">Doctors on Duty</h3>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-white text-emerald-800 border border-teal-200/80 shadow-2xs">
                 <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>3 Active On-Site</span>
               </div>
             </div>
-            <div className="p-6 space-y-3.5">
-              {/* Lead Surgeon: Dr. Sheriyaar */}
-              <div className="p-3.5 rounded-2xl bg-teal-50/50 border border-teal-200/70 hover:border-teal-300 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="relative size-11 rounded-2xl overflow-hidden ring-2 ring-teal-500/30 shrink-0 bg-slate-100">
+
+            <div className="p-5 sm:p-6 space-y-3.5">
+              {/* Lead Surgeon: Dr. Sheriyaar - Spotlight Card */}
+              <div className="p-4 rounded-2xl bg-white border border-teal-300/80 shadow-xs relative overflow-hidden group hover:border-teal-400 transition-all">
+                <div className="flex items-center gap-3.5">
+                  <div className="relative size-14 rounded-2xl overflow-hidden ring-2 ring-teal-500/30 shadow-md shrink-0 bg-slate-100">
                     <Image
                       src="/images/dr_sheriyaar.jpg"
                       alt="Dr. Sheriyaar"
                       fill
-                      className="object-cover object-top"
+                      className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-black text-slate-900 truncate">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-black text-slate-900 truncate tracking-tight">
                         Dr. Sheriyaar
                       </p>
-                      <span className="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-teal-600 text-white shrink-0">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black bg-teal-600 text-white uppercase tracking-wider shrink-0 shadow-2xs">
                         Lead Surgeon
                       </span>
                     </div>
-                    <p className="text-[11px] font-semibold text-teal-800 truncate">
+                    <p className="text-xs font-bold text-teal-800 truncate mt-0.5">
                       Chair 1 · Surgical Suite
                     </p>
-                    <p className="text-[10px] text-slate-500 font-medium mt-0.5 flex items-center gap-1">
-                      <AccessTimeOutlined sx={{ fontSize: 11 }} />
-                      <span>12:00 PM – 8:00 PM (Active)</span>
-                    </p>
+                    <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-600 font-semibold">
+                      <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                      <span>12:00 PM – 8:00 PM (Active Shift)</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Consultant Orthodontist: Dr. Ayesha Malik */}
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 hover:border-slate-300 transition-all">
+              <div className="p-3.5 rounded-2xl bg-white/80 border border-teal-200/70 hover:border-teal-400 hover:bg-white transition-all shadow-2xs">
                 <div className="flex items-center gap-3">
-                  <div className="size-9 rounded-xl bg-teal-100 text-teal-800 font-extrabold text-xs flex items-center justify-center shrink-0">
+                  <div className="size-10 rounded-xl bg-teal-100 text-teal-900 border border-teal-200/80 font-extrabold text-xs flex items-center justify-center shrink-0">
                     AM
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
-                      <p className="text-xs font-bold text-slate-900 truncate">
+                      <p className="text-xs font-black text-slate-900 truncate">
                         Dr. Ayesha Malik
                       </p>
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                      <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                         In Operatory
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 font-medium">
+                    <p className="text-[11px] text-teal-900/80 font-semibold">
                       Chair 2 · Orthodontics Bay
                     </p>
-                    <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                    <p className="text-[10px] text-slate-500 font-medium mt-0.5">
                       2:00 PM – 6:00 PM
                     </p>
                   </div>
@@ -699,24 +710,24 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
               </div>
 
               {/* Consultant Endodontist: Dr. Hamza Tariq */}
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 hover:border-slate-300 transition-all">
+              <div className="p-3.5 rounded-2xl bg-white/80 border border-teal-200/70 hover:border-sky-400 hover:bg-white transition-all shadow-2xs">
                 <div className="flex items-center gap-3">
-                  <div className="size-9 rounded-xl bg-slate-200 text-slate-800 font-extrabold text-xs flex items-center justify-center shrink-0">
+                  <div className="size-10 rounded-xl bg-sky-100 text-sky-900 border border-sky-200/80 font-extrabold text-xs flex items-center justify-center shrink-0">
                     HT
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
-                      <p className="text-xs font-bold text-slate-900 truncate">
+                      <p className="text-xs font-black text-slate-900 truncate">
                         Dr. Hamza Tariq
                       </p>
-                      <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                      <span className="text-[10px] font-extrabold text-sky-800 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200">
                         Next Shift (4 PM)
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 font-medium">
+                    <p className="text-[11px] text-teal-900/80 font-semibold">
                       Chair 3 · Rotary Endodontics
                     </p>
-                    <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                    <p className="text-[10px] text-slate-500 font-medium mt-0.5">
                       4:00 PM – 8:00 PM
                     </p>
                   </div>
@@ -726,7 +737,7 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
               <Button
                 asChild
                 variant="outline"
-                className="w-full h-9 rounded-xl border-slate-200 text-xs font-bold text-teal-800 hover:bg-teal-50 hover:text-teal-900 cursor-pointer"
+                className="w-full h-10 rounded-xl border border-teal-300/90 bg-white hover:bg-teal-600 hover:text-white text-xs font-extrabold text-teal-800 transition-all shadow-2xs cursor-pointer flex items-center justify-center"
               >
                 <Link href="/staff/doctors">
                   <span>View Full Specialist Roster</span>

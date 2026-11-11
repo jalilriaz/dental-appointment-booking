@@ -52,10 +52,16 @@ export default function Navbar() {
               <AccessTimeOutlined sx={{ fontSize: 15, color: "#2dd4bf" }} />
               {clinicInfo.workingHours}
             </span>
-            <span className="hidden md:flex items-center gap-1.5 text-slate-300">
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center gap-1.5 text-slate-300 hover:text-teal-300 transition-colors"
+              title="Open Elite Dental & Aesthetic Centre on Google Maps"
+            >
               <LocationOnOutlined sx={{ fontSize: 15, color: "#2dd4bf" }} />
-              {clinicInfo.address}
-            </span>
+              <span className="hover:underline">{clinicInfo.address}</span>
+            </a>
           </div>
           <div className="flex items-center gap-4 text-xs font-medium">
             <div className="flex items-center gap-1 text-teal-300 bg-teal-950/70 border border-teal-800/60 px-2 py-0.5 rounded-full">

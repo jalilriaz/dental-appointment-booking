@@ -90,21 +90,21 @@ export default async function StaffAppointmentsPage({ searchParams }: { searchPa
     }));
 
     return (
-        <div className="max-w-6xl mx-auto py-8 px-4 space-y-8">
-            <div className="flex items-center justify-between">
+        <div className="w-full space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <Link href="/staff" className="text-sm text-teal-700 hover:text-teal-800 flex items-center gap-1.5 mb-2 font-semibold transition-premium">
-                        <ArrowBackOutlinedIcon className="size-4" /> Back to Dashboard
+                    <Link href="/staff" className="text-xs text-teal-700 hover:text-teal-800 flex items-center gap-1.5 mb-1.5 font-bold transition-premium">
+                        <ArrowBackOutlinedIcon sx={{ fontSize: 14 }} /> Back to Dashboard
                     </Link>
-                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">All Appointments</h1>
-                    <p className="text-sm text-slate-600 font-medium">Manage schedule and view patient details.</p>
+                    <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">All Appointments</h1>
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">Manage schedule, operatory allocations, and view patient details.</p>
                 </div>
                 <Link
                     href="/staff/book"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-premium active:scale-95"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs sm:text-sm font-bold rounded-2xl shadow-xs transition-premium active:scale-95"
                 >
-                    <CalendarTodayOutlinedIcon className="size-4" />
-                    Book for Patient
+                    <CalendarTodayOutlinedIcon sx={{ fontSize: 16 }} />
+                    <span>Book for Patient</span>
                 </Link>
             </div>
 

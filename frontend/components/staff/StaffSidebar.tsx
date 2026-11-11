@@ -20,7 +20,7 @@ const navSections = [
     title: "Front Desk Operations",
     items: [
       { label: "Dashboard", href: "/staff", icon: DashboardOutlined },
-      { label: "Walk-In Booking", href: "/staff/book", icon: PersonAddAlt1Outlined, highlight: true },
+      { label: "Walk-In Booking", href: "/staff/book", icon: PersonAddAlt1Outlined },
       { label: "Appointments", href: "/staff/appointments", icon: CalendarMonthOutlined },
       { label: "Patients Directory", href: "/staff/patients", icon: PeopleAltOutlined },
       { label: "Doctors on Duty", href: "/staff/doctors", icon: LocalHospitalOutlined },
@@ -47,9 +47,8 @@ export default function StaffSidebar({ open, onClose }: { open: boolean; onClose
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-200/90 flex flex-col transition-transform duration-300 shadow-sm lg:translate-x-0 ${
-          open ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-200/90 flex flex-col transition-transform duration-300 shadow-sm lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Clinic Brand Identity with Official SVG Logo */}
         <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100">
@@ -100,22 +99,15 @@ export default function StaffSidebar({ open, onClose }: { open: boolean; onClose
                       key={item.href}
                       href={item.href}
                       onClick={onClose}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
-                        active
-                          ? "bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs font-extrabold"
-                          : item.highlight
-                          ? "text-teal-700 hover:bg-teal-50/50 hover:text-teal-800 font-bold"
-                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 font-semibold"
-                      }`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${active
+                        ? "bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs font-extrabold"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 font-semibold"
+                        }`}
                     >
                       <Icon
                         sx={{
                           fontSize: 19,
-                          color: active
-                            ? "#0d9488"
-                            : item.highlight
-                            ? "#0d9488"
-                            : "#94a3b8",
+                          color: active ? "#0d9488" : "#94a3b8",
                         }}
                       />
                       <span className="truncate">{item.label}</span>

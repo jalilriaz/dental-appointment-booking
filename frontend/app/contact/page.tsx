@@ -75,7 +75,7 @@ export default async function ContactPage() {
         "latitude": 33.6922,
         "longitude": 73.0423
       },
-      "hasMap": "https://maps.google.com/maps?q=Doctors+Plaza,+6+Markaz+Rd,+next+to+Islamabad+Diagnostic+Centre,+G-8+Markaz,+Islamabad",
+      "hasMap": "https://www.google.com/maps/search/?api=1&query=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad",
       "openingHoursSpecification": [
         {
           "@type": "OpeningHoursSpecification",
