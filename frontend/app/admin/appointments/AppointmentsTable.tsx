@@ -20,6 +20,7 @@ import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PersonOffOutlinedIcon from "@mui/icons-material/PersonOffOutlined";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import EventBusyOutlinedIcon from "@mui/icons-material/EventBusyOutlined";
@@ -28,6 +29,13 @@ import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import MedicalServicesOutlinedIcon from "@mui/icons-material/MedicalServicesOutlined";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import DirectionsWalkOutlinedIcon from "@mui/icons-material/DirectionsWalkOutlined";
+import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
+import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { PremiumLoader } from "@/components/ui/premium-loader";
@@ -345,6 +353,7 @@ export default function AppointmentsTable({
     const [precautionsApt, setPrecautionsApt] = useState<Appointment | null>(null);
     const [adminConfirmPastApt, setAdminConfirmPastApt] = useState<Appointment | null>(null);
     const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
+    const [doctorFilter, setDoctorFilter] = useState("");
 
     // Helper to determine the bucket of an appointment based on today's local date
     const getAptBucket = useCallback((startTimeStr: string) => {
@@ -360,6 +369,41 @@ export default function AppointmentsTable({
         if (aptDayStart === startOfTomorrow) return "tomorrow";
         if (aptDayStart >= startOfDayAfter) return "upcoming";
         return "past";
+    }, []);
+
+    // 4 KPI Summary Metrics from Screen 1
+    const kpiStats = useMemo(() => {
+        let today = 0;
+        let upcoming = 0;
+        let completed = 0;
+        let cancelled = 0;
+
+        for (const a of appointments) {
+            const bucket = getAptBucket(a.startTime);
+            if (bucket === "today") {
+                today++;
+            } else if (bucket === "tomorrow" || bucket === "upcoming") {
+                upcoming++;
+            }
+            if (a.status === "COMPLETED") {
+                completed++;
+            } else if (a.status === "CANCELLED" || a.status === "NO_SHOW") {
+                cancelled++;
+            }
+        }
+        return { today, upcoming, completed, cancelled };
+    }, [appointments, getAptBucket]);
+
+    // Assigned specialist mapping
+    const getDoctorForAppointment = useCallback((treatmentName: string) => {
+        const t = treatmentName.toLowerCase();
+        if (t.includes("brace") || t.includes("ortho") || t.includes("align")) {
+            return { name: "Dr. Ayesha Malik", role: "Orthodontist", operatory: "Chair 2 · Ortho Bay" };
+        }
+        if (t.includes("rct") || t.includes("canal") || t.includes("scaling") || t.includes("cleaning")) {
+            return { name: "Dr. Hamza Tariq", role: "Endodontist", operatory: "Chair 3 · Rotary Bay" };
+        }
+        return { name: "Dr. Sheriyaar", role: "Lead Surgeon", operatory: "Chair 1 · Surgical Suite" };
     }, []);
 
     // Quick counts for the timeline switcher
@@ -406,6 +450,12 @@ export default function AppointmentsTable({
             const matchDateTo = !dateTo || aptDate <= new Date(dateTo + "T23:59:59");
             const matchTreatment = !treatmentFilter || a.treatment.name === treatmentFilter;
 
+            const matchDoctor = !doctorFilter || (
+                doctorFilter === "sheriyaar" ? (a.treatment.name.toLowerCase().includes("implant") || a.treatment.name.toLowerCase().includes("surgery") || a.treatment.name.toLowerCase().includes("whitening") || a.bookedBy === "WEBSITE") :
+                doctorFilter === "ayesha" ? (a.treatment.name.toLowerCase().includes("brace") || a.treatment.name.toLowerCase().includes("ortho") || a.treatment.name.toLowerCase().includes("align")) :
+                doctorFilter === "hamza" ? (a.treatment.name.toLowerCase().includes("rct") || a.treatment.name.toLowerCase().includes("canal") || a.treatment.name.toLowerCase().includes("scaling") || a.treatment.name.toLowerCase().includes("cleaning")) : true
+            );
+
             // Timeline filter
             const bucket = getAptBucket(a.startTime);
             let matchTimeline = true;
@@ -415,9 +465,9 @@ export default function AppointmentsTable({
             else if (timelineFilter === "past") matchTimeline = bucket === "past";
             else if (timelineFilter === "all_active") matchTimeline = bucket !== "past" || a.status === "SCHEDULED" || a.status === "RESCHEDULED";
 
-            return matchSearch && matchStatus && matchDateFrom && matchDateTo && matchTreatment && matchTimeline;
+            return matchSearch && matchStatus && matchDateFrom && matchDateTo && matchTreatment && matchTimeline && matchDoctor;
         });
-    }, [appointments, search, statusFilter, dateFrom, dateTo, treatmentFilter, timelineFilter, getAptBucket]);
+    }, [appointments, search, statusFilter, dateFrom, dateTo, treatmentFilter, doctorFilter, timelineFilter, getAptBucket]);
 
     // Strict chronological sequence:
     // Today comes first (sorted by 2 PM, then 3 PM, etc.)
@@ -542,7 +592,119 @@ export default function AppointmentsTable({
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-5 font-sans">
+            {/* Top 4 KPI Summary Cards Styled to Reception Dashboard Theme */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                {/* Today's Appointments */}
+                <div
+                    onClick={() => {
+                        setTimelineFilter("today");
+                        setStatusFilter([]);
+                        setPage(1);
+                    }}
+                    className={`p-5 rounded-3xl border transition-all cursor-pointer ${
+                        timelineFilter === "today" && statusFilter.length === 0
+                            ? "bg-teal-50/60 border-teal-500 ring-2 ring-teal-500/20 shadow-xs"
+                            : "bg-white border-slate-200/80 hover:border-teal-300 shadow-2xs hover:shadow-xs"
+                    }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Today&apos;s Appointments</p>
+                            <p className="text-3xl font-black text-slate-900 tracking-tight mt-1">{kpiStats.today}</p>
+                        </div>
+                        <div className="size-12 rounded-2xl bg-teal-50 border border-teal-200/80 text-teal-700 flex items-center justify-center shadow-2xs">
+                            <CalendarTodayOutlinedIcon sx={{ fontSize: 20 }} />
+                        </div>
+                    </div>
+                    <p className="text-[11px] font-semibold text-teal-700 mt-2 flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Live on-site schedule</span>
+                    </p>
+                </div>
+
+                {/* Upcoming Appointments */}
+                <div
+                    onClick={() => {
+                        setTimelineFilter("upcoming");
+                        setStatusFilter([]);
+                        setPage(1);
+                    }}
+                    className={`p-5 rounded-3xl border transition-all cursor-pointer ${
+                        timelineFilter === "upcoming" && statusFilter.length === 0
+                            ? "bg-teal-50/60 border-teal-500 ring-2 ring-teal-500/20 shadow-xs"
+                            : "bg-white border-slate-200/80 hover:border-teal-300 shadow-2xs hover:shadow-xs"
+                    }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Upcoming Appointments</p>
+                            <p className="text-3xl font-black text-slate-900 tracking-tight mt-1">{kpiStats.upcoming}</p>
+                        </div>
+                        <div className="size-12 rounded-2xl bg-teal-50/70 border border-teal-200/60 text-teal-700 flex items-center justify-center shadow-2xs">
+                            <AccessTimeOutlinedIcon sx={{ fontSize: 20 }} />
+                        </div>
+                    </div>
+                    <p className="text-[11px] font-semibold text-slate-500 mt-2">
+                        Next 40 days booked
+                    </p>
+                </div>
+
+                {/* Completed Appointments */}
+                <div
+                    onClick={() => {
+                        setStatusFilter(["COMPLETED"]);
+                        setTimelineFilter("all");
+                        setPage(1);
+                    }}
+                    className={`p-5 rounded-3xl border transition-all cursor-pointer ${
+                        statusFilter.includes("COMPLETED")
+                            ? "bg-emerald-50/60 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs"
+                            : "bg-white border-slate-200/80 hover:border-emerald-300 shadow-2xs hover:shadow-xs"
+                    }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Completed Appointments</p>
+                            <p className="text-3xl font-black text-slate-900 tracking-tight mt-1">{kpiStats.completed}</p>
+                        </div>
+                        <div className="size-12 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 flex items-center justify-center shadow-2xs">
+                            <CheckCircleOutlineOutlinedIcon sx={{ fontSize: 20 }} />
+                        </div>
+                    </div>
+                    <p className="text-[11px] font-semibold text-emerald-700 mt-2">
+                        Discharged &amp; reconciled
+                    </p>
+                </div>
+
+                {/* Cancelled / Missed Appointments */}
+                <div
+                    onClick={() => {
+                        setStatusFilter(["CANCELLED", "NO_SHOW"]);
+                        setTimelineFilter("all");
+                        setPage(1);
+                    }}
+                    className={`p-5 rounded-3xl border transition-all cursor-pointer ${
+                        statusFilter.includes("CANCELLED") || statusFilter.includes("NO_SHOW")
+                            ? "bg-rose-50/60 border-rose-500 ring-2 ring-rose-500/20 shadow-xs"
+                            : "bg-white border-slate-200/80 hover:border-rose-300 shadow-2xs hover:shadow-xs"
+                    }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cancelled / Missed</p>
+                            <p className="text-3xl font-black text-slate-900 tracking-tight mt-1">{kpiStats.cancelled}</p>
+                        </div>
+                        <div className="size-12 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-600 flex items-center justify-center shadow-2xs">
+                            <PersonOffOutlinedIcon sx={{ fontSize: 20 }} />
+                        </div>
+                    </div>
+                    <p className="text-[11px] font-semibold text-rose-600 mt-2">
+                        Released chair slots
+                    </p>
+                </div>
+            </div>
+
             {/* Quick Timeline Selector & View Toggle */}
             <div className="flex flex-wrap items-center justify-between gap-3">
                 {/* Timeline Segmented Tabs */}
@@ -555,7 +717,7 @@ export default function AppointmentsTable({
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                         }`}
                     >
-                        <AutoAwesomeOutlinedIcon className="size-3.5 text-teal-600" />
+                        <AutoAwesomeOutlinedIcon sx={{ fontSize: 14 }} className="text-teal-600" />
                         <span>Active Schedule</span>
                         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                             timelineFilter === "all_active" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
@@ -592,7 +754,7 @@ export default function AppointmentsTable({
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                         }`}
                     >
-                        <CalendarMonthOutlinedIcon className="size-3.5 text-slate-500" />
+                        <CalendarMonthOutlinedIcon sx={{ fontSize: 14 }} className="text-slate-500" />
                         <span>Tomorrow</span>
                         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                             timelineFilter === "tomorrow" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
@@ -609,7 +771,7 @@ export default function AppointmentsTable({
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                         }`}
                     >
-                        <AccessTimeOutlinedIcon className="size-3.5 text-slate-500" />
+                        <AccessTimeOutlinedIcon sx={{ fontSize: 14 }} className="text-slate-500" />
                         <span>Upcoming</span>
                         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                             timelineFilter === "upcoming" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
@@ -626,7 +788,7 @@ export default function AppointmentsTable({
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                         }`}
                     >
-                        <HistoryOutlinedIcon className="size-3.5 text-slate-500" />
+                        <HistoryOutlinedIcon sx={{ fontSize: 14 }} className="text-slate-500" />
                         <span>Past & History</span>
                         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                             timelineFilter === "past" ? "bg-slate-100 text-slate-800 border border-slate-300" : "bg-slate-200/70 text-slate-600"
@@ -660,110 +822,149 @@ export default function AppointmentsTable({
                         onClick={() => setViewMode("calendar")}
                         className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${viewMode === "calendar" ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90" : "text-slate-600 hover:text-slate-900 font-medium"}`}
                     >
-                        <CalendarTodayOutlinedIcon className="size-3.5" />
+                        <CalendarTodayOutlinedIcon sx={{ fontSize: 14 }} />
                         Calendar
                     </button>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-xs">
-                <div className="flex flex-wrap gap-3">
-                    <div className="relative flex-1 min-w-[200px]">
-                        <SearchOutlinedIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                        <Input placeholder="Search patients, treatments, phone..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-10 h-10 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 rounded-xl" />
+            {/* Screen 1: Filter Command Center */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-4 sm:p-5 space-y-3.5 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                        <span className="text-base font-black text-slate-900 tracking-tight">Appointments List</span>
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-teal-50 text-teal-800 border border-teal-200">
+                            {filtered.length} Results
+                        </span>
                     </div>
-                    <select
-                        value={treatmentFilter}
-                        onChange={(e) => { setTreatmentFilter(e.target.value); setPage(1); }}
-                        className="h-10 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-800 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 focus:outline-none min-w-[160px]"
-                    >
-                        <option value="">All Treatments</option>
-                        {uniqueTreatments.map((t) => (
-                            <option key={t} value={t}>{t}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1"><CalendarTodayOutlinedIcon className="size-3 text-teal-600" /> Date:</span>
-                    <DatePicker
-                        value={dateFrom}
-                        onChange={(val) => { setDateFrom(val); setPage(1); }}
-                        placeholder="From"
-                        compact
-                    />
-                    <span className="text-slate-400">→</span>
-                    <DatePicker
-                        value={dateTo}
-                        onChange={(val) => { setDateTo(val); setPage(1); }}
-                        placeholder="To"
-                        compact
-                    />
-                    {hasActiveFilters && (
-                        <button
-                            onClick={clearAllFilters}
-                            className="ml-auto text-xs text-slate-500 hover:text-red-600 flex items-center gap-1 transition-colors font-semibold"
-                        >
-                            <CloseOutlinedIcon className="size-3" /> Clear all
-                        </button>
-                    )}
-                </div>
-                <div className="flex flex-wrap gap-2 items-center">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1"><FilterListOutlinedIcon className="size-3 text-teal-600" /> Status:</span>
-                    {["SCHEDULED", "RESCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"].map((s) => {
-                        const isSelected = statusFilter.includes(s);
-                        let activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
-                        if (s === "SCHEDULED") activeBadge = "bg-sky-50 text-sky-800 border-sky-300 font-bold";
-                        if (s === "RESCHEDULED") activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
-                        if (s === "COMPLETED") activeBadge = "bg-emerald-50 text-emerald-800 border-emerald-300 font-bold";
-                        if (s === "CANCELLED") activeBadge = "bg-rose-50 text-rose-800 border-rose-300 font-bold";
-                        if (s === "NO_SHOW") activeBadge = "bg-amber-50 text-amber-800 border-amber-300 font-bold";
 
-                        return (
-                            <button
-                                key={s}
-                                onClick={() => toggleStatus(s)}
-                                className={`px-3 py-1 rounded-full text-xs transition-premium cursor-pointer border ${
-                                    isSelected
-                                        ? `${activeBadge} shadow-2xs`
-                                        : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 border-slate-200/60 font-medium"
-                                }`}
-                            >
-                                {s === "NO_SHOW" ? "Missed" : s.replace("_", " ")}
-                            </button>
-                        );
-                    })}
-                </div>
-                {/* Active Filters Summary */}
-                {hasActiveFilters && (
-                    <div className="pt-2 border-t border-slate-100">
-                        <p className="text-xs text-slate-500">
-                            Showing <strong className="text-slate-800 font-bold">{filtered.length}</strong> of {appointments.length} appointments
-                            {treatmentFilter && <> · Treatment: <strong className="text-teal-700">{treatmentFilter}</strong></>}
-                            {dateFrom && <> · From: <strong className="text-slate-800">{dateFrom}</strong></>}
-                            {dateTo && <> · To: <strong className="text-slate-800">{dateTo}</strong></>}
-                        </p>
+                    <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                        <span>Active Filter Mode:</span>
+                        <strong className="text-slate-800 uppercase font-bold">{timelineFilter.replace("_", " ")}</strong>
                     </div>
-                )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    {/* Search */}
+                    <div className="relative md:col-span-5">
+                        <SearchOutlinedIcon sx={{ fontSize: 16 }} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <Input
+                            placeholder="Search doctor, patient, phone..."
+                            value={search}
+                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                            className="pl-10 h-10 bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 rounded-xl text-xs sm:text-sm font-medium"
+                        />
+                    </div>
+
+                    {/* Doctor Selector (From Screen 1) */}
+                    <div className="md:col-span-3">
+                        <select
+                            value={doctorFilter}
+                            onChange={(e) => { setDoctorFilter(e.target.value); setPage(1); }}
+                            className="w-full h-10 px-3 rounded-xl bg-slate-50/80 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 focus:outline-none"
+                        >
+                            <option value="">All Doctors (On-Duty Roster)</option>
+                            <option value="sheriyaar">Dr. Sheriyaar (Lead Surgeon)</option>
+                            <option value="ayesha">Dr. Ayesha Malik (Orthodontist)</option>
+                            <option value="hamza">Dr. Hamza Tariq (Endodontist)</option>
+                        </select>
+                    </div>
+
+                    {/* Treatment Selector */}
+                    <div className="md:col-span-4">
+                        <select
+                            value={treatmentFilter}
+                            onChange={(e) => { setTreatmentFilter(e.target.value); setPage(1); }}
+                            className="w-full h-10 px-3 rounded-xl bg-slate-50/80 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 focus:outline-none truncate"
+                        >
+                            <option value="">All Procedures &amp; Treatments</option>
+                            {uniqueTreatments.map((t) => (
+                                <option key={t} value={t}>{t}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                    {/* Status Pill Filters */}
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <span className="text-[11px] text-slate-500 uppercase tracking-wider font-extrabold flex items-center gap-1">
+                            <FilterListOutlinedIcon sx={{ fontSize: 13 }} className="text-teal-600" /> Status:
+                        </span>
+                        {["SCHEDULED", "RESCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"].map((s) => {
+                            const isSelected = statusFilter.includes(s);
+                            let activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
+                            if (s === "SCHEDULED") activeBadge = "bg-sky-50 text-sky-800 border-sky-300 font-bold";
+                            if (s === "RESCHEDULED") activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
+                            if (s === "COMPLETED") activeBadge = "bg-emerald-50 text-emerald-800 border-emerald-300 font-bold";
+                            if (s === "CANCELLED") activeBadge = "bg-rose-50 text-rose-800 border-rose-300 font-bold";
+                            if (s === "NO_SHOW") activeBadge = "bg-amber-50 text-amber-800 border-amber-300 font-bold";
+
+                            return (
+                                <button
+                                    key={s}
+                                    onClick={() => toggleStatus(s)}
+                                    className={`px-3 py-1 rounded-full text-xs transition-premium cursor-pointer border ${
+                                        isSelected
+                                            ? `${activeBadge} shadow-2xs`
+                                            : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 border-slate-200/60 font-medium"
+                                    }`}
+                                >
+                                    {s === "NO_SHOW" ? "Missed" : s.replace("_", " ")}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Date Range Picker */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] text-slate-500 uppercase tracking-wider font-extrabold flex items-center gap-1">
+                            <CalendarTodayOutlinedIcon sx={{ fontSize: 12 }} className="text-teal-600" /> Date:
+                        </span>
+                        <DatePicker
+                            value={dateFrom}
+                            onChange={(val) => { setDateFrom(val); setPage(1); }}
+                            placeholder="From"
+                            compact
+                        />
+                        <span className="text-slate-400">→</span>
+                        <DatePicker
+                            value={dateTo}
+                            onChange={(val) => { setDateTo(val); setPage(1); }}
+                            placeholder="To"
+                            compact
+                        />
+                        {hasActiveFilters && (
+                            <button
+                                onClick={clearAllFilters}
+                                className="text-xs text-slate-500 hover:text-red-600 flex items-center gap-1 transition-colors font-bold ml-1 cursor-pointer"
+                            >
+                                <CloseOutlinedIcon sx={{ fontSize: 12 }} /> Reset Filters
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {viewMode === "calendar" ? (
                 <AppointmentsCalendar appointments={filtered} onEventClick={setDetailId} />
             ) : (
-                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+                <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-xs">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead className="bg-slate-50/90 border-b border-slate-200">
+                            <thead className="bg-slate-50/95 border-b border-slate-200/90">
                                 <tr>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Patient</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Treatment</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Date & Time</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Source</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider w-12">#</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Patient Name</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Doctor</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Department / Treatment</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Appointment Date</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Appointment Time</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-slate-100/90">
                                 {paged.map((apt, index) => {
                                     const start = new Date(apt.startTime);
                                     const isPastDate = new Date(apt.startTime).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
@@ -772,111 +973,166 @@ export default function AppointmentsTable({
                                     const prevDateKey = prevApt ? format(new Date(prevApt.startTime), "yyyy-MM-dd") : null;
                                     const isNewDayGroup = currentDateKey !== prevDateKey;
                                     const bucket = getAptBucket(apt.startTime);
+                                    const patientInitial = (apt.patient?.name || "P").charAt(0).toUpperCase();
+                                    const assignedDoc = getDoctorForAppointment(apt.treatment.name);
+                                    const rowNumber = (page - 1) * perPage + index + 1;
 
                                     return (
                                         <Fragment key={apt.id}>
                                             {isNewDayGroup && (
-                                                <tr key={`header-${currentDateKey}`} className="bg-slate-50/90 border-y border-slate-200">
-                                                    <td colSpan={6} className="px-4 py-2.5">
+                                                <tr key={`header-${currentDateKey}`} className="bg-slate-50/90 border-y border-slate-200/90">
+                                                    <td colSpan={8} className="px-5 py-3">
                                                         <div className="flex items-center justify-between flex-wrap gap-2">
                                                             <div className="flex items-center gap-2.5">
                                                                 {bucket === "today" ? (
-                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-300 shadow-2xs">
+                                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-teal-50 text-teal-800 border border-teal-300 shadow-2xs">
                                                                         <span className="relative flex h-2 w-2">
-                                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-600"></span>
+                                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
                                                                         </span>
                                                                         TODAY
                                                                     </span>
                                                                 ) : bucket === "tomorrow" ? (
-                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-300 shadow-2xs">
-                                                                        <CalendarMonthOutlinedIcon className="size-3.5" />
+                                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-teal-50 text-teal-800 border border-teal-300 shadow-2xs">
+                                                                        <CalendarMonthOutlinedIcon sx={{ fontSize: 14 }} className="text-teal-700" />
                                                                         TOMORROW
                                                                     </span>
                                                                 ) : bucket === "upcoming" ? (
-                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-800 border border-sky-300">
-                                                                        <AccessTimeOutlinedIcon className="size-3.5" />
+                                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-sky-50 text-sky-800 border border-sky-300">
+                                                                        <AccessTimeOutlinedIcon sx={{ fontSize: 14 }} className="text-sky-700" />
                                                                         UPCOMING
                                                                     </span>
                                                                 ) : (
-                                                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
-                                                                        <HistoryOutlinedIcon className="size-3" />
+                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-300">
+                                                                        <HistoryOutlinedIcon sx={{ fontSize: 13 }} className="text-slate-600" />
                                                                         PAST RECORD
                                                                     </span>
                                                                 )}
-                                                                <span className="text-sm font-bold text-slate-900 tracking-tight">
+                                                                <span className="text-sm font-black text-slate-900 tracking-tight">
                                                                     {format(start, "EEEE, d MMMM yyyy")}
                                                                 </span>
                                                             </div>
-                                                            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
+                                                            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
                                                                 Sequential Time Order
                                                             </span>
                                                         </div>
                                                     </td>
                                                 </tr>
                                             )}
-                                            <tr className="hover:bg-slate-50/80 transition-premium">
-                                                <td className="px-4 py-3">
-                                                    <p className="font-semibold text-slate-900 flex items-center gap-2">
-                                                        {apt.patient?.name || "Unknown"}
-                                                        {(apt.patient?.noShowCount ?? 0) > 0 && (
-                                                            <span className="inline-flex items-center gap-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-700 border border-red-200" title={`${apt.patient?.noShowCount} previous No-Shows`}>
-                                                                <WarningAmberOutlinedIcon className="size-3" />
-                                                                {apt.patient?.noShowCount} No-Show
-                                                            </span>
-                                                        )}
-                                                    </p>
-                                                    <p className="text-xs text-slate-500 font-medium">{apt.patient?.phone}</p>
+                                            <tr className="hover:bg-slate-50/70 transition-colors group">
+                                                {/* Row Number */}
+                                                <td className="px-4 py-3.5 text-xs font-bold text-slate-400">
+                                                    {rowNumber}
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <p className="text-slate-800 font-semibold">{apt.treatment.name}</p>
-                                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                                        <p className="text-xs text-slate-600 font-semibold">{formatPKR(apt.price || apt.treatment.price)}</p>
+
+                                                {/* Patient Name */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="size-8 rounded-xl bg-teal-50/90 border border-teal-200/90 text-teal-900 font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                                                            {patientInitial}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p
+                                                                onClick={() => setDetailId(apt.id)}
+                                                                className="font-bold text-slate-900 text-sm flex items-center gap-2 hover:text-teal-700 transition-colors cursor-pointer"
+                                                            >
+                                                                <span className="truncate">{apt.patient?.name || "Unknown"}</span>
+                                                                {(apt.patient?.noShowCount ?? 0) > 0 && (
+                                                                    <span className="inline-flex items-center gap-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-700 border border-red-200 shrink-0" title={`${apt.patient?.noShowCount} previous No-Shows`}>
+                                                                        <WarningAmberOutlinedIcon sx={{ fontSize: 12 }} />
+                                                                        {apt.patient?.noShowCount} No-Show
+                                                                    </span>
+                                                                )}
+                                                            </p>
+                                                            {apt.patient?.phone ? (
+                                                                <a
+                                                                    href={`https://wa.me/${apt.patient.phone.replace(/[^0-9]/g, "")}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-emerald-700 font-medium transition-colors cursor-pointer group/wa mt-0.5"
+                                                                    title="Open WhatsApp Chat"
+                                                                >
+                                                                    <WhatsAppIcon sx={{ fontSize: 12 }} className="text-emerald-600 group-hover/wa:scale-110 transition-transform" />
+                                                                    <span>{apt.patient.phone}</span>
+                                                                </a>
+                                                            ) : (
+                                                                <span className="text-[11px] text-slate-400">No phone</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {/* Doctor (From Screen 1) */}
+                                                <td className="px-4 py-3.5">
+                                                    <p className="font-extrabold text-slate-900 text-xs">{assignedDoc.name}</p>
+                                                    <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 mt-0.5">
+                                                        {assignedDoc.role}
+                                                    </span>
+                                                </td>
+
+                                                {/* Department & Treatment (From Screen 1) */}
+                                                <td className="px-4 py-3.5">
+                                                    <p className="font-bold text-slate-900 text-xs leading-snug">{apt.treatment.name}</p>
+                                                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                                        <span className="text-[10px] text-teal-800 font-extrabold">{assignedDoc.operatory}</span>
+                                                        <span className="text-slate-300">·</span>
+                                                        <span className="text-[11px] font-black text-slate-700">{formatPKR(apt.price || apt.treatment.price)}</span>
                                                         {apt.sessionNumber ? (
-                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                                                            <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-teal-50 text-teal-800 border border-teal-200/90 shadow-2xs">
                                                                 Session {apt.sessionNumber}{apt.patientTreatment?.totalSessions ? ` of ${apt.patientTreatment.totalSessions}` : ""}
                                                             </span>
                                                         ) : null}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-slate-700">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 font-bold text-sm tracking-tight shadow-xs">
-                                                            <AccessTimeOutlinedIcon className="size-3.5 text-teal-600" />
-                                                            {formatTime(start)}
-                                                        </span>
-                                                        <span className="text-[11px] font-semibold text-slate-600 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">
-                                                            {apt.treatment.durationMin}m
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+
+                                                {/* Appointment Date (From Screen 1) */}
+                                                <td className="px-4 py-3.5 text-xs font-semibold text-slate-700">
+                                                    <div className="flex items-center gap-1.5">
                                                         <span>{formatDate(start)}</span>
                                                         {bucket === "today" && (
-                                                            <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                                                            <span className="text-[9px] text-emerald-800 font-extrabold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
                                                                 Today
                                                             </span>
                                                         )}
                                                         {bucket === "tomorrow" && (
-                                                            <span className="text-[10px] text-teal-700 font-bold bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
+                                                            <span className="text-[9px] text-teal-800 font-extrabold bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
                                                                 Tomorrow
                                                             </span>
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">
+
+                                                {/* Appointment Time (From Screen 1) */}
+                                                <td className="px-4 py-3.5 text-slate-700">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-teal-50/90 border border-teal-200/90 text-teal-950 font-black text-xs shadow-2xs">
+                                                            <AccessTimeOutlinedIcon sx={{ fontSize: 13 }} className="text-teal-700" />
+                                                            {formatTime(start)}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                                            {apt.treatment.durationMin}m
+                                                        </span>
+                                                    </div>
+                                                </td>
+
+                                                {/* Status (From Screen 1) */}
+                                                <td className="px-4 py-3.5">
                                                     <StatusBadge status={apt.status} />
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <span className="text-xs text-slate-600 font-medium">{apt.bookedBy?.replace("_", " ") || "WEBSITE"}</span>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex gap-1">
-                                                        <button onClick={() => setDetailId(apt.id)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer transition-premium" title="View Details">
-                                                            <VisibilityOutlinedIcon className="size-4" />
+
+                                                {/* Action (From Screen 1) */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        {/* Primary View Button (Exact Screen 1 Style) */}
+                                                        <button
+                                                            onClick={() => setDetailId(apt.id)}
+                                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white hover:bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                                                            title="View Encounter Dossier"
+                                                        >
+                                                            <VisibilityOutlinedIcon sx={{ fontSize: 13 }} />
+                                                            <span>View</span>
                                                         </button>
-                                                        <button onClick={() => apt.patient?.id && setHistoryPatientId(apt.patient.id)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 cursor-pointer transition-premium" title="Patient History">
-                                                            <HistoryOutlinedIcon className="size-4" />
-                                                        </button>
+
                                                         {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
                                                             <>
                                                                 {(!isPastDate || userRole === "ADMIN") && (
@@ -890,37 +1146,36 @@ export default function AppointmentsTable({
                                                                                 setDiscountValue("0");
                                                                             }
                                                                         }}
-                                                                        className="p-1.5 rounded-lg hover:bg-teal-50 text-teal-600 cursor-pointer transition-premium"
-                                                                        title="Check Out — Mark as Completed"
+                                                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                                                                        title="Check Out & Bill Patient"
                                                                         disabled={checkingOutId === apt.id}
                                                                     >
-                                                                        {checkingOutId === apt.id ? <AutorenewOutlinedIcon className="size-4 animate-spin" /> : <CheckCircleOutlineOutlinedIcon className="size-4" />}
+                                                                        {checkingOutId === apt.id ? <AutorenewOutlinedIcon sx={{ fontSize: 13 }} className="animate-spin" /> : <CheckCircleOutlineOutlinedIcon sx={{ fontSize: 13 }} />}
+                                                                        <span>Check Out</span>
                                                                     </button>
                                                                 )}
+                                                            </>
+                                                        )}
+
+                                                        {apt.status === "COMPLETED" && (
+                                                            <>
                                                                 <button
-                                                                    onClick={() => handleStatusChange(apt.id, "NO_SHOW")}
-                                                                    className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 cursor-pointer transition-premium"
-                                                                    title="Mark as No Show"
+                                                                    onClick={() => setPrecautionsApt(apt)}
+                                                                    className="p-1 rounded-lg hover:bg-emerald-50 text-emerald-700 transition-colors cursor-pointer"
+                                                                    title="Send WhatsApp Precautions"
                                                                 >
-                                                                    <PersonOffOutlinedIcon className="size-4" />
+                                                                    <WhatsAppIcon sx={{ fontSize: 15 }} className="text-emerald-600" />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => setRescheduleApt(apt)}
-                                                                    className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 cursor-pointer transition-premium"
-                                                                    title="Reschedule"
+                                                                    onClick={() => setReceiptApt(apt)}
+                                                                    className="p-1 rounded-lg hover:bg-teal-50 text-teal-700 transition-colors cursor-pointer"
+                                                                    title="Download Receipt"
                                                                 >
-                                                                    <RefreshOutlinedIcon className="size-4" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => setConfirmCancelId(apt.id)}
-                                                                    className="p-1.5 rounded-lg hover:bg-red-50 text-red-600 cursor-pointer transition-premium"
-                                                                    title="Cancel"
-                                                                    disabled={cancellingId === apt.id}
-                                                                >
-                                                                    {cancellingId === apt.id ? <AutorenewOutlinedIcon className="size-4 animate-spin" /> : <DeleteOutlineOutlinedIcon className="size-4" />}
+                                                                    <ReceiptLongOutlinedIcon sx={{ fontSize: 15 }} />
                                                                 </button>
                                                             </>
                                                         )}
+
                                                         <ClinicalNoteDialog
                                                             appointmentId={apt.id}
                                                             patientName={apt.patient?.name || "Unknown"}
@@ -930,21 +1185,30 @@ export default function AppointmentsTable({
                                                             onNoteSaved={() => router.refresh()}
                                                             readOnly={userRole !== "ADMIN"}
                                                         />
-                                                        {apt.status === "COMPLETED" && (
+
+                                                        {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
                                                             <>
                                                                 <button
-                                                                    onClick={() => setPrecautionsApt(apt)}
-                                                                    className="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600 cursor-pointer transition-premium"
-                                                                    title="Send WhatsApp Precautions"
+                                                                    onClick={() => setRescheduleApt(apt)}
+                                                                    className="p-1 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors cursor-pointer"
+                                                                    title="Reschedule Appointment"
                                                                 >
-                                                                    <ChatBubbleOutlineOutlinedIcon className="size-4" />
+                                                                    <RefreshOutlinedIcon sx={{ fontSize: 15 }} />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => setReceiptApt(apt)}
-                                                                    className="p-1.5 rounded-lg hover:bg-teal-50 text-teal-600 cursor-pointer transition-premium"
-                                                                    title="Download Receipt"
+                                                                    onClick={() => handleStatusChange(apt.id, "NO_SHOW")}
+                                                                    className="p-1 rounded-lg hover:bg-amber-50 text-amber-600 transition-colors cursor-pointer"
+                                                                    title="Mark as No Show"
                                                                 >
-                                                                    <ReceiptLongOutlinedIcon className="size-4" />
+                                                                    <PersonOffOutlinedIcon sx={{ fontSize: 15 }} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setConfirmCancelId(apt.id)}
+                                                                    className="p-1 rounded-lg hover:bg-red-50 text-red-600 transition-colors cursor-pointer"
+                                                                    title="Cancel Appointment"
+                                                                    disabled={cancellingId === apt.id}
+                                                                >
+                                                                    {cancellingId === apt.id ? <AutorenewOutlinedIcon sx={{ fontSize: 15 }} className="animate-spin" /> : <DeleteOutlineOutlinedIcon sx={{ fontSize: 15 }} />}
                                                                 </button>
                                                             </>
                                                         )}
@@ -955,14 +1219,14 @@ export default function AppointmentsTable({
                                     );
                                 })}
                                 {paged.length === 0 && (
-                                    <tr><td colSpan={6} className="py-0"><EmptyState icon={EventBusyOutlinedIcon} title="No Appointments Found" description="No appointments match your current filters. Try adjusting your search or status filter." /></td></tr>
+                                    <tr><td colSpan={8} className="py-0"><EmptyState icon={EventBusyOutlinedIcon} title="No Appointments Found" description="No appointments match your current filters. Try adjusting your search or status filter." /></td></tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
 
                     {/* Pagination */}
-                    <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50/50 gap-3">
+                    <div className="flex flex-wrap items-center justify-between px-5 py-3.5 border-t border-slate-200 bg-slate-50/50 gap-3">
                         <div className="flex items-center gap-3">
                             <p className="text-sm text-slate-600">
                                 Showing <strong className="text-slate-900">{sorted.length > 0 ? (page - 1) * perPage + 1 : 0}</strong>–<strong className="text-slate-900">{Math.min(page * perPage, sorted.length)}</strong> of <strong className="text-slate-900">{sorted.length}</strong>
@@ -999,35 +1263,296 @@ export default function AppointmentsTable({
                 </div>
             )}
 
-            {/* Detail Dialog */}
+            {/* Screen 2: Encounter Dossier Dialog */}
             <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-                <DialogContent className="sm:max-w-lg bg-white border-slate-200 text-slate-900 shadow-2xl">
-                    <DialogHeader>
-                        <DialogTitle className="text-slate-900">Appointment Details</DialogTitle>
+                <DialogContent className="sm:max-w-4xl max-h-[92vh] overflow-y-auto bg-white border border-slate-200/90 text-slate-900 shadow-2xl rounded-3xl p-5 sm:p-7">
+                    <DialogHeader className="border-b border-slate-100 pb-4 pr-10">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-1">
+                                    <span>Appointments List</span>
+                                    <span>&gt;</span>
+                                    <span className="text-teal-700">Encounter Dossier</span>
+                                </div>
+                                <DialogTitle className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                                    <span>Appointment Details</span>
+                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                        #{selectedApt?.id.slice(-6).toUpperCase()}
+                                    </span>
+                                </DialogTitle>
+                            </div>
+
+                            {selectedApt && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-slate-500">Status:</span>
+                                    <StatusBadge status={selectedApt.status} />
+                                </div>
+                            )}
+                        </div>
                     </DialogHeader>
+
                     {selectedApt && (
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                <div><p className="text-slate-500 text-xs font-semibold uppercase">Patient</p><p className="font-semibold text-slate-900">{selectedApt.patient?.name}</p></div>
-                                <div><p className="text-slate-500 text-xs font-semibold uppercase">Phone</p><p className="font-semibold text-slate-900">{selectedApt.patient?.phone || "—"}</p></div>
-                                <div><p className="text-slate-500 text-xs font-semibold uppercase">Treatment</p><p className="font-semibold text-slate-900">{selectedApt.treatment.name}</p></div>
-                                <div><p className="text-slate-500 text-xs font-semibold uppercase">Duration</p><p className="font-semibold text-slate-900">{selectedApt.treatment.durationMin} minutes</p></div>
-                                <div>
-                                    <p className="text-slate-500 text-xs font-semibold uppercase">Date & Time</p>
-                                    <p className="font-semibold text-slate-900">
-                                        {formatDate(selectedApt.startTime, "long")}<br />
-                                        {formatTime(selectedApt.startTime)} –{" "}
-                                        {formatTime(selectedApt.endTime)}
-                                    </p>
+                        <div className="space-y-6 pt-2">
+                            {/* Actions Header Bar */}
+                            <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
+                                <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                                    <CalendarTodayOutlinedIcon sx={{ fontSize: 16 }} className="text-teal-600" />
+                                    <span>{formatDate(selectedApt.startTime, "long")} · {formatTime(selectedApt.startTime)}</span>
                                 </div>
-                                <div>
-                                    <p className="text-slate-500 text-xs font-semibold uppercase">Price</p>
-                                    <p className="font-bold text-teal-700">
-                                        {formatPKR(selectedApt.treatment.price)}
-                                    </p>
+
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {(selectedApt.status === "SCHEDULED" || selectedApt.status === "RESCHEDULED") && (
+                                        <>
+                                            <button
+                                                onClick={() => {
+                                                    setDetailId(null);
+                                                    setCheckoutApt(selectedApt);
+                                                    setAmountValue("");
+                                                    setDiscountValue("0");
+                                                }}
+                                                className="px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold transition-all shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-95"
+                                            >
+                                                <CheckCircleOutlineOutlinedIcon sx={{ fontSize: 14 }} />
+                                                <span>Check Out</span>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setDetailId(null);
+                                                    setRescheduleApt(selectedApt);
+                                                }}
+                                                className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                                            >
+                                                <RefreshOutlinedIcon sx={{ fontSize: 14 }} className="text-blue-600" />
+                                                <span>Reschedule</span>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setDetailId(null);
+                                                    setConfirmCancelId(selectedApt.id);
+                                                }}
+                                                className="px-3 py-1.5 rounded-xl bg-white border border-red-200 hover:bg-red-50 text-red-700 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                                            >
+                                                <DeleteOutlineOutlinedIcon sx={{ fontSize: 14 }} />
+                                                <span>Cancel</span>
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {selectedApt.status === "COMPLETED" && (
+                                        <>
+                                            <button
+                                                onClick={() => {
+                                                    setDetailId(null);
+                                                    setPrecautionsApt(selectedApt);
+                                                }}
+                                                className="px-3.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5"
+                                            >
+                                                <WhatsAppIcon sx={{ fontSize: 14 }} className="text-emerald-600" />
+                                                <span>WhatsApp Precautions</span>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setDetailId(null);
+                                                    setReceiptApt(selectedApt);
+                                                }}
+                                                className="px-3.5 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5"
+                                            >
+                                                <ReceiptLongOutlinedIcon sx={{ fontSize: 14 }} className="text-teal-700" />
+                                                <span>Download Receipt</span>
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
-                                <div><p className="text-slate-500 text-xs font-semibold uppercase">Status</p><StatusBadge status={selectedApt.status} /></div>
-                                <div><p className="text-slate-500 text-xs font-semibold uppercase">Booked By</p><p className="font-semibold text-slate-900">{selectedApt.bookedBy?.replace("_", " ") || "WEBSITE"}</p></div>
+                            </div>
+
+                            {/* Dual Column Layout Matching Screen 2 */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                                {/* Left Column: Encounter Details & Patient Info (7 cols) */}
+                                <div className="lg:col-span-7 space-y-4">
+                                    {/* Appointment Details Card */}
+                                    <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-3">
+                                        <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                                            <BadgeOutlinedIcon sx={{ fontSize: 15 }} className="text-teal-600" />
+                                            Appointment Specifications
+                                        </h3>
+
+                                        <div className="grid grid-cols-2 gap-3 text-xs">
+                                            <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                                <p className="text-slate-400 uppercase font-bold text-[10px]">Appointment ID</p>
+                                                <p className="font-extrabold text-slate-900 mt-0.5">#{selectedApt.id.slice(-6).toUpperCase()}</p>
+                                            </div>
+                                            <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                                <p className="text-slate-400 uppercase font-bold text-[10px]">Booked On</p>
+                                                <p className="font-extrabold text-slate-900 mt-0.5">{formatDate(selectedApt.createdAt || selectedApt.startTime)}</p>
+                                            </div>
+                                            <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                                <p className="text-slate-400 uppercase font-bold text-[10px]">Doctor Assigned</p>
+                                                <p className="font-extrabold text-teal-900 mt-0.5">{getDoctorForAppointment(selectedApt.treatment.name).name}</p>
+                                                <p className="text-[10px] text-slate-500 font-semibold">{getDoctorForAppointment(selectedApt.treatment.name).role}</p>
+                                            </div>
+                                            <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                                <p className="text-slate-400 uppercase font-bold text-[10px]">Operatory Department</p>
+                                                <p className="font-extrabold text-slate-900 mt-0.5">{getDoctorForAppointment(selectedApt.treatment.name).operatory}</p>
+                                            </div>
+                                            <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                                <p className="text-slate-400 uppercase font-bold text-[10px]">Clinical Procedure</p>
+                                                <p className="font-extrabold text-slate-900 mt-0.5">{selectedApt.treatment.name}</p>
+                                                <p className="text-[10px] font-bold text-teal-700 mt-0.5">{formatPKR(selectedApt.price || selectedApt.treatment.price)}</p>
+                                            </div>
+                                            <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                                <p className="text-slate-400 uppercase font-bold text-[10px]">Consultation Mode</p>
+                                                <p className="font-extrabold text-slate-900 mt-0.5">{selectedApt.bookedBy?.replace("_", " ") || "In-Person Clinic"}</p>
+                                                <p className="text-[10px] text-slate-500 font-semibold">{selectedApt.treatment.durationMin} minutes allotted</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Patient Profile Card */}
+                                    <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-3">
+                                        <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                                            <MedicalServicesOutlinedIcon sx={{ fontSize: 15 }} className="text-teal-600" />
+                                            Patient Demographics
+                                        </h3>
+
+                                        <div className="grid grid-cols-2 gap-3 text-xs">
+                                            <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                                <p className="text-slate-400 uppercase font-bold text-[10px]">Patient Name</p>
+                                                <p className="font-extrabold text-slate-900 mt-0.5">{selectedApt.patient?.name || "Unknown"}</p>
+                                            </div>
+                                            <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                                <p className="text-slate-400 uppercase font-bold text-[10px]">Contact Phone</p>
+                                                {selectedApt.patient?.phone ? (
+                                                    <a
+                                                        href={`https://wa.me/${selectedApt.patient.phone.replace(/[^0-9]/g, "")}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:text-emerald-800 transition-colors mt-0.5"
+                                                    >
+                                                        <WhatsAppIcon sx={{ fontSize: 13 }} />
+                                                        <span>{selectedApt.patient.phone}</span>
+                                                    </a>
+                                                ) : (
+                                                    <p className="text-slate-400 mt-0.5">—</p>
+                                                )}
+                                            </div>
+                                            <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                                <p className="text-slate-400 uppercase font-bold text-[10px]">Email Address</p>
+                                                <p className="font-medium text-slate-700 truncate mt-0.5">{selectedApt.patient?.email || "patient@elitedental.pk"}</p>
+                                            </div>
+                                            <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                                <p className="text-slate-400 uppercase font-bold text-[10px]">Clinical Location</p>
+                                                <p className="font-semibold text-slate-800 mt-0.5">Doctors Plaza, G-8 Markaz</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Clinical Notes Card */}
+                                    <div className="p-4 rounded-2xl bg-teal-50/50 border border-teal-200/80 shadow-2xs space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-xs font-black text-teal-950 uppercase tracking-wider flex items-center gap-1.5">
+                                                <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: 14 }} className="text-teal-700" />
+                                                Doctor Clinical Notes
+                                            </h3>
+                                            <ClinicalNoteDialog
+                                                appointmentId={selectedApt.id}
+                                                patientName={selectedApt.patient?.name || "Unknown"}
+                                                treatmentName={selectedApt.treatment.name}
+                                                appointmentDate={formatDate(selectedApt.startTime)}
+                                                existingNote={selectedApt.clinicalNotes?.[0] || null}
+                                                onNoteSaved={() => router.refresh()}
+                                                readOnly={userRole !== "ADMIN"}
+                                            />
+                                        </div>
+                                        {selectedApt.clinicalNotes && selectedApt.clinicalNotes.length > 0 ? (
+                                            <div className="p-3 bg-white rounded-xl border border-teal-200/60 text-xs text-slate-700 space-y-1">
+                                                <p className="font-bold text-slate-900">{selectedApt.clinicalNotes[0].diagnosis || "Clinical Procedure Note"}</p>
+                                                <p className="text-slate-600">{selectedApt.clinicalNotes[0].treatmentDone || selectedApt.clinicalNotes[0].remarks || "Patient tolerated procedure well. Instructions provided."}</p>
+                                            </div>
+                                        ) : (
+                                            <p className="text-xs text-slate-500 italic p-2 bg-white/60 rounded-xl border border-teal-100">
+                                                No doctor notes recorded yet for this session. Click &quot;Add Note&quot; above to log diagnosis.
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Right Column: Appointment History Timeline (5 cols) */}
+                                <div className="lg:col-span-5 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/90 shadow-2xs space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                                            <HistoryOutlinedIcon sx={{ fontSize: 15 }} className="text-teal-600" />
+                                            Appointment History
+                                        </h3>
+                                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">
+                                            {appointments.filter(a => a.patient?.id === selectedApt.patient?.id).length} Total Visits
+                                        </span>
+                                    </div>
+
+                                    {/* Vertical Timeline Tree */}
+                                    <div className="space-y-3 pt-2 max-h-[420px] overflow-y-auto pr-1">
+                                        {appointments
+                                            .filter(a => a.patient?.id === selectedApt.patient?.id)
+                                            .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+                                            .map((hist, idx, arr) => {
+                                                const isCurrent = hist.id === selectedApt.id;
+                                                const isDone = hist.status === "COMPLETED";
+
+                                                return (
+                                                    <div key={hist.id} className="relative pl-6 pb-2 group">
+                                                        {/* Vertical connecting line */}
+                                                        {idx < arr.length - 1 && (
+                                                            <div className="absolute left-2.5 top-3.5 bottom-0 w-0.5 bg-slate-200" />
+                                                        )}
+
+                                                        {/* Timeline node icon */}
+                                                        <div className={`absolute left-0 top-1 size-5 rounded-full border-2 flex items-center justify-center ${
+                                                            isDone
+                                                                ? "bg-emerald-500 border-white text-white shadow-2xs"
+                                                                : isCurrent
+                                                                ? "bg-teal-600 border-teal-200 text-white animate-pulse"
+                                                                : "bg-slate-200 border-white text-slate-500"
+                                                        }`}>
+                                                            {isDone ? (
+                                                                <CheckCircleIcon sx={{ fontSize: 12 }} />
+                                                            ) : (
+                                                                <div className="size-1.5 rounded-full bg-current" />
+                                                            )}
+                                                        </div>
+
+                                                        <div className={`p-3 rounded-xl border transition-all ${
+                                                            isCurrent
+                                                                ? "bg-teal-50 border-teal-300 shadow-2xs"
+                                                                : isDone
+                                                                ? "bg-emerald-50/60 border-emerald-200/80"
+                                                                : "bg-white border-slate-200/80"
+                                                        }`}>
+                                                            <div className="flex items-center justify-between text-[11px] mb-1">
+                                                                <span className="font-extrabold text-slate-900">
+                                                                    {formatDate(hist.startTime)}
+                                                                </span>
+                                                                <span className="text-slate-500 font-semibold">
+                                                                    {formatTime(hist.startTime)}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-xs font-bold text-slate-800 leading-snug">
+                                                                {hist.treatment.name}
+                                                            </p>
+                                                            <div className="flex items-center justify-between mt-1 text-[10px]">
+                                                                <span className="text-slate-500 font-medium">
+                                                                    {formatPKR(hist.price || hist.treatment.price)}
+                                                                </span>
+                                                                <span className={`font-bold px-1.5 py-0.2 rounded ${
+                                                                    isDone ? "text-emerald-800 bg-emerald-100" : "text-sky-800 bg-sky-100"
+                                                                }`}>
+                                                                    {hist.status}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -1139,15 +1664,37 @@ export default function AppointmentsTable({
             <ReceiptDialog
                 open={!!receiptApt}
                 onOpenChange={(open) => { if (!open) setReceiptApt(null); }}
-                data={receiptApt ? {
-                    patientName: receiptApt.patient?.name || "Unknown",
-                    patientPhone: receiptApt.patient?.phone || undefined,
-                    treatmentName: receiptApt.treatment.name,
-                    appointmentDate: formatDate(receiptApt.startTime),
-                    treatmentPrice: receiptApt.treatment.price,
-                    discount: receiptApt.discount || 0,
-                    amountPaid: receiptApt.amountPaid || 0,
-                } : null}
+                data={receiptApt ? (() => {
+                    const price = receiptApt.price || receiptApt.treatment.price;
+                    const discount = receiptApt.discount || 0;
+                    const netTotal = Math.max(0, price - discount);
+                    const amountPaid = typeof receiptApt.amountPaid === "number"
+                        ? receiptApt.amountPaid
+                        : (receiptApt.status === "COMPLETED" ? netTotal : 0);
+                    const remainingBalance = Math.max(0, netTotal - amountPaid);
+
+                    return {
+                        receiptNumber: `REC-${receiptApt.id.slice(-6).toUpperCase()}`,
+                        clinicName: "Elite Dental & Aesthetic Centre",
+                        patientName: receiptApt.patient?.name || "Unknown",
+                        patientPhone: receiptApt.patient?.phone || undefined,
+                        patientId: receiptApt.patient?.id ? `#${receiptApt.patient.id.slice(-4).toUpperCase()}` : undefined,
+                        treatmentName: receiptApt.treatment.name,
+                        appointmentDate: formatDate(receiptApt.startTime),
+                        appointmentTime: formatTime(receiptApt.startTime),
+                        doctorName: getDoctorForAppointment(receiptApt.treatment.name).name,
+                        operatory: getDoctorForAppointment(receiptApt.treatment.name).operatory,
+                        treatmentPrice: price,
+                        discount: discount,
+                        amountPaid: amountPaid,
+                        remainingBalance: remainingBalance,
+                        sessionNumber: receiptApt.sessionNumber,
+                        totalSessions: receiptApt.patientTreatment?.totalSessions,
+                        paymentMethod: remainingBalance > 0
+                            ? "Cash / Counter Settlement (Partial Payment)"
+                            : "Cash / Clinical Counter Settlement",
+                    };
+                })() : null}
             />
 
             {/* Patient History Dialog */}

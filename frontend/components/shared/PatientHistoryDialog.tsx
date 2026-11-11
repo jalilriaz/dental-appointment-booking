@@ -148,12 +148,12 @@ export default function PatientHistoryDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-3xl bg-white border-slate-200 text-slate-900 shadow-2xl max-h-[88vh] overflow-hidden flex flex-col p-0">
+            <DialogContent className="sm:max-w-3xl bg-white border-slate-200 text-slate-900 shadow-2xl max-h-[88vh] overflow-hidden flex flex-col p-0 rounded-3xl">
                 {/* Header */}
-                <DialogHeader className="p-5 border-b border-slate-200 bg-white shrink-0">
+                <DialogHeader className="p-5 pr-14 sm:pr-16 border-b border-slate-200 bg-white shrink-0">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="flex items-center gap-3">
-                            <div className="size-11 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 font-bold text-lg shrink-0">
+                            <div className="size-11 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 font-bold text-lg shrink-0 shadow-2xs">
                                 {(history?.patient?.name || "P").charAt(0).toUpperCase()}
                             </div>
                             <div>
@@ -182,9 +182,9 @@ export default function PatientHistoryDialog({
 
                         {/* Top Financial Stats */}
                         <div className="flex items-center gap-2">
-                            <div className="px-3.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-right">
-                                <p className="text-[10px] text-emerald-800 uppercase tracking-wider font-semibold">Total Revenue Collected</p>
-                                <p className="text-sm font-bold text-emerald-700">{formatPKR(totalRevenue)}</p>
+                            <div className="px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-right shadow-2xs">
+                                <p className="text-[9.5px] text-emerald-800 uppercase tracking-wider font-extrabold">Total Revenue Collected</p>
+                                <p className="text-sm font-black text-emerald-700">{formatPKR(totalRevenue)}</p>
                             </div>
                         </div>
                     </div>

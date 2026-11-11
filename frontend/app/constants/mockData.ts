@@ -2,7 +2,7 @@
 // These are used on the landing page and other public pages where DB data isn't fetched
 
 export const clinicInfo = {
-    name: "Elite Dental Centre",
+    name: "Elite Dental & Aesthetic Centre",
     tagline: "Your Smile, Our Passion",
     address: "Office #6, 1st Floor, Doctors Plaza, 6 Markaz Rd, Next to Islamabad Diagnostic Centre (IDC), G-8 Markaz, G-8/2, Islamabad, 44220",
     phone: "+92-314-5475528",
@@ -10,7 +10,8 @@ export const clinicInfo = {
     workingHours: "12:00 PM - 8:00 PM (Mon-Sat)",
     // sundayHours: "2:00 PM - 8:00 PM (Sunday)",
     sundayHours: "Sunday - Closed",
-    mapUrl: "https://maps.google.com/?q=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad",
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad",
+    directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad",
     whatsapp: "923145475528",
 };
 

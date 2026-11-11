@@ -124,6 +124,11 @@ export interface PatientResult {
         status: string;
         treatment: { name: string };
     }[];
+    patientTreatments?: {
+        id: string;
+        treatment: { name: string };
+        totalSessions: number;
+    }[];
     _count: { appointments: number };
 }
 
