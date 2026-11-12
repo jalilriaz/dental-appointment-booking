@@ -20,6 +20,7 @@ import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PersonOffOutlinedIcon from "@mui/icons-material/PersonOffOutlined";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import EventBusyOutlinedIcon from "@mui/icons-material/EventBusyOutlined";
@@ -28,6 +29,13 @@ import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import MedicalServicesOutlinedIcon from "@mui/icons-material/MedicalServicesOutlined";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import DirectionsWalkOutlinedIcon from "@mui/icons-material/DirectionsWalkOutlined";
+import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
+import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { PremiumLoader } from "@/components/ui/premium-loader";
@@ -345,6 +353,7 @@ export default function AppointmentsTable({
     const [precautionsApt, setPrecautionsApt] = useState<Appointment | null>(null);
     const [adminConfirmPastApt, setAdminConfirmPastApt] = useState<Appointment | null>(null);
     const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
+    const [doctorFilter, setDoctorFilter] = useState("");
 
     // Helper to determine the bucket of an appointment based on today's local date
     const getAptBucket = useCallback((startTimeStr: string) => {
@@ -360,6 +369,41 @@ export default function AppointmentsTable({
         if (aptDayStart === startOfTomorrow) return "tomorrow";
         if (aptDayStart >= startOfDayAfter) return "upcoming";
         return "past";
+    }, []);
+
+    // 4 KPI Summary Metrics from Screen 1
+    const kpiStats = useMemo(() => {
+        let today = 0;
+        let upcoming = 0;
+        let completed = 0;
+        let cancelled = 0;
+
+        for (const a of appointments) {
+            const bucket = getAptBucket(a.startTime);
+            if (bucket === "today") {
+                today++;
+            } else if (bucket === "tomorrow" || bucket === "upcoming") {
+                upcoming++;
+            }
+            if (a.status === "COMPLETED") {
+                completed++;
+            } else if (a.status === "CANCELLED" || a.status === "NO_SHOW") {
+                cancelled++;
+            }
+        }
+        return { today, upcoming, completed, cancelled };
+    }, [appointments, getAptBucket]);
+
+    // Assigned specialist mapping
+    const getDoctorForAppointment = useCallback((treatmentName: string) => {
+        const t = treatmentName.toLowerCase();
+        if (t.includes("brace") || t.includes("ortho") || t.includes("align")) {
+            return { name: "Dr. Ayesha Malik", role: "Orthodontist", operatory: "Chair 2 · Ortho Bay" };
+        }
+        if (t.includes("rct") || t.includes("canal") || t.includes("scaling") || t.includes("cleaning")) {
+            return { name: "Dr. Hamza Tariq", role: "Endodontist", operatory: "Chair 3 · Rotary Bay" };
+        }
+        return { name: "Dr. Sheriyaar", role: "Lead Surgeon", operatory: "Chair 1 · Surgical Suite" };
     }, []);
 
     // Quick counts for the timeline switcher
@@ -408,6 +452,12 @@ export default function AppointmentsTable({
             const matchDateTo = !dateTo || aptDate <= new Date(dateTo + "T23:59:59");
             const matchTreatment = !treatmentFilter || a.treatment.name === treatmentFilter;
 
+            const matchDoctor = !doctorFilter || (
+                doctorFilter === "sheriyaar" ? (a.treatment.name.toLowerCase().includes("implant") || a.treatment.name.toLowerCase().includes("surgery") || a.treatment.name.toLowerCase().includes("whitening") || a.bookedBy === "WEBSITE") :
+                    doctorFilter === "ayesha" ? (a.treatment.name.toLowerCase().includes("brace") || a.treatment.name.toLowerCase().includes("ortho") || a.treatment.name.toLowerCase().includes("align")) :
+                        doctorFilter === "hamza" ? (a.treatment.name.toLowerCase().includes("rct") || a.treatment.name.toLowerCase().includes("canal") || a.treatment.name.toLowerCase().includes("scaling") || a.treatment.name.toLowerCase().includes("cleaning")) : true
+            );
+
             // Timeline filter
             const bucket = getAptBucket(a.startTime);
             let matchTimeline = true;
@@ -417,9 +467,9 @@ export default function AppointmentsTable({
             else if (timelineFilter === "past") matchTimeline = bucket === "past";
             else if (timelineFilter === "all_active") matchTimeline = bucket !== "past" || a.status === "SCHEDULED" || a.status === "RESCHEDULED";
 
-            return matchSearch && matchStatus && matchDateFrom && matchDateTo && matchTreatment && matchTimeline;
+            return matchSearch && matchStatus && matchDateFrom && matchDateTo && matchTreatment && matchTimeline && matchDoctor;
         });
-    }, [appointments, search, statusFilter, dateFrom, dateTo, treatmentFilter, timelineFilter, getAptBucket]);
+    }, [appointments, search, statusFilter, dateFrom, dateTo, treatmentFilter, doctorFilter, timelineFilter, getAptBucket]);
 
     // Strict chronological sequence:
     // Today comes first (sorted by 2 PM, then 3 PM, etc.)
@@ -544,106 +594,203 @@ export default function AppointmentsTable({
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-5 font-sans">
+            {/* Top 4 KPI Summary Cards Styled to Reception Dashboard Theme */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                {/* Today's Appointments */}
+                <div
+                    onClick={() => {
+                        setTimelineFilter("today");
+                        setStatusFilter([]);
+                        setPage(1);
+                    }}
+                    className={`p-5 rounded-3xl border transition-all cursor-pointer ${timelineFilter === "today" && statusFilter.length === 0
+                            ? "bg-teal-50/60 border-teal-500 ring-2 ring-teal-500/20 shadow-xs"
+                            : "bg-white border-slate-200/80 hover:border-teal-300 shadow-2xs hover:shadow-xs"
+                        }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Today&apos;s Appointments</p>
+                            <p className="text-3xl font-black text-slate-900 tracking-tight mt-1">{kpiStats.today}</p>
+                        </div>
+                        <div className="size-12 rounded-2xl bg-teal-50 border border-teal-200/80 text-teal-700 flex items-center justify-center shadow-2xs">
+                            <CalendarTodayOutlinedIcon sx={{ fontSize: 20 }} />
+                        </div>
+                    </div>
+                    <p className="text-[11px] font-semibold text-teal-700 mt-2 flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Live on-site schedule</span>
+                    </p>
+                </div>
+
+                {/* Upcoming Appointments */}
+                <div
+                    onClick={() => {
+                        setTimelineFilter("upcoming");
+                        setStatusFilter([]);
+                        setPage(1);
+                    }}
+                    className={`p-5 rounded-3xl border transition-all cursor-pointer ${timelineFilter === "upcoming" && statusFilter.length === 0
+                            ? "bg-teal-50/60 border-teal-500 ring-2 ring-teal-500/20 shadow-xs"
+                            : "bg-white border-slate-200/80 hover:border-teal-300 shadow-2xs hover:shadow-xs"
+                        }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Upcoming Appointments</p>
+                            <p className="text-3xl font-black text-slate-900 tracking-tight mt-1">{kpiStats.upcoming}</p>
+                        </div>
+                        <div className="size-12 rounded-2xl bg-teal-50/70 border border-teal-200/60 text-teal-700 flex items-center justify-center shadow-2xs">
+                            <AccessTimeOutlinedIcon sx={{ fontSize: 20 }} />
+                        </div>
+                    </div>
+                    <p className="text-[11px] font-semibold text-slate-500 mt-2">
+                        Next 40 days booked
+                    </p>
+                </div>
+
+                {/* Completed Appointments */}
+                <div
+                    onClick={() => {
+                        setStatusFilter(["COMPLETED"]);
+                        setTimelineFilter("all");
+                        setPage(1);
+                    }}
+                    className={`p-5 rounded-3xl border transition-all cursor-pointer ${statusFilter.includes("COMPLETED")
+                            ? "bg-emerald-50/60 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs"
+                            : "bg-white border-slate-200/80 hover:border-emerald-300 shadow-2xs hover:shadow-xs"
+                        }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Completed Appointments</p>
+                            <p className="text-3xl font-black text-slate-900 tracking-tight mt-1">{kpiStats.completed}</p>
+                        </div>
+                        <div className="size-12 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 flex items-center justify-center shadow-2xs">
+                            <CheckCircleOutlineOutlinedIcon sx={{ fontSize: 20 }} />
+                        </div>
+                    </div>
+                    <p className="text-[11px] font-semibold text-emerald-700 mt-2">
+                        Discharged &amp; reconciled
+                    </p>
+                </div>
+
+                {/* Cancelled / Missed Appointments */}
+                <div
+                    onClick={() => {
+                        setStatusFilter(["CANCELLED", "NO_SHOW"]);
+                        setTimelineFilter("all");
+                        setPage(1);
+                    }}
+                    className={`p-5 rounded-3xl border transition-all cursor-pointer ${statusFilter.includes("CANCELLED") || statusFilter.includes("NO_SHOW")
+                            ? "bg-rose-50/60 border-rose-500 ring-2 ring-rose-500/20 shadow-xs"
+                            : "bg-white border-slate-200/80 hover:border-rose-300 shadow-2xs hover:shadow-xs"
+                        }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cancelled / Missed</p>
+                            <p className="text-3xl font-black text-slate-900 tracking-tight mt-1">{kpiStats.cancelled}</p>
+                        </div>
+                        <div className="size-12 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-600 flex items-center justify-center shadow-2xs">
+                            <PersonOffOutlinedIcon sx={{ fontSize: 20 }} />
+                        </div>
+                    </div>
+                    <p className="text-[11px] font-semibold text-rose-600 mt-2">
+                        Released chair slots
+                    </p>
+                </div>
+            </div>
+
             {/* Quick Timeline Selector & View Toggle */}
             <div className="flex flex-wrap items-center justify-between gap-3">
                 {/* Timeline Segmented Tabs */}
                 <div className="inline-flex flex-wrap items-center gap-1 p-1 bg-slate-100/90 border border-slate-200/80 rounded-xl shadow-xs">
                     <button
                         onClick={() => { setTimelineFilter("all_active"); setPage(1); }}
-                        className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-                            timelineFilter === "all_active"
+                        className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer ${timelineFilter === "all_active"
                                 ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
-                        }`}
+                            }`}
                     >
-                        <AutoAwesomeOutlinedIcon className="size-3.5 text-teal-600" />
+                        <AutoAwesomeOutlinedIcon sx={{ fontSize: 14 }} className="text-teal-600" />
                         <span>Active Schedule</span>
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            timelineFilter === "all_active" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
-                        }`}>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${timelineFilter === "all_active" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
+                            }`}>
                             {timelineCounts.active}
                         </span>
                     </button>
 
                     <button
                         onClick={() => { setTimelineFilter("today"); setPage(1); }}
-                        className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-                            timelineFilter === "today"
+                        className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer ${timelineFilter === "today"
                                 ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
-                        }`}
+                            }`}
                     >
                         <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                         </span>
                         <span>Today</span>
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            timelineFilter === "today" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-slate-200/70 text-slate-600"
-                        }`}>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${timelineFilter === "today" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-slate-200/70 text-slate-600"
+                            }`}>
                             {timelineCounts.today}
                         </span>
                     </button>
 
                     <button
                         onClick={() => { setTimelineFilter("tomorrow"); setPage(1); }}
-                        className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-                            timelineFilter === "tomorrow"
+                        className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer ${timelineFilter === "tomorrow"
                                 ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
-                        }`}
+                            }`}
                     >
-                        <CalendarMonthOutlinedIcon className="size-3.5 text-slate-500" />
+                        <CalendarMonthOutlinedIcon sx={{ fontSize: 14 }} className="text-slate-500" />
                         <span>Tomorrow</span>
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            timelineFilter === "tomorrow" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
-                        }`}>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${timelineFilter === "tomorrow" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
+                            }`}>
                             {timelineCounts.tomorrow}
                         </span>
                     </button>
 
                     <button
                         onClick={() => { setTimelineFilter("upcoming"); setPage(1); }}
-                        className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-                            timelineFilter === "upcoming"
+                        className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer ${timelineFilter === "upcoming"
                                 ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
-                        }`}
+                            }`}
                     >
-                        <AccessTimeOutlinedIcon className="size-3.5 text-slate-500" />
+                        <AccessTimeOutlinedIcon sx={{ fontSize: 14 }} className="text-slate-500" />
                         <span>Upcoming</span>
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            timelineFilter === "upcoming" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
-                        }`}>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${timelineFilter === "upcoming" ? "bg-teal-50 text-teal-800 border border-teal-200" : "bg-slate-200/70 text-slate-600"
+                            }`}>
                             {timelineCounts.upcoming}
                         </span>
                     </button>
 
                     <button
                         onClick={() => { setTimelineFilter("past"); setPage(1); }}
-                        className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-                            timelineFilter === "past"
+                        className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer ${timelineFilter === "past"
                                 ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200/90"
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
-                        }`}
+                            }`}
                     >
-                        <HistoryOutlinedIcon className="size-3.5 text-slate-500" />
+                        <HistoryOutlinedIcon sx={{ fontSize: 14 }} className="text-slate-500" />
                         <span>Past & History</span>
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            timelineFilter === "past" ? "bg-slate-100 text-slate-800 border border-slate-300" : "bg-slate-200/70 text-slate-600"
-                        }`}>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${timelineFilter === "past" ? "bg-slate-100 text-slate-800 border border-slate-300" : "bg-slate-200/70 text-slate-600"
+                            }`}>
                             {timelineCounts.past}
                         </span>
                     </button>
 
                     <button
                         onClick={() => { setTimelineFilter("all"); setPage(1); }}
-                        className={`px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer ${
-                            timelineFilter === "all"
+                        className={`px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer ${timelineFilter === "all"
                                 ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200/90"
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
-                        }`}
+                            }`}
                     >
                         All ({timelineCounts.total})
                     </button>
@@ -662,110 +809,148 @@ export default function AppointmentsTable({
                         onClick={() => setViewMode("calendar")}
                         className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${viewMode === "calendar" ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90" : "text-slate-600 hover:text-slate-900 font-medium"}`}
                     >
-                        <CalendarTodayOutlinedIcon className="size-3.5" />
+                        <CalendarTodayOutlinedIcon sx={{ fontSize: 14 }} />
                         Calendar
                     </button>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-xs">
-                <div className="flex flex-wrap gap-3">
-                    <div className="relative flex-1 min-w-[200px]">
-                        <SearchOutlinedIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                        <Input placeholder="Search patients, treatments, phone..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-10 h-10 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 rounded-xl" />
+            {/* Screen 1: Filter Command Center */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-4 sm:p-5 space-y-3.5 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                        <span className="text-base font-black text-slate-900 tracking-tight">Appointments List</span>
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-teal-50 text-teal-800 border border-teal-200">
+                            {filtered.length} Results
+                        </span>
                     </div>
-                    <select
-                        value={treatmentFilter}
-                        onChange={(e) => { setTreatmentFilter(e.target.value); setPage(1); }}
-                        className="h-10 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-800 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 focus:outline-none min-w-[160px]"
-                    >
-                        <option value="">All Treatments</option>
-                        {uniqueTreatments.map((t) => (
-                            <option key={t} value={t}>{t}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1"><CalendarTodayOutlinedIcon className="size-3 text-teal-600" /> Date:</span>
-                    <DatePicker
-                        value={dateFrom}
-                        onChange={(val) => { setDateFrom(val); setPage(1); }}
-                        placeholder="From"
-                        compact
-                    />
-                    <span className="text-slate-400">→</span>
-                    <DatePicker
-                        value={dateTo}
-                        onChange={(val) => { setDateTo(val); setPage(1); }}
-                        placeholder="To"
-                        compact
-                    />
-                    {hasActiveFilters && (
-                        <button
-                            onClick={clearAllFilters}
-                            className="ml-auto text-xs text-slate-500 hover:text-red-600 flex items-center gap-1 transition-colors font-semibold"
-                        >
-                            <CloseOutlinedIcon className="size-3" /> Clear all
-                        </button>
-                    )}
-                </div>
-                <div className="flex flex-wrap gap-2 items-center">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1"><FilterListOutlinedIcon className="size-3 text-teal-600" /> Status:</span>
-                    {["SCHEDULED", "RESCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"].map((s) => {
-                        const isSelected = statusFilter.includes(s);
-                        let activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
-                        if (s === "SCHEDULED") activeBadge = "bg-sky-50 text-sky-800 border-sky-300 font-bold";
-                        if (s === "RESCHEDULED") activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
-                        if (s === "COMPLETED") activeBadge = "bg-emerald-50 text-emerald-800 border-emerald-300 font-bold";
-                        if (s === "CANCELLED") activeBadge = "bg-rose-50 text-rose-800 border-rose-300 font-bold";
-                        if (s === "NO_SHOW") activeBadge = "bg-amber-50 text-amber-800 border-amber-300 font-bold";
 
-                        return (
-                            <button
-                                key={s}
-                                onClick={() => toggleStatus(s)}
-                                className={`px-3 py-1 rounded-full text-xs transition-premium cursor-pointer border ${
-                                    isSelected
-                                        ? `${activeBadge} shadow-2xs`
-                                        : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 border-slate-200/60 font-medium"
-                                }`}
-                            >
-                                {s === "NO_SHOW" ? "Missed" : s.replace("_", " ")}
-                            </button>
-                        );
-                    })}
-                </div>
-                {/* Active Filters Summary */}
-                {hasActiveFilters && (
-                    <div className="pt-2 border-t border-slate-100">
-                        <p className="text-xs text-slate-500">
-                            Showing <strong className="text-slate-800 font-bold">{filtered.length}</strong> of {appointments.length} appointments
-                            {treatmentFilter && <> · Treatment: <strong className="text-teal-700">{treatmentFilter}</strong></>}
-                            {dateFrom && <> · From: <strong className="text-slate-800">{dateFrom}</strong></>}
-                            {dateTo && <> · To: <strong className="text-slate-800">{dateTo}</strong></>}
-                        </p>
+                    <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                        <span>Active Filter Mode:</span>
+                        <strong className="text-slate-800 uppercase font-bold">{timelineFilter.replace("_", " ")}</strong>
                     </div>
-                )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    {/* Search */}
+                    <div className="relative md:col-span-5">
+                        <SearchOutlinedIcon sx={{ fontSize: 16 }} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <Input
+                            placeholder="Search doctor, patient, phone..."
+                            value={search}
+                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                            className="pl-10 h-10 bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 rounded-xl text-xs sm:text-sm font-medium"
+                        />
+                    </div>
+
+                    {/* Doctor Selector (From Screen 1) */}
+                    <div className="md:col-span-3">
+                        <select
+                            value={doctorFilter}
+                            onChange={(e) => { setDoctorFilter(e.target.value); setPage(1); }}
+                            className="w-full h-10 px-3 rounded-xl bg-slate-50/80 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 focus:outline-none"
+                        >
+                            <option value="">All Doctors (On-Duty Roster)</option>
+                            <option value="sheriyaar">Dr. Sheriyaar (Lead Surgeon)</option>
+                            <option value="ayesha">Dr. Ayesha Malik (Orthodontist)</option>
+                            <option value="hamza">Dr. Hamza Tariq (Endodontist)</option>
+                        </select>
+                    </div>
+
+                    {/* Treatment Selector */}
+                    <div className="md:col-span-4">
+                        <select
+                            value={treatmentFilter}
+                            onChange={(e) => { setTreatmentFilter(e.target.value); setPage(1); }}
+                            className="w-full h-10 px-3 rounded-xl bg-slate-50/80 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 focus:outline-none truncate"
+                        >
+                            <option value="">All Procedures &amp; Treatments</option>
+                            {uniqueTreatments.map((t) => (
+                                <option key={t} value={t}>{t}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                    {/* Status Pill Filters */}
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <span className="text-[11px] text-slate-500 uppercase tracking-wider font-extrabold flex items-center gap-1">
+                            <FilterListOutlinedIcon sx={{ fontSize: 13 }} className="text-teal-600" /> Status:
+                        </span>
+                        {["SCHEDULED", "RESCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"].map((s) => {
+                            const isSelected = statusFilter.includes(s);
+                            let activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
+                            if (s === "SCHEDULED") activeBadge = "bg-sky-50 text-sky-800 border-sky-300 font-bold";
+                            if (s === "RESCHEDULED") activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
+                            if (s === "COMPLETED") activeBadge = "bg-emerald-50 text-emerald-800 border-emerald-300 font-bold";
+                            if (s === "CANCELLED") activeBadge = "bg-rose-50 text-rose-800 border-rose-300 font-bold";
+                            if (s === "NO_SHOW") activeBadge = "bg-amber-50 text-amber-800 border-amber-300 font-bold";
+
+                            return (
+                                <button
+                                    key={s}
+                                    onClick={() => toggleStatus(s)}
+                                    className={`px-3 py-1 rounded-full text-xs transition-premium cursor-pointer border ${isSelected
+                                            ? `${activeBadge} shadow-2xs`
+                                            : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 border-slate-200/60 font-medium"
+                                        }`}
+                                >
+                                    {s === "NO_SHOW" ? "Missed" : s.replace("_", " ")}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Date Range Picker */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] text-slate-500 uppercase tracking-wider font-extrabold flex items-center gap-1">
+                            <CalendarTodayOutlinedIcon sx={{ fontSize: 12 }} className="text-teal-600" /> Date:
+                        </span>
+                        <DatePicker
+                            value={dateFrom}
+                            onChange={(val) => { setDateFrom(val); setPage(1); }}
+                            placeholder="From"
+                            compact
+                        />
+                        <span className="text-slate-400">→</span>
+                        <DatePicker
+                            value={dateTo}
+                            onChange={(val) => { setDateTo(val); setPage(1); }}
+                            placeholder="To"
+                            compact
+                        />
+                        {hasActiveFilters && (
+                            <button
+                                onClick={clearAllFilters}
+                                className="text-xs text-slate-500 hover:text-red-600 flex items-center gap-1 transition-colors font-bold ml-1 cursor-pointer"
+                            >
+                                <CloseOutlinedIcon sx={{ fontSize: 12 }} /> Reset Filters
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {viewMode === "calendar" ? (
                 <AppointmentsCalendar appointments={filtered} onEventClick={setDetailId} />
             ) : (
-                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+                <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-xs">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead className="bg-slate-50/90 border-b border-slate-200">
+                            <thead className="bg-slate-50/95 border-b border-slate-200/90">
                                 <tr>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Patient</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Treatment</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Date & Time</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Source</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider w-12">#</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Patient Name</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Doctor</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Department / Treatment</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Appointment Date</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Appointment Time</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-slate-100/90">
                                 {paged.map((apt, index) => {
                                     const start = new Date(apt.startTime);
                                     const isPastDate = new Date(apt.startTime).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
@@ -774,43 +959,46 @@ export default function AppointmentsTable({
                                     const prevDateKey = prevApt ? format(new Date(prevApt.startTime), "yyyy-MM-dd") : null;
                                     const isNewDayGroup = currentDateKey !== prevDateKey;
                                     const bucket = getAptBucket(apt.startTime);
+                                    const patientInitial = (apt.patient?.name || "P").charAt(0).toUpperCase();
+                                    const assignedDoc = getDoctorForAppointment(apt.treatment.name);
+                                    const rowNumber = (page - 1) * perPage + index + 1;
 
                                     return (
                                         <Fragment key={apt.id}>
                                             {isNewDayGroup && (
-                                                <tr key={`header-${currentDateKey}`} className="bg-slate-50/90 border-y border-slate-200">
-                                                    <td colSpan={6} className="px-4 py-2.5">
+                                                <tr key={`header-${currentDateKey}`} className="bg-slate-50/90 border-y border-slate-200/90">
+                                                    <td colSpan={8} className="px-5 py-3">
                                                         <div className="flex items-center justify-between flex-wrap gap-2">
                                                             <div className="flex items-center gap-2.5">
                                                                 {bucket === "today" ? (
-                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-300 shadow-2xs">
+                                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-teal-50 text-teal-800 border border-teal-300 shadow-2xs">
                                                                         <span className="relative flex h-2 w-2">
-                                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-600"></span>
+                                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
                                                                         </span>
                                                                         TODAY
                                                                     </span>
                                                                 ) : bucket === "tomorrow" ? (
-                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-300 shadow-2xs">
-                                                                        <CalendarMonthOutlinedIcon className="size-3.5" />
+                                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-teal-50 text-teal-800 border border-teal-300 shadow-2xs">
+                                                                        <CalendarMonthOutlinedIcon sx={{ fontSize: 14 }} className="text-teal-700" />
                                                                         TOMORROW
                                                                     </span>
                                                                 ) : bucket === "upcoming" ? (
-                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-800 border border-sky-300">
-                                                                        <AccessTimeOutlinedIcon className="size-3.5" />
+                                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-sky-50 text-sky-800 border border-sky-300">
+                                                                        <AccessTimeOutlinedIcon sx={{ fontSize: 14 }} className="text-sky-700" />
                                                                         UPCOMING
                                                                     </span>
                                                                 ) : (
-                                                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
-                                                                        <HistoryOutlinedIcon className="size-3" />
+                                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-300">
+                                                                        <HistoryOutlinedIcon sx={{ fontSize: 13 }} className="text-slate-600" />
                                                                         PAST RECORD
                                                                     </span>
                                                                 )}
-                                                                <span className="text-sm font-bold text-slate-900 tracking-tight">
+                                                                <span className="text-sm font-black text-slate-900 tracking-tight">
                                                                     {format(start, "EEEE, d MMMM yyyy")}
                                                                 </span>
                                                             </div>
-                                                            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
+                                                            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
                                                                 Sequential Time Order
                                                             </span>
                                                         </div>
@@ -830,55 +1018,78 @@ export default function AppointmentsTable({
                                                     </p>
                                                     <p className="text-xs text-slate-500 font-medium">{apt.guestPhone || apt.patient?.phone}</p>
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <p className="text-slate-800 font-semibold">{apt.treatment.name}</p>
-                                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                                        <p className="text-xs text-slate-600 font-semibold">{formatPKR(apt.price || apt.treatment.price)}</p>
+
+                                                {/* Doctor (From Screen 1) */}
+                                                <td className="px-4 py-3.5">
+                                                    <p className="font-extrabold text-slate-900 text-xs">{assignedDoc.name}</p>
+                                                    <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 mt-0.5">
+                                                        {assignedDoc.role}
+                                                    </span>
+                                                </td>
+
+                                                {/* Department & Treatment (From Screen 1) */}
+                                                <td className="px-4 py-3.5">
+                                                    <p className="font-bold text-slate-900 text-xs leading-snug">{apt.treatment.name}</p>
+                                                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                                        <span className="text-[10px] text-teal-800 font-extrabold">{assignedDoc.operatory}</span>
+                                                        <span className="text-slate-300">·</span>
+                                                        <span className="text-[11px] font-black text-slate-700">{formatPKR(apt.price || apt.treatment.price)}</span>
                                                         {apt.sessionNumber ? (
-                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                                                            <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-teal-50 text-teal-800 border border-teal-200/90 shadow-2xs">
                                                                 Session {apt.sessionNumber}{apt.patientTreatment?.totalSessions ? ` of ${apt.patientTreatment.totalSessions}` : ""}
                                                             </span>
                                                         ) : null}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-slate-700">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 font-bold text-sm tracking-tight shadow-xs">
-                                                            <AccessTimeOutlinedIcon className="size-3.5 text-teal-600" />
-                                                            {formatTime(start)}
-                                                        </span>
-                                                        <span className="text-[11px] font-semibold text-slate-600 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">
-                                                            {apt.treatment.durationMin}m
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+
+                                                {/* Appointment Date (From Screen 1) */}
+                                                <td className="px-4 py-3.5 text-xs font-semibold text-slate-700">
+                                                    <div className="flex items-center gap-1.5">
                                                         <span>{formatDate(start)}</span>
                                                         {bucket === "today" && (
-                                                            <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                                                            <span className="text-[9px] text-emerald-800 font-extrabold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
                                                                 Today
                                                             </span>
                                                         )}
                                                         {bucket === "tomorrow" && (
-                                                            <span className="text-[10px] text-teal-700 font-bold bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
+                                                            <span className="text-[9px] text-teal-800 font-extrabold bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
                                                                 Tomorrow
                                                             </span>
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">
+
+                                                {/* Appointment Time (From Screen 1) */}
+                                                <td className="px-4 py-3.5 text-slate-700">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-teal-50/90 border border-teal-200/90 text-teal-950 font-black text-xs shadow-2xs">
+                                                            <AccessTimeOutlinedIcon sx={{ fontSize: 13 }} className="text-teal-700" />
+                                                            {formatTime(start)}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                                            {apt.treatment.durationMin}m
+                                                        </span>
+                                                    </div>
+                                                </td>
+
+                                                {/* Status (From Screen 1) */}
+                                                <td className="px-4 py-3.5">
                                                     <StatusBadge status={apt.status} />
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <span className="text-xs text-slate-600 font-medium">{apt.bookedBy?.replace("_", " ") || "WEBSITE"}</span>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex gap-1">
-                                                        <button onClick={() => setDetailId(apt.id)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer transition-premium" title="View Details">
-                                                            <VisibilityOutlinedIcon className="size-4" />
+
+                                                {/* Action (From Screen 1) */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        {/* Primary View Button (Exact Screen 1 Style) */}
+                                                        <button
+                                                            onClick={() => setDetailId(apt.id)}
+                                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white hover:bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                                                            title="View Encounter Dossier"
+                                                        >
+                                                            <VisibilityOutlinedIcon sx={{ fontSize: 13 }} />
+                                                            <span>View</span>
                                                         </button>
-                                                        <button onClick={() => apt.patient?.id && setHistoryPatientId(apt.patient.id)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 cursor-pointer transition-premium" title="Patient History">
-                                                            <HistoryOutlinedIcon className="size-4" />
-                                                        </button>
+
                                                         {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
                                                             <>
                                                                 {(!isPastDate || userRole === "ADMIN") && (
@@ -892,37 +1103,36 @@ export default function AppointmentsTable({
                                                                                 setDiscountValue("0");
                                                                             }
                                                                         }}
-                                                                        className="p-1.5 rounded-lg hover:bg-teal-50 text-teal-600 cursor-pointer transition-premium"
-                                                                        title="Check Out — Mark as Completed"
+                                                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                                                                        title="Check Out & Bill Patient"
                                                                         disabled={checkingOutId === apt.id}
                                                                     >
-                                                                        {checkingOutId === apt.id ? <AutorenewOutlinedIcon className="size-4 animate-spin" /> : <CheckCircleOutlineOutlinedIcon className="size-4" />}
+                                                                        {checkingOutId === apt.id ? <AutorenewOutlinedIcon sx={{ fontSize: 13 }} className="animate-spin" /> : <CheckCircleOutlineOutlinedIcon sx={{ fontSize: 13 }} />}
+                                                                        <span>Check Out</span>
                                                                     </button>
                                                                 )}
+                                                            </>
+                                                        )}
+
+                                                        {apt.status === "COMPLETED" && (
+                                                            <>
                                                                 <button
-                                                                    onClick={() => handleStatusChange(apt.id, "NO_SHOW")}
-                                                                    className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 cursor-pointer transition-premium"
-                                                                    title="Mark as No Show"
+                                                                    onClick={() => setPrecautionsApt(apt)}
+                                                                    className="p-1 rounded-lg hover:bg-emerald-50 text-emerald-700 transition-colors cursor-pointer"
+                                                                    title="Send WhatsApp Precautions"
                                                                 >
-                                                                    <PersonOffOutlinedIcon className="size-4" />
+                                                                    <WhatsAppIcon sx={{ fontSize: 15 }} className="text-emerald-600" />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => setRescheduleApt(apt)}
-                                                                    className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 cursor-pointer transition-premium"
-                                                                    title="Reschedule"
+                                                                    onClick={() => setReceiptApt(apt)}
+                                                                    className="p-1 rounded-lg hover:bg-teal-50 text-teal-700 transition-colors cursor-pointer"
+                                                                    title="Download Receipt"
                                                                 >
-                                                                    <RefreshOutlinedIcon className="size-4" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => setConfirmCancelId(apt.id)}
-                                                                    className="p-1.5 rounded-lg hover:bg-red-50 text-red-600 cursor-pointer transition-premium"
-                                                                    title="Cancel"
-                                                                    disabled={cancellingId === apt.id}
-                                                                >
-                                                                    {cancellingId === apt.id ? <AutorenewOutlinedIcon className="size-4 animate-spin" /> : <DeleteOutlineOutlinedIcon className="size-4" />}
+                                                                    <ReceiptLongOutlinedIcon sx={{ fontSize: 15 }} />
                                                                 </button>
                                                             </>
                                                         )}
+
                                                         <ClinicalNoteDialog
                                                             appointmentId={apt.id}
                                                             patientName={apt.guestName || apt.patient?.name || "Unknown"}
@@ -932,21 +1142,30 @@ export default function AppointmentsTable({
                                                             onNoteSaved={() => router.refresh()}
                                                             readOnly={userRole !== "ADMIN"}
                                                         />
-                                                        {apt.status === "COMPLETED" && (
+
+                                                        {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
                                                             <>
                                                                 <button
-                                                                    onClick={() => setPrecautionsApt(apt)}
-                                                                    className="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600 cursor-pointer transition-premium"
-                                                                    title="Send WhatsApp Precautions"
+                                                                    onClick={() => setRescheduleApt(apt)}
+                                                                    className="p-1 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors cursor-pointer"
+                                                                    title="Reschedule Appointment"
                                                                 >
-                                                                    <ChatBubbleOutlineOutlinedIcon className="size-4" />
+                                                                    <RefreshOutlinedIcon sx={{ fontSize: 15 }} />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => setReceiptApt(apt)}
-                                                                    className="p-1.5 rounded-lg hover:bg-teal-50 text-teal-600 cursor-pointer transition-premium"
-                                                                    title="Download Receipt"
+                                                                    onClick={() => handleStatusChange(apt.id, "NO_SHOW")}
+                                                                    className="p-1 rounded-lg hover:bg-amber-50 text-amber-600 transition-colors cursor-pointer"
+                                                                    title="Mark as No Show"
                                                                 >
-                                                                    <ReceiptLongOutlinedIcon className="size-4" />
+                                                                    <PersonOffOutlinedIcon sx={{ fontSize: 15 }} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setConfirmCancelId(apt.id)}
+                                                                    className="p-1 rounded-lg hover:bg-red-50 text-red-600 transition-colors cursor-pointer"
+                                                                    title="Cancel Appointment"
+                                                                    disabled={cancellingId === apt.id}
+                                                                >
+                                                                    {cancellingId === apt.id ? <AutorenewOutlinedIcon sx={{ fontSize: 15 }} className="animate-spin" /> : <DeleteOutlineOutlinedIcon sx={{ fontSize: 15 }} />}
                                                                 </button>
                                                             </>
                                                         )}
@@ -957,14 +1176,14 @@ export default function AppointmentsTable({
                                     );
                                 })}
                                 {paged.length === 0 && (
-                                    <tr><td colSpan={6} className="py-0"><EmptyState icon={EventBusyOutlinedIcon} title="No Appointments Found" description="No appointments match your current filters. Try adjusting your search or status filter." /></td></tr>
+                                    <tr><td colSpan={8} className="py-0"><EmptyState icon={EventBusyOutlinedIcon} title="No Appointments Found" description="No appointments match your current filters. Try adjusting your search or status filter." /></td></tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
 
                     {/* Pagination */}
-                    <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50/50 gap-3">
+                    <div className="flex flex-wrap items-center justify-between px-5 py-3.5 border-t border-slate-200 bg-slate-50/50 gap-3">
                         <div className="flex items-center gap-3">
                             <p className="text-sm text-slate-600">
                                 Showing <strong className="text-slate-900">{sorted.length > 0 ? (page - 1) * perPage + 1 : 0}</strong>–<strong className="text-slate-900">{Math.min(page * perPage, sorted.length)}</strong> of <strong className="text-slate-900">{sorted.length}</strong>
@@ -1001,12 +1220,34 @@ export default function AppointmentsTable({
                 </div>
             )}
 
-            {/* Detail Dialog */}
+            {/* Screen 2: Encounter Dossier Dialog */}
             <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-                <DialogContent className="sm:max-w-lg bg-white border-slate-200 text-slate-900 shadow-2xl">
-                    <DialogHeader>
-                        <DialogTitle className="text-slate-900">Appointment Details</DialogTitle>
+                <DialogContent className="sm:max-w-4xl max-h-[92vh] overflow-y-auto bg-white border border-slate-200/90 text-slate-900 shadow-2xl rounded-3xl p-5 sm:p-7">
+                    <DialogHeader className="border-b border-slate-100 pb-4 pr-10">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-1">
+                                    <span>Appointments List</span>
+                                    <span>&gt;</span>
+                                    <span className="text-teal-700">Encounter Dossier</span>
+                                </div>
+                                <DialogTitle className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                                    <span>Appointment Details</span>
+                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                        #{selectedApt?.id.slice(-6).toUpperCase()}
+                                    </span>
+                                </DialogTitle>
+                            </div>
+
+                            {selectedApt && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-slate-500">Status:</span>
+                                    <StatusBadge status={selectedApt.status} />
+                                </div>
+                            )}
+                        </div>
                     </DialogHeader>
+
                     {selectedApt && (
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-200">

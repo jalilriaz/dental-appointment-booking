@@ -330,28 +330,28 @@ export default async function AdminDashboard() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Dr. Sheriyaar */}
-          <div className="p-4 rounded-2xl bg-teal-50/50 border border-teal-200/80 hover:border-teal-300 transition-all flex flex-col justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative size-12 rounded-xl overflow-hidden ring-2 ring-teal-500/20 shrink-0 bg-slate-100">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0B1528] via-[#0E2438] to-teal-950 border border-teal-500/40 hover:border-teal-400/80 text-white transition-all shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div className="flex items-center gap-3 relative z-10">
+              <div className="relative size-13 rounded-xl overflow-hidden ring-2 ring-teal-400/70 shrink-0 bg-slate-800 shadow-md">
                 <Image
                   src="/images/dr_sheriyaar.jpg"
                   alt="Dr. Sheriyaar"
                   fill
-                  className="object-cover object-top"
+                  className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-black text-slate-900 truncate">Dr. Sheriyaar</p>
-                  <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <p className="text-xs font-black text-white truncate">Dr. Sheriyaar</p>
+                  <span className="size-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                 </div>
-                <p className="text-[11px] font-bold text-teal-800 truncate">Lead Surgeon</p>
-                <p className="text-[10px] text-slate-500 font-medium">Chair 1 · Surgical Suite</p>
+                <p className="text-[11px] font-bold text-teal-300 truncate">Lead Surgeon</p>
+                <p className="text-[10px] text-slate-300 font-medium">Chair 1 · Surgical Suite</p>
               </div>
             </div>
-            <div className="mt-3 pt-2.5 border-t border-teal-200/60 flex items-center justify-between text-[11px]">
-              <span className="font-semibold text-slate-600">12 PM – 8 PM</span>
-              <span className="font-extrabold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded">Active</span>
+            <div className="mt-3 pt-2.5 border-t border-teal-500/30 flex items-center justify-between text-[11px] relative z-10">
+              <span className="font-semibold text-slate-300">12 PM – 8 PM</span>
+              <span className="font-extrabold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded">Active</span>
             </div>
           </div>
 

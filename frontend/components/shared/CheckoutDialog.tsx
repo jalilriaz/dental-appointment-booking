@@ -52,6 +52,8 @@ export interface CheckoutConfirmData {
     totalSessions?: number;
     nextSessionDate?: string;
     nextSessionTime?: string;
+    nextSessionFee?: number;
+    nextSessionLabel?: string;
 }
 
 export default function CheckoutDialog({
@@ -76,6 +78,8 @@ export default function CheckoutDialog({
             totalSessions?: number;
             nextSessionDate?: string;
             nextSessionTime?: string;
+            nextSessionFee?: number;
+            nextSessionLabel?: string;
         }
     ) => void;
     amountValue: string;
@@ -103,6 +107,8 @@ export default function CheckoutDialog({
     const [scheduleNextSession, setScheduleNextSession] = useState(false);
     const [nextSessionDate, setNextSessionDate] = useState("");
     const [nextSessionTime, setNextSessionTime] = useState("14:00");
+    const [nextSessionFee, setNextSessionFee] = useState<string>("");
+    const [nextSessionLabel, setNextSessionLabel] = useState<string>("");
 
     // Calculate existing plan balance if linked
     const existingTotalCost = apt?.patientTreatment?.totalCost || 0;
@@ -130,16 +136,25 @@ export default function CheckoutDialog({
             setScheduleNextSession(false);
             setNextSessionDate("");
             setNextSessionTime("14:00");
+            setNextSessionFee("");
+            setNextSessionLabel("");
         } else {
             setPriceValue("");
             setInternalDiscount("0");
             setScheduleNextSession(false);
+            setNextSessionFee("");
+            setNextSessionLabel("");
         }
     }, [apt]);
 
     const billedPrice = editablePrice ? (Number(priceValue) || 0) : (apt?.treatment?.price || 0);
     const discount = Math.max(0, Number(discountValue) || 0);
     const netTotal = Math.max(0, billedPrice - discount);
+
+    const enteredPaid = amountValue !== "" ? Number(amountValue) : (isLinkedPlan ? 0 : netTotal);
+    const remainingBalanceDue = isLinkedPlan
+        ? Math.max(0, remainingBalance - enteredPaid)
+        : Math.max(0, netTotal - enteredPaid);
 
     const handleConfirm = () => {
         const paid = Number(amountValue !== "" ? amountValue : (isLinkedPlan ? 0 : netTotal));
@@ -150,6 +165,8 @@ export default function CheckoutDialog({
             totalSessions: isNewMultiSession ? Number(totalSessions || 4) : undefined,
             nextSessionDate: scheduleNextSession && nextSessionDate ? nextSessionDate : undefined,
             nextSessionTime: scheduleNextSession && nextSessionDate ? nextSessionTime : undefined,
+            nextSessionFee: scheduleNextSession && nextSessionFee ? Number(nextSessionFee) : undefined,
+            nextSessionLabel: scheduleNextSession && nextSessionLabel ? nextSessionLabel : undefined,
         });
     };
 
@@ -313,6 +330,30 @@ export default function CheckoutDialog({
                                 autoFocus
                             />
                         </div>
+
+                        {/* Live Balance Summary */}
+                        <div className={`p-2.5 rounded-xl border flex items-center justify-between text-xs transition-all ${
+                            remainingBalanceDue > 0
+                                ? "bg-amber-50/90 border-amber-200 text-amber-950"
+                                : "bg-emerald-50/80 border-emerald-200 text-emerald-900"
+                        }`}>
+                            <div className="flex items-center gap-1.5 font-bold">
+                                {remainingBalanceDue > 0 ? (
+                                    <>
+                                        <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
+                                        <span>Remaining Balance Due:</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircleOutlineOutlinedIcon className="size-4 text-emerald-600" />
+                                        <span>Account Settled in Full</span>
+                                    </>
+                                )}
+                            </div>
+                            <span className={`font-black text-xs sm:text-sm ${remainingBalanceDue > 0 ? "text-amber-900" : "text-emerald-800"}`}>
+                                {remainingBalanceDue > 0 ? formatPKR(remainingBalanceDue) : "Rs. 0 (Cleared)"}
+                            </span>
+                        </div>
                     </div>
 
                     {/* Payment Method Selector */}
@@ -355,26 +396,47 @@ export default function CheckoutDialog({
                         </div>
                     </div>
 
-                    {/* Inline Next Session Scheduling Section */}
-                    {isMultiSession && (
-                        <div className="pt-2 border-t border-slate-200 space-y-3">
-                            <div className="flex items-center justify-between">
-                                <label className="text-xs font-semibold text-slate-800 flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={scheduleNextSession}
-                                        onChange={(e) => setScheduleNextSession(e.target.checked)}
-                                        className="rounded border-slate-300 text-teal-600 focus:ring-teal-500/20 size-4 cursor-pointer"
-                                    />
-                                    <span>Schedule Session {currentSessionNumber + 1} Now</span>
-                                </label>
-                                <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full font-bold">Recommended</span>
-                            </div>
+                    {/* Next Session & Follow-up Scheduling Section */}
+                    <div className="pt-3 border-t border-slate-200 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-slate-800 flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={scheduleNextSession}
+                                    onChange={(e) => {
+                                        setScheduleNextSession(e.target.checked);
+                                        if (e.target.checked && !nextSessionFee && remainingBalanceDue > 0) {
+                                            setNextSessionFee(String(remainingBalanceDue));
+                                        }
+                                    }}
+                                    className="rounded border-slate-300 text-teal-600 focus:ring-teal-500/20 size-4 cursor-pointer"
+                                />
+                                <span>
+                                    {isMultiSession
+                                        ? `Schedule Session ${currentSessionNumber + 1} Now`
+                                        : "Schedule Next Session / Follow-up Visit"}
+                                </span>
+                            </label>
+                            {remainingBalanceDue > 0 ? (
+                                <span className="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full font-bold">
+                                    Balance Due · Recommended
+                                </span>
+                            ) : isMultiSession ? (
+                                <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full font-bold">
+                                    Recommended
+                                </span>
+                            ) : (
+                                <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-full font-semibold">
+                                    Optional
+                                </span>
+                            )}
+                        </div>
 
-                            {scheduleNextSession && (
-                                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                        {scheduleNextSession && (
+                            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 shadow-2xs">
+                                <div className="grid grid-cols-2 gap-2.5">
                                     <div className="space-y-1">
-                                        <Label className="text-[11px] font-semibold text-slate-700">Next Session Date</Label>
+                                        <Label className="text-[11px] font-bold text-slate-700">Next Session Date</Label>
                                         <DatePicker
                                             value={nextSessionDate}
                                             onChange={(val) => setNextSessionDate(val)}
@@ -384,18 +446,65 @@ export default function CheckoutDialog({
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="text-[11px] font-semibold text-slate-700">Preferred Time Slot</Label>
+                                        <Label className="text-[11px] font-bold text-slate-700">Preferred Time Slot</Label>
                                         <Input
                                             type="time"
                                             value={nextSessionTime}
                                             onChange={(e) => setNextSessionTime(e.target.value)}
-                                            className="bg-white border-slate-300 h-8 text-xs text-slate-900 focus:border-teal-600"
+                                            className="bg-white border-slate-300 h-9 text-xs text-slate-900 focus:border-teal-600 rounded-lg"
                                         />
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    )}
+
+                                {/* Next Appointment Planned Price / Expected Amount */}
+                                <div className="space-y-1 pt-1 border-t border-slate-200/80">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-[11px] font-bold text-slate-800 flex items-center gap-1">
+                                            <span>Next Session Expected Amount (PKR)</span>
+                                            <span className="text-[10px] font-normal text-slate-400">(Optional)</span>
+                                        </Label>
+                                        {remainingBalanceDue > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setNextSessionFee(String(remainingBalanceDue))}
+                                                className="text-[10px] text-teal-700 hover:text-teal-800 font-bold underline cursor-pointer"
+                                            >
+                                                Set Full Balance ({formatPKR(remainingBalanceDue)})
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="relative">
+                                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">Rs.</span>
+                                        <Input
+                                            type="number"
+                                            value={nextSessionFee}
+                                            onChange={(e) => setNextSessionFee(e.target.value)}
+                                            min={0}
+                                            placeholder={remainingBalanceDue > 0 ? String(remainingBalanceDue) : "e.g. 15000"}
+                                            className="bg-white border-slate-300 pl-8 h-9 text-xs text-slate-900 font-bold focus:border-teal-600 rounded-lg"
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 font-medium">
+                                        {remainingBalanceDue > 0
+                                            ? `Amount expected to be collected at the next appointment to clear remaining balance.`
+                                            : `Custom session installment or procedure fee for the subsequent visit.`}
+                                    </p>
+                                </div>
+
+                                {/* Optional Stage / Session Label */}
+                                <div className="space-y-1">
+                                    <Label className="text-[11px] font-semibold text-slate-700">Next Stage / Clinical Note (Optional)</Label>
+                                    <Input
+                                        type="text"
+                                        value={nextSessionLabel}
+                                        onChange={(e) => setNextSessionLabel(e.target.value)}
+                                        placeholder={isMultiSession ? `Session ${currentSessionNumber + 1} Follow-up` : "Follow-up & Balance Clearance"}
+                                        className="bg-white border-slate-300 h-8 text-xs text-slate-900 focus:border-teal-600 rounded-lg"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <DialogFooter className="sm:justify-center gap-2 pt-3 border-t border-slate-200">

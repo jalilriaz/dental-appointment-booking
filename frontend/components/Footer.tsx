@@ -72,18 +72,25 @@ export default function Footer() {
             <p className="text-slate-400 max-w-sm leading-relaxed text-xs">
               Center of Advanced Implantology and Aesthetic Dentistry in G-8 Markaz, Islamabad. Dedicated to evidence-based practice, biological tooth preservation, and patient comfort.
             </p>
-            <div className="space-y-1.5 text-slate-400 text-xs">
-              <div className="flex items-start gap-2">
-                <LocationOnOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} className="shrink-0 mt-0.5" />
-                <span>{clinicInfo.address}</span>
-              </div>
+            <div className="space-y-2 text-slate-400 text-xs">
               <a
-                href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
+                href="https://www.google.com/maps/search/?api=1&query=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-teal-400 hover:text-teal-300 font-bold text-[11px] ml-6 transition-colors"
+                className="flex items-start gap-2 hover:text-teal-300 transition-colors group"
+                title="View Elite Dental & Aesthetic Centre on Google Maps"
               >
-                <span>View Pin on Google Maps</span>
+                <LocationOnOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} className="shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                <span className="group-hover:underline">{clinicInfo.address}</span>
+              </a>
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-950/80 hover:bg-teal-900 border border-teal-500/30 text-teal-300 hover:text-white font-bold text-[11px] ml-6 transition-all shadow-xs"
+              >
+                <LocationOnOutlined sx={{ fontSize: 14, color: "#2dd4bf" }} />
+                <span>Open Google Maps Pin</span>
                 <span aria-hidden="true">→</span>
               </a>
             </div>

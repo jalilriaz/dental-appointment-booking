@@ -734,12 +734,13 @@ export default async function LandingPage() {
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Address</h4>
                       <p className="text-sm font-bold text-slate-900 mt-0.5">{clinicInfo.address}</p>
                       <a
-                        href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
+                        href="https://www.google.com/maps/dir/?api=1&destination=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 hover:text-teal-800 mt-1.5"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 hover:text-teal-800 mt-2 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
-                        <span>Open Directions on Google Maps</span>
+                        <LocationOnOutlined sx={{ fontSize: 15 }} />
+                        <span>Navigate on Google Maps</span>
                         <span aria-hidden="true">→</span>
                       </a>
                     </div>
@@ -774,8 +775,8 @@ export default async function LandingPage() {
               <div className="lg:col-span-7">
                 <div className="relative h-80 sm:h-96 rounded-3xl overflow-hidden border border-slate-200 shadow-md">
                   <iframe
-                    title="Elite Dental Centre Islamabad Location Map"
-                    src="https://maps.google.com/maps?q=Doctors+Plaza,+6+Markaz+Rd,+next+to+Islamabad+Diagnostic+Centre,+G-8+Markaz,+Islamabad&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                    title="Elite Dental & Aesthetic Centre Islamabad Location Map"
+                    src="https://maps.google.com/maps?q=Elite+Dental+%26+Aesthetic+Centre,+G-8+Markaz,+Islamabad&t=&z=16&ie=UTF8&iwloc=&output=embed"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}

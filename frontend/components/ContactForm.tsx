@@ -230,7 +230,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
             </div>
             <div className="mt-6 pt-4 border-t border-slate-100">
               <a
-                href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
+                href="https://www.google.com/maps/search/?api=1&query=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full h-11 inline-flex items-center justify-center gap-2 px-4 rounded-xl bg-[#0B1528] hover:bg-slate-800 text-white font-extrabold text-xs uppercase tracking-wider shadow-md shadow-slate-900/15 active:scale-[0.98] transition-all cursor-pointer"
@@ -358,7 +358,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
 
                 <div className="grid grid-cols-2 gap-3 mt-3">
                   <a
-                    href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
+                    href="https://www.google.com/maps/dir/?api=1&destination=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs text-center flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
@@ -631,7 +631,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
 
             <div className="flex items-center gap-3 shrink-0">
               <a
-                href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
+                href="https://www.google.com/maps/dir/?api=1&destination=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-sm transition-all"
@@ -672,8 +672,8 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
             {/* Embedded Full-Width Google Map */}
             <div className="relative w-full h-[460px] sm:h-[540px]">
               <iframe
-                title="Elite Dental Centre Islamabad - Full Width Map"
-                src="https://maps.google.com/maps?q=Doctors+Plaza,+6+Markaz+Rd,+next+to+Islamabad+Diagnostic+Centre,+G-8+Markaz,+Islamabad&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                title="Elite Dental & Aesthetic Centre Islamabad - Full Width Map"
+                src="https://maps.google.com/maps?q=Elite+Dental+%26+Aesthetic+Centre,+G-8+Markaz,+Islamabad&t=&z=16&ie=UTF8&iwloc=&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -697,7 +697,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                     </p>
                     <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center gap-2">
                       <a
-                        href="https://www.google.com/maps/dir/?api=1&destination=Doctors+Plaza+6+Markaz+Rd+next+to+Islamabad+Diagnostic+Centre+G-8+Markaz+Islamabad"
+                        href="https://www.google.com/maps/dir/?api=1&destination=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1"

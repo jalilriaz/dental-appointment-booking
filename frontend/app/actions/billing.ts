@@ -23,6 +23,7 @@ export interface CheckoutOptions {
     nextSessionDate?: string;
     nextSessionTime?: string;
     nextSessionLabel?: string;
+    nextSessionFee?: number;
 }
 
 const checkoutSchema = z.object({
@@ -37,6 +38,7 @@ const checkoutSchema = z.object({
     nextSessionDate: z.string().optional(),
     nextSessionTime: z.string().optional(),
     nextSessionLabel: z.string().optional(),
+    nextSessionFee: z.number().min(0).optional(),
 });
 
 export async function checkoutAppointment(
@@ -65,6 +67,7 @@ export async function checkoutAppointment(
                 nextSessionDate: extraOptions?.nextSessionDate,
                 nextSessionTime: extraOptions?.nextSessionTime,
                 nextSessionLabel: extraOptions?.nextSessionLabel,
+                nextSessionFee: extraOptions?.nextSessionFee,
             };
         }
 
@@ -254,6 +257,7 @@ export async function checkoutAppointment(
                 sessionNumber: nextSessionNumber,
                 sessionLabel: nextSessionLabel,
                 notes: nextSessionLabel,
+                plannedFee: validData.nextSessionFee || undefined,
             });
 
             if (nextBookingResult.success) {
