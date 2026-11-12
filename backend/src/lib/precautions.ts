@@ -122,37 +122,57 @@ export async function dispatchN8nPrecautionsWebhook(payload: {
     message: string;
     appointmentId?: string;
 }): Promise<{ success: boolean; error?: string }> {
-    const webhookUrl = process.env.N8N_WEBHOOK_URL;
-    if (!webhookUrl) {
-        return { success: false, error: "N8N_WEBHOOK_URL not configured" };
+    let webhookUrl = process.env.N8N_WEBHOOK_URL || "http://localhost:5678/webhook/elite-dental-precautions";
+
+    // Clean phone number for Meta WhatsApp Cloud API (e.g. +92 314 5475528 -> 923145475528)
+    let sanitizedPhone = payload.phone.replace(/[^0-9]/g, "");
+    if (sanitizedPhone.startsWith("0") && sanitizedPhone.length === 11) {
+        sanitizedPhone = "92" + sanitizedPhone.substring(1);
     }
 
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+    const payloadWithCleanPhone = {
+        ...payload,
+        phone: sanitizedPhone,
+    };
 
-        const res = await fetch(webhookUrl, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                ...(process.env.N8N_SECRET_KEY ? { "Authorization": `Bearer ${process.env.N8N_SECRET_KEY}` } : {})
-            },
-            body: JSON.stringify({
-                event: "SEND_PRECAUTIONS",
-                timestamp: new Date().toISOString(),
-                ...payload
-            }),
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
+    // Primary URL, with automatic fallback between host.docker.internal and localhost
+    const urlsToTry = [webhookUrl];
+    if (webhookUrl.includes("host.docker.internal")) {
+        urlsToTry.push(webhookUrl.replace("host.docker.internal", "localhost"));
+    } else if (webhookUrl.includes("localhost")) {
+        urlsToTry.push(webhookUrl.replace("localhost", "host.docker.internal"));
+    }
 
-        if (res.ok) {
-            return { success: true };
-        } else {
-            return { success: false, error: `Webhook returned status ${res.status}` };
+    let lastError = "Failed to dispatch to n8n webhook";
+    for (const url of urlsToTry) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(process.env.N8N_SECRET_KEY ? { "Authorization": `Bearer ${process.env.N8N_SECRET_KEY}` } : {})
+                },
+                body: JSON.stringify({
+                    event: "SEND_PRECAUTIONS",
+                    timestamp: new Date().toISOString(),
+                    ...payloadWithCleanPhone
+                }),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+                return { success: true };
+            } else {
+                lastError = `Webhook returned status ${res.status}`;
+            }
+        } catch (err) {
+            lastError = err instanceof Error ? err.message : "Network error connecting to n8n webhook";
         }
-    } catch (err) {
-        const msg = err instanceof Error ? err.message : "Unknown error connecting to n8n webhook";
-        return { success: false, error: msg };
     }
+
+    return { success: false, error: lastError };
 }

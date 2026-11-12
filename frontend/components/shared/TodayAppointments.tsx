@@ -42,6 +42,8 @@ interface TodayAppointment {
   status: string;
   amountPaid?: number;
   price?: number;
+  guestName?: string | null;
+  guestPhone?: string | null;
   patient: { id?: string; name: string | null; phone: string | null; medicalAlerts?: string | null } | null;
   treatment: { name: string; durationMin: number; price: number };
   discount?: number;
@@ -223,7 +225,7 @@ export default function TodayAppointments({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-bold text-slate-900 truncate flex items-center gap-2">
-                        {apt.patient?.name || "Unknown Patient"}
+                        {apt.guestName || apt.patient?.name || "Unknown Patient"}
                         {(apt.patient as any)?.noShowCount > 0 && (
                           <span
                             className="inline-flex items-center gap-1 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200"
@@ -405,8 +407,8 @@ export default function TodayAppointments({
 
       <SendPrecautionsModal
         appointmentId={precautionsApt?.id || null}
-        patientName={precautionsApt?.patient?.name || undefined}
-        patientPhone={precautionsApt?.patient?.phone}
+        patientName={precautionsApt?.guestName || precautionsApt?.patient?.name || undefined}
+        patientPhone={precautionsApt?.guestPhone || precautionsApt?.patient?.phone}
         treatmentName={precautionsApt?.treatment?.name}
         isOpen={!!precautionsApt}
         onClose={() => setPrecautionsApt(null)}

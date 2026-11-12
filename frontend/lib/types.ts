@@ -55,6 +55,8 @@ export interface Appointment {
     bookedBy?: string;
     notes?: string | null;
     createdAt?: string;
+    guestName?: string | null;
+    guestPhone?: string | null;
     patient: {
         id: string;
         name: string | null;

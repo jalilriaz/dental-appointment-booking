@@ -31,6 +31,24 @@ const navSections = [
 export default function StaffSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (e) {
+      console.error("Logout request failed:", e);
+    } finally {
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+          document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        } catch {}
+        window.location.href = "/";
+      }
+    }
+  };
+
   function isActive(href: string) {
     if (href === "/staff") return pathname === "/staff";
     return pathname.startsWith(href);
@@ -156,13 +174,14 @@ export default function StaffSidebar({ open, onClose }: { open: boolean; onClose
           </div>
 
           {/* Sign Out */}
-          <Link
-            href="/api/auth/logout"
+          <button
+            type="button"
+            onClick={handleLogout}
             className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 border border-transparent transition-colors cursor-pointer w-full"
           >
             <LogoutOutlined sx={{ fontSize: 16 }} />
             <span>Sign Out Session</span>
-          </Link>
+          </button>
         </div>
       </aside>
     </>

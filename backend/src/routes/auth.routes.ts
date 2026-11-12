@@ -101,11 +101,35 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 });
 
-// POST /api/auth/logout
+// Helper to clear auth cookies with proper flags
+const clearAuthCookies = (res: Response) => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOpts = {
+        path: '/',
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+        expires: new Date(0),
+        maxAge: 0,
+    };
+    res.clearCookie('session', cookieOpts);
+    res.clearCookie('refreshToken', cookieOpts);
+    res.clearCookie('token', cookieOpts);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+};
+
+// GET /api/auth/logout (Direct navigation / fallback)
+router.get('/logout', (_req: Request, res: Response) => {
+    clearAuthCookies(res);
+    return res.redirect('/');
+});
+
+// POST /api/auth/logout (Client API call)
 router.post('/logout', (_req: Request, res: Response) => {
-    res.clearCookie('session', { path: '/' });
-    res.clearCookie('refreshToken', { path: '/' });
-    return res.json({ success: true });
+    clearAuthCookies(res);
+    return res.json({ success: true, redirect: '/' });
 });
 
 // GET /api/auth/me

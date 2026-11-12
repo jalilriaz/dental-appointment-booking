@@ -9,6 +9,7 @@ import { sendAppointmentConfirmationEmail } from '../lib/email';
 import { normalizePhone } from '../lib/phone';
 import { isSundayInKarachi, parseKarachiDateTime, getKarachiDayBoundaries } from '../lib/timezone';
 import { generateRandomPatientPasswordHash } from '../lib/security';
+import { createAppointment } from '../lib/bookingService';
 
 const router = Router();
 
@@ -266,196 +267,35 @@ router.post('/walk-in', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: 
             });
         }
 
-        const { patientId, phone, fullName, date, time, treatmentId, patientTreatmentId, notes } = validationResult.data;
-        const canonicalPhone = phone ? normalizePhone(phone) : undefined;
+        const { patientId, phone, fullName, age, date, time, treatmentId, patientTreatmentId, notes } = validationResult.data;
 
-        if (isSundayInKarachi(date)) {
-            return res.status(400).json({ error: 'Sunday is a clinic off day. Please select another date.' });
-        }
-
-        const treatment = await prisma.treatment.findUnique({ where: { id: treatmentId } });
-        if (!treatment) return res.status(404).json({ error: 'Treatment not found' });
-
-        const startTime = parseKarachiDateTime(date, time);
-        const endTime = new Date(startTime.getTime() + treatment.durationMin * 60000);
-
-        const result = await prisma.$transaction(async (tx) => {
-            let userId: string;
-            let patientCode: number | null = null;
-            let patientName: string;
-
-            if (patientId) {
-                const existingUser = await tx.user.findUnique({
-                    where: { id: patientId },
-                    select: { id: true, name: true, patientCode: true },
-                });
-                if (!existingUser) throw new Error('PATIENT_NOT_FOUND');
-                userId = existingUser.id;
-                patientName = existingUser.name;
-                patientCode = existingUser.patientCode;
-
-                if (!patientCode) {
-                    patientCode = await generatePatientCode();
-                    await tx.user.update({ where: { id: userId }, data: { patientCode } });
-                }
-            } else {
-                let user = await tx.user.findFirst({ where: { phone: canonicalPhone! } });
-                if (!user) {
-                    patientCode = await generatePatientCode();
-                    const hashedPassword = await generateRandomPatientPasswordHash();
-                    user = await tx.user.create({
-                        data: {
-                            name: fullName!,
-                            phone: canonicalPhone!,
-                            password: hashedPassword,
-                            role: 'PATIENT',
-                            patientCode,
-                        },
-                    });
-                } else if (!user.patientCode) {
-                    patientCode = await generatePatientCode();
-                    await tx.user.update({ where: { id: user.id }, data: { patientCode } });
-                } else {
-                    patientCode = user.patientCode;
-                }
-                userId = user.id;
-                patientName = user.name;
-            }
-
-            const { startOfDay: dayStart, endOfDay: dayEnd } = getKarachiDayBoundaries(date);
-
-            const conflict = await tx.appointment.findFirst({
-                where: {
-                    status: { notIn: ['CANCELLED'] },
-                    startTime: { gte: dayStart, lte: dayEnd },
-                    AND: [
-                        { startTime: { lt: endTime } },
-                        { endTime: { gt: startTime } },
-                    ],
-                },
-            });
-            if (conflict) throw new Error('DOUBLE_BOOKING');
-
-            let targetPtId = patientTreatmentId || null;
-            if (!targetPtId) {
-                const activePlan = await tx.patientTreatment.findFirst({
-                    where: {
-                        patientId: userId,
-                        treatmentId: treatment.id,
-                        clinicalStatus: 'IN_PROGRESS',
-                    },
-                    orderBy: { startDate: 'desc' },
-                });
-                if (activePlan) {
-                    targetPtId = activePlan.id;
-                }
-            }
-
-            let sessionNumber: number | null = null;
-            let sessionLabel: string | null = null;
-
-            if (targetPtId) {
-                const plan = await tx.patientTreatment.findUnique({
-                    where: { id: targetPtId },
-                    include: {
-                        appointments: {
-                            where: { status: { notIn: ['CANCELLED', 'NO_SHOW'] } },
-                        },
-                    },
-                });
-                if (plan) {
-                    sessionNumber = plan.appointments.length + 1;
-                    sessionLabel = `Session ${sessionNumber} of ${plan.totalSessions}`;
-                }
-            }
-
-            const appointment = await tx.appointment.create({
-                data: {
-                    startTime,
-                    endTime,
-                    patientId: userId,
-                    treatmentId,
-                    patientTreatmentId: targetPtId,
-                    sessionNumber,
-                    sessionLabel,
-                    status: 'SCHEDULED',
-                    bookedBy: 'WALK_IN',
-                    price: treatment.price,
-                    notes: notes || null,
-                },
-                include: {
-                    treatment: { select: { name: true, durationMin: true } },
-                    patient: { select: { id: true, name: true, phone: true, email: true, patientCode: true } },
-                },
-            });
-
-            return appointment;
+        const bookingResult = await createAppointment({
+            patientId,
+            patientName: fullName,
+            phone,
+            age,
+            treatmentId,
+            date,
+            time,
+            bookedBy: 'WALK_IN',
+            patientTreatmentId,
+            notes,
         });
 
-        // Google calendar non-blocking sync
-        (async () => {
-            try {
-                const safeResult = result as any;
-                if (safeResult.treatment && safeResult.patient) {
-                    const googleEventId = await createCalendarEvent({
-                        summary: `🚶 ${safeResult.treatment.name} — ${safeResult.patient.name} (Walk-in)`,
-                        description: `Walk-in Appointment\nTreatment: ${safeResult.treatment.name}\nDuration: ${safeResult.treatment.durationMin} min`,
-                        startTime: safeResult.startTime,
-                        endTime: safeResult.endTime,
-                        patientName: safeResult.patient.name || 'Patient',
-                    });
-
-                    if (googleEventId) {
-                        await prisma.appointment.update({
-                            where: { id: result.id },
-                            data: { googleEventId },
-                        });
-                    }
-                }
-            } catch (calError) {
-                logger.warn({ err: calError, appointmentId: result.id }, 'Google Calendar sync failed for walk-in');
-            }
-        })();
-
-        // Email confirmation
-        const safeResultObj = result as any;
-        const emailToNotify = safeResultObj.patient?.email;
-        if (emailToNotify) {
-            const formattedDate = new Date(safeResultObj.startTime).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
+        if (!bookingResult.success) {
+            return res.status(bookingResult.status || 400).json({
+                error: bookingResult.error || 'Failed to book walk-in appointment',
+                code: bookingResult.status === 409 ? 'DOUBLE_BOOKING' : undefined,
             });
-            const formattedTime = new Date(safeResultObj.startTime).toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-            });
-
-            sendAppointmentConfirmationEmail(
-                emailToNotify,
-                safeResultObj.patient.name,
-                safeResultObj.treatment.name,
-                formattedDate,
-                formattedTime
-            ).catch((err) => logger.warn({ err }, 'Failed to send confirmation email for walk-in'));
         }
 
         return res.status(201).json({
             success: true,
-            appointment: result,
+            appointment: bookingResult.appointment,
+            patientCode: bookingResult.patientCode,
             message: 'Walk-in appointment booked successfully!',
         });
     } catch (error) {
-        if (error instanceof Error && error.message === 'DOUBLE_BOOKING') {
-            return res.status(409).json({
-                error: 'This time slot conflicts with an existing appointment. Please choose another time.',
-                code: 'DOUBLE_BOOKING',
-            });
-        }
-        if (error instanceof Error && error.message === 'PATIENT_NOT_FOUND') {
-            return res.status(404).json({ error: 'Patient not found' });
-        }
         logger.error({ err: error, body }, 'Failed to book walk-in appointment');
         return res.status(500).json({ error: 'Failed to book walk-in appointment' });
     }

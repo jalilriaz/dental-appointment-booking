@@ -20,7 +20,7 @@ router.use(botAuthMiddleware);
 // POST /api/bot/check-availability
 router.post('/check-availability', async (req: Request, res: Response) => {
     try {
-        const { date, time } = req.body;
+        const { date, time, serviceType, treatmentId } = req.body;
         if (!date || !time) {
             return res.status(400).json({ message: 'Missing date or time' });
         }
@@ -32,13 +32,45 @@ router.post('/check-availability', async (req: Request, res: Response) => {
             });
         }
 
+        let treatmentDuration = 30;
+        let treatmentName = 'Standard';
+        if (treatmentId) {
+            const tr = await prisma.treatment.findUnique({ where: { id: treatmentId } });
+            if (tr) {
+                treatmentDuration = tr.durationMin || 30;
+                treatmentName = tr.name;
+            }
+        } else if (serviceType) {
+            const tr = await prisma.treatment.findFirst({
+                where: { name: { contains: serviceType, mode: 'insensitive' } },
+            });
+            if (tr) {
+                treatmentDuration = tr.durationMin || 30;
+                treatmentName = tr.name;
+            }
+        }
+
         const startTimeStamp = parseKarachiDateTime(date, time);
-        const endTimeStamp = new Date(startTimeStamp);
-        endTimeStamp.setMinutes(endTimeStamp.getMinutes() + 30);
+        const endTimeStamp = new Date(startTimeStamp.getTime() + treatmentDuration * 60000);
+
+        // Check clinic working hours
+        const settings = await prisma.systemSettings.findUnique({ where: { id: 'settings' } });
+        const workEnd = settings?.workDayEnd || '21:00';
+        const [endH, endM] = workEnd.split(':').map(Number);
+        const { endOfDay } = getKarachiDayBoundaries(date);
+        const closingTime = new Date(endOfDay);
+        closingTime.setHours(endH, endM, 0, 0);
+
+        if (endTimeStamp.getTime() > closingTime.getTime()) {
+            return res.json({
+                isAvailable: false,
+                message: `The clinic closes at ${workEnd}. A ${treatmentDuration}-minute treatment starting at ${time} cannot be accommodated.`,
+            });
+        }
 
         const existingAppointment = await prisma.appointment.findFirst({
             where: {
-                status: { notIn: ['CANCELLED', 'NO_SHOW'] },
+                status: { notIn: ['CANCELLED'] },
                 AND: [
                     { startTime: { lt: endTimeStamp } },
                     { endTime: { gt: startTimeStamp } },
@@ -49,13 +81,15 @@ router.post('/check-availability', async (req: Request, res: Response) => {
         if (existingAppointment) {
             return res.json({
                 isAvailable: false,
-                message: 'An appointment already exists at this time.',
+                message: 'This time slot is already booked or overlaps with an existing appointment.',
             });
         }
 
         return res.json({
             isAvailable: true,
-            message: 'Time slot is available!',
+            durationMin: treatmentDuration,
+            treatmentName,
+            message: `Time slot is available for ${treatmentName} (${treatmentDuration} min)!`,
         });
     } catch (error) {
         console.error('Error in check-availability:', error);
@@ -272,7 +306,7 @@ router.patch('/reschedule', async (req: Request, res: Response) => {
         const conflict = await prisma.appointment.findFirst({
             where: {
                 id: { not: targetAppointment.id },
-                status: { notIn: ['CANCELLED', 'NO_SHOW'] },
+                status: { notIn: ['CANCELLED'] },
                 AND: [
                     { startTime: { lt: newEndTime } },
                     { endTime: { gt: newStartTime } },

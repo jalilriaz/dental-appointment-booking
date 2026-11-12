@@ -6,7 +6,8 @@ import { requireAuth, requireRole, optionalAuth } from '../middleware/auth.middl
 import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from '../lib/googleCalendar';
 import { sendAppointmentConfirmationEmail, sendAppointmentRescheduleEmail } from '../lib/email';
 import { normalizePhone } from '../lib/phone';
-import { isSundayInKarachi, parseKarachiDateTime } from '../lib/timezone';
+import { isSundayInKarachi, parseKarachiDateTime, getKarachiDayBoundaries } from '../lib/timezone';
+import { createAppointment } from '../lib/bookingService';
 import { generateRandomPatientPasswordHash } from '../lib/security';
 import {
     getPrecautionsForTreatment,
@@ -74,28 +75,25 @@ router.get('/availability', async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'date is required' });
         }
 
-        const [year, month, day] = date.split('-').map(Number);
-        const selectedDate = new Date(year, month - 1, day);
-
-        if (selectedDate.getDay() === 0) {
+        if (isSundayInKarachi(date)) {
             return res.json({ slots: [], dayOff: true, reason: 'Sunday is a clinic off day' });
         }
 
         let treatmentDuration = 30;
         if (treatmentId) {
             const treatment = await resolveTreatment(treatmentId);
-            if (treatment) treatmentDuration = treatment.durationMin;
+            if (treatment && treatment.durationMin) treatmentDuration = treatment.durationMin;
         }
 
         const settings = await prisma.systemSettings.findUnique({
             where: { id: 'settings' },
         });
 
-        const workStart = settings?.workDayStart || '09:00';
-        const workEnd = settings?.workDayEnd || '17:00';
+        const workStart = settings?.workDayStart || '11:00';
+        const workEnd = settings?.workDayEnd || '21:00';
+        const slotIncrement = settings?.slotDurationMin || 30;
 
-        const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
-        const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+        const { startOfDay, endOfDay } = getKarachiDayBoundaries(date);
 
         const whereClause: any = {
             startTime: { gte: startOfDay, lte: endOfDay },
@@ -117,17 +115,24 @@ router.get('/availability', async (req: Request, res: Response) => {
         const workStartMin = startH * 60 + startM;
         const workEndMin = endH * 60 + endM;
 
-        for (let min = workStartMin; min < workEndMin; min += treatmentDuration) {
+        const now = new Date();
+
+        // Increment through the work day by the slot interval (default 30 min)
+        for (let min = workStartMin; min < workEndMin; min += slotIncrement) {
             const slotH = Math.floor(min / 60);
             const slotM = min % 60;
             const slotEndMin = min + treatmentDuration;
 
+            // If the full treatment cannot be completed before closing time, omit the slot
             if (slotEndMin > workEndMin) continue;
 
+            const timeStr = `${slotH.toString().padStart(2, '0')}:${slotM.toString().padStart(2, '0')}`;
+            const slotStartTime = parseKarachiDateTime(date, timeStr);
+            const slotEndTime = new Date(slotStartTime.getTime() + treatmentDuration * 60000);
+
+            // True dynamic collision check: [slotStartTime, slotEndTime] overlaps existing non-cancelled appointment
             const isOccupied = existingAppointments.some((apt) => {
-                const aptStartMin = apt.startTime.getHours() * 60 + apt.startTime.getMinutes();
-                const aptEndMin = apt.endTime.getHours() * 60 + apt.endTime.getMinutes();
-                return min < aptEndMin && slotEndMin > aptStartMin;
+                return apt.startTime < slotEndTime && apt.endTime > slotStartTime;
             });
 
             const period = slotH >= 12 ? 'PM' : 'AM';
@@ -140,12 +145,10 @@ router.get('/availability', async (req: Request, res: Response) => {
             const endDisplayH = endTimeH === 0 ? 12 : endTimeH > 12 ? endTimeH - 12 : endTimeH;
             const endLabel = `${endDisplayH}:${endTimeM.toString().padStart(2, '0')} ${endPeriod}`;
 
-            const now = new Date();
-            const isToday = selectedDate.toDateString() === now.toDateString();
-            const isPast = isToday && (slotH < now.getHours() || (slotH === now.getHours() && slotM <= now.getMinutes()));
+            const isPast = slotStartTime.getTime() <= now.getTime();
 
             slots.push({
-                value: `${slotH.toString().padStart(2, '0')}:${slotM.toString().padStart(2, '0')}`,
+                value: timeStr,
                 label,
                 endLabel,
                 available: !isOccupied && !isPast,
@@ -310,177 +313,42 @@ router.post('/', optionalAuth, async (req: Request, res: Response) => {
             }
         }
 
-        if (isSundayInKarachi(date)) {
-            return res.status(400).json({
-                error: 'Sunday is a clinic off day. Please select another date.',
-            });
-        }
-
-        const treatment = await resolveTreatment(treatmentId);
-        if (!treatment) {
-            return res.status(404).json({ error: 'Treatment not found' });
-        }
-
-        const startTime = parseKarachiDateTime(date, time);
-        const endTime = new Date(startTime.getTime() + treatment.durationMin * 60000);
-
         let bookedBy: 'WEBSITE' | 'WALK_IN' | 'WHATSAPP_BOT' = 'WEBSITE';
         if (bookerRole === 'STAFF' || bookerRole === 'ADMIN') {
             bookedBy = body.bookedBy || 'WALK_IN';
         }
 
-        const result = await prisma.$transaction(async (tx) => {
-            let finalPatientId = patientId;
-
-            if ((bookerRole === 'STAFF' || bookerRole === 'ADMIN') && newPatient) {
-                const canonicalPhone = normalizePhone(newPatient.phone);
-                const existingUser = await tx.user.findFirst({
-                    where: { phone: canonicalPhone },
-                });
-
-                if (existingUser) {
-                    finalPatientId = existingUser.id;
-                } else {
-                    const hashedPassword = await generateRandomPatientPasswordHash();
-                    const createdUser = await tx.user.create({
-                        data: {
-                            name: newPatient.name,
-                            email: newPatient.email || undefined,
-                            phone: canonicalPhone,
-                            password: hashedPassword,
-                            role: 'PATIENT',
-                            dateOfBirth: newPatient.dateOfBirth ? new Date(newPatient.dateOfBirth) : undefined,
-                        },
-                    });
-                    finalPatientId = createdUser.id;
-                }
-            } else if (!finalPatientId && guestPhone && guestName) {
-                const canonicalGuestPhone = normalizePhone(guestPhone);
-                const existingUser = await tx.user.findFirst({
-                    where: { phone: canonicalGuestPhone },
-                });
-
-                if (existingUser) {
-                    finalPatientId = existingUser.id;
-                } else {
-                    const hashedPassword = await generateRandomPatientPasswordHash();
-                    const createdUser = await tx.user.create({
-                        data: {
-                            name: guestName,
-                            email: guestEmail || undefined,
-                            phone: canonicalGuestPhone,
-                            password: hashedPassword,
-                            role: 'PATIENT',
-                            dateOfBirth: guestDob ? new Date(guestDob) : undefined,
-                        },
-                    });
-                    finalPatientId = createdUser.id;
-                }
-            }
-
-            const conflict = await tx.appointment.findFirst({
-                where: {
-                    status: { notIn: ['CANCELLED'] },
-                    AND: [
-                        { startTime: { lt: endTime } },
-                        { endTime: { gt: startTime } },
-                    ],
-                },
-            });
-
-            if (conflict) {
-                throw new Error('DOUBLE_BOOKING');
-            }
-
-            if (!finalPatientId) {
-                throw new Error('PATIENT_ID_REQUIRED');
-            }
-
-            const appointment = await tx.appointment.create({
-                data: {
-                    startTime,
-                    endTime,
-                    patientId: finalPatientId,
-                    treatmentId: treatment.id,
-                    status: 'SCHEDULED',
-                    bookedBy,
-                    price: treatment.price,
-                    notes: notes || null,
-                    guestName: guestName,
-                    guestPhone: guestPhone,
-                    guestEmail: guestEmail,
-                    guestDob: guestDob ? new Date(guestDob) : undefined,
-                },
-                include: {
-                    treatment: { select: { name: true, durationMin: true } },
-                    patient: { select: { name: true, phone: true, email: true } },
-                },
-            });
-
-            return appointment;
+        const bookingResult = await createAppointment({
+            patientId,
+            patientName: newPatient?.name || guestName,
+            phone: newPatient?.phone || guestPhone,
+            email: newPatient?.email || guestEmail,
+            dateOfBirth: newPatient?.dateOfBirth || guestDob,
+            guestName,
+            guestPhone,
+            guestEmail,
+            guestDob,
+            treatmentId,
+            date,
+            time,
+            bookedBy,
+            notes,
         });
 
-        // Non-blocking Google Calendar Sync
-        (async () => {
-            try {
-                const safeResult = result as any;
-                if (safeResult.treatment && safeResult.patient) {
-                    const googleEventId = await createCalendarEvent({
-                        summary: `${safeResult.treatment.name} — ${safeResult.patient.name}`,
-                        description: `Treatment: ${safeResult.treatment.name}\nDuration: ${safeResult.treatment.durationMin} min`,
-                        startTime: safeResult.startTime,
-                        endTime: safeResult.endTime,
-                        patientName: safeResult.patient.name || 'Patient',
-                    });
-
-                    if (googleEventId) {
-                        await prisma.appointment.update({
-                            where: { id: result.id },
-                            data: { googleEventId },
-                        });
-                    }
-                }
-            } catch (calError) {
-                logger.warn({ err: calError, appointmentId: result.id }, 'Google Calendar sync failed');
-            }
-        })();
-
-        // Non-blocking email
-        const safeResultObj = result as any;
-        const emailToNotify = safeResultObj.patient?.email;
-        if (emailToNotify) {
-            const formattedDate = new Date(safeResultObj.startTime).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
+        if (!bookingResult.success) {
+            return res.status(bookingResult.status || 400).json({
+                error: bookingResult.error || 'Failed to book appointment',
+                code: bookingResult.status === 409 ? 'DOUBLE_BOOKING' : undefined,
             });
-            const formattedTime = new Date(safeResultObj.startTime).toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-            });
-
-            sendAppointmentConfirmationEmail(
-                emailToNotify,
-                safeResultObj.patient.name,
-                safeResultObj.treatment.name,
-                formattedDate,
-                formattedTime
-            ).catch((err) => logger.warn({ err }, 'Failed to send confirmation email'));
         }
 
         return res.status(201).json({
             success: true,
-            appointment: result,
+            appointment: bookingResult.appointment,
+            patientCode: bookingResult.patientCode,
             message: 'Appointment booked successfully!',
         });
     } catch (error) {
-        if (error instanceof Error && error.message === 'DOUBLE_BOOKING') {
-            return res.status(409).json({
-                error: 'This time slot is no longer available. Please select another time.',
-                code: 'DOUBLE_BOOKING',
-            });
-        }
         logger.error({ err: error, body }, 'Failed to book appointment');
         return res.status(500).json({ error: 'Failed to book appointment' });
     }
@@ -913,7 +781,13 @@ router.post('/:id/send-precautions', requireAuth, requireRole('ADMIN', 'STAFF'),
             appointmentId: appointment.id,
         });
 
-        return res.json({ success: true, dispatched: result });
+        return res.json({
+            success: true,
+            n8nDispatched: result.success,
+            n8nError: result.error,
+            dispatched: result,
+            patientPhone,
+        });
     } catch (error) {
         console.error('Failed to send precautions:', error);
         return res.status(500).json({ error: 'Failed to dispatch precautions' });

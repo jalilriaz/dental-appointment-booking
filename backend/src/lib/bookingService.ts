@@ -4,6 +4,10 @@ import { generatePatientCode } from "@/lib/patientCode";
 import { normalizePhone } from "@/lib/phone";
 import { isSundayInKarachi, parseKarachiDateTime } from "@/lib/timezone";
 import { generateRandomPatientPasswordHash } from "@/lib/security";
+import { ALL_TREATMENTS } from "@/lib/treatmentsData";
+import { sendAppointmentConfirmationEmail } from "@/lib/email";
+import { formatTime, formatDate } from "@/lib/utils";
+
 const revalidatePath = (..._args: any[]) => {};
 
 export interface CreateAppointmentInput {
@@ -13,13 +17,20 @@ export interface CreateAppointmentInput {
     phone?: string;
     age?: number | string;
     email?: string;
+    dateOfBirth?: string | Date;
+
+    // Guest booking details (for unauthenticated web bookings)
+    guestName?: string;
+    guestPhone?: string;
+    guestEmail?: string;
+    guestDob?: string | Date;
 
     // Booking details
     treatmentId: string;
     date: string; // "YYYY-MM-DD"
     time: string; // "HH:MM"
     durationMin?: number;
-    bookedBy: "WEBSITE" | "WALK_IN" | "WHATSAPP_BOT" | "ADMIN" | "RECEPTIONIST";
+    bookedBy: "WEBSITE" | "WALK_IN" | "WHATSAPP_BOT" | "ADMIN" | "RECEPTIONIST" | "STAFF";
     notes?: string;
 
     // Multi-session treatment plan linking
@@ -43,7 +54,7 @@ export interface BookingResponse {
 
 /**
  * Centralized, transactional booking engine for Elite Dental Centre.
- * Unifies appointment creation across Web, Walk-in, Admin, and WhatsApp Bot.
+ * Serializes and guarantees anti-double booking across WhatsApp Bot, Website, and Walk-in portals.
  */
 export async function createAppointment(input: CreateAppointmentInput): Promise<BookingResponse> {
     try {
@@ -53,6 +64,11 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             phone,
             age,
             email,
+            dateOfBirth,
+            guestName,
+            guestPhone,
+            guestEmail,
+            guestDob,
             treatmentId,
             date,
             time,
@@ -69,7 +85,11 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
         if (!date || !time) {
             return { success: false, error: "Date and time are required.", status: 400 };
         }
-        if (!inputPatientId && (!patientName || !phone)) {
+
+        const rawPhone = phone || guestPhone;
+        const rawName = patientName || guestName;
+
+        if (!inputPatientId && (!rawName || !rawPhone)) {
             return { success: false, error: "Patient name and phone number are required.", status: 400 };
         }
 
@@ -82,174 +102,220 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             };
         }
 
-        // 3. Resolve treatment
-        let treatment = null;
-        if (treatmentId) {
-            treatment = await prisma.treatment.findUnique({
-                where: { id: treatmentId },
-            });
-        }
-        if (!treatment) {
-            treatment = await prisma.treatment.findFirst({
-                where: { isActive: true },
-            });
-        }
-        if (!treatment) {
-            return { success: false, error: "No valid treatment found.", status: 400 };
-        }
-
-        const duration = customDuration || treatment.durationMin || 30;
-        const startTime = parseKarachiDateTime(date, time);
-        const endTime = new Date(startTime.getTime() + duration * 60000);
-
-        // 4. Resolve Patient (Phone-based canonical lookup or existing patientId)
-        let patient = null;
-        let canonicalPhone: string | null = null;
-
-        if (inputPatientId) {
-            patient = await prisma.user.findUnique({
-                where: { id: inputPatientId },
-            });
-            if (patient) {
-                canonicalPhone = patient.phone ? normalizePhone(patient.phone) : null;
-            }
-        }
-
-        if (!patient && phone) {
-            canonicalPhone = normalizePhone(phone);
-            patient = await prisma.user.findFirst({
-                where: { phone: canonicalPhone },
-            });
-
-            if (!patient) {
-                const initialPasswordHash = await generateRandomPatientPasswordHash();
-                const code = await generatePatientCode();
-                patient = await prisma.user.create({
-                    data: {
-                        name: patientName || "Valued Patient",
-                        phone: canonicalPhone,
-                        email: email || undefined,
-                        role: "PATIENT",
-                        password: initialPasswordHash,
-                        patientCode: code,
-                    },
+        // 3. Execute atomic serialized transaction
+        const txResult = await prisma.$transaction(async (tx) => {
+            // A. Resolve treatment
+            let treatment = null;
+            if (treatmentId) {
+                treatment = await tx.treatment.findUnique({
+                    where: { id: treatmentId },
                 });
-            } else if (!patient.patientCode) {
-                const code = await generatePatientCode();
-                patient = await prisma.user.update({
-                    where: { id: patient.id },
-                    data: { patientCode: code },
+                if (!treatment) {
+                    const mock = ALL_TREATMENTS.find((t) => t.id === treatmentId);
+                    if (mock) {
+                        treatment = await tx.treatment.findFirst({
+                            where: { name: { equals: mock.name, mode: "insensitive" } },
+                        });
+                    }
+                }
+            }
+            if (!treatment) {
+                treatment = await tx.treatment.findFirst({
+                    where: { isActive: true },
                 });
             }
-        }
+            if (!treatment) {
+                throw new Error("TREATMENT_NOT_FOUND");
+            }
 
-        if (!patient) {
-            return { success: false, error: "Unable to find or create patient record.", status: 400 };
-        }
+            // B. Compute dynamic duration & time windows
+            const duration = customDuration || treatment.durationMin || 30;
+            const startTime = parseKarachiDateTime(date, time);
+            const endTime = new Date(startTime.getTime() + duration * 60000);
 
-        // 5. Double Booking Conflict Check
-        const conflict = await prisma.appointment.findFirst({
-            where: {
-                status: { notIn: ["CANCELLED", "NO_SHOW"] },
-                AND: [
-                    { startTime: { lt: endTime } },
-                    { endTime: { gt: startTime } },
-                ],
-            },
-        });
-
-        if (conflict) {
-            return {
-                success: false,
-                error: "This time slot is already booked. Please choose another time.",
-                status: 409,
-            };
-        }
-
-        // 6. Multi-Session Treatment Plan Linking & Session Number Computation
-        let targetPtId = explicitPtId || null;
-        let assignedSessionNumber: number | null = explicitSessionNumber || null;
-        let assignedSessionLabel: string | null = explicitSessionLabel || null;
-
-        // If no explicit plan was passed, check if the patient has an active IN_PROGRESS plan for this treatment
-        if (!targetPtId) {
-            const activePlan = await prisma.patientTreatment.findFirst({
+            // C. Atomic double-booking collision check across all channels
+            const conflict = await tx.appointment.findFirst({
                 where: {
-                    patientId: patient.id,
-                    treatmentId: treatment.id,
-                    clinicalStatus: "IN_PROGRESS",
+                    status: { notIn: ["CANCELLED"] },
+                    AND: [
+                        { startTime: { lt: endTime } },
+                        { endTime: { gt: startTime } },
+                    ],
                 },
-                orderBy: { startDate: "desc" },
             });
-            if (activePlan) {
-                targetPtId = activePlan.id;
+
+            if (conflict) {
+                throw new Error("DOUBLE_BOOKING");
             }
-        }
 
-        let appointmentPrice = treatment.price;
+            // D. Resolve patient (existing ID or canonical phone lookup)
+            let user = null;
+            let canonicalPhone: string | null = null;
+            let patientCode: number | null = null;
 
-        if (targetPtId) {
-            const plan = await prisma.patientTreatment.findUnique({
-                where: { id: targetPtId },
-                include: {
-                    appointments: {
-                        where: { status: { notIn: ["CANCELLED", "NO_SHOW"] } },
+            if (inputPatientId) {
+                user = await tx.user.findUnique({
+                    where: { id: inputPatientId },
+                });
+                if (!user) throw new Error("PATIENT_NOT_FOUND");
+                canonicalPhone = user.phone ? normalizePhone(user.phone) : null;
+                patientCode = user.patientCode;
+                if (!patientCode) {
+                    patientCode = await generatePatientCode();
+                    await tx.user.update({
+                        where: { id: user.id },
+                        data: { patientCode },
+                    });
+                }
+            } else {
+                canonicalPhone = normalizePhone(rawPhone!);
+                user = await tx.user.findFirst({
+                    where: { phone: canonicalPhone },
+                });
+
+                const nameToUse = rawName || "Valued Patient";
+                const emailToUse = email || guestEmail || undefined;
+                const dobToUse = guestDob || dateOfBirth ? new Date((guestDob || dateOfBirth)!) : undefined;
+
+                if (!user) {
+                    patientCode = await generatePatientCode();
+                    const initialPasswordHash = await generateRandomPatientPasswordHash();
+                    user = await tx.user.create({
+                        data: {
+                            name: nameToUse,
+                            phone: canonicalPhone,
+                            email: emailToUse,
+                            role: "PATIENT",
+                            password: initialPasswordHash,
+                            patientCode,
+                            dateOfBirth: dobToUse,
+                        },
+                    });
+                } else {
+                    const shouldUpdateName = Boolean(nameToUse && nameToUse !== "Valued Patient" && nameToUse !== user.name);
+                    patientCode = user.patientCode || (await generatePatientCode());
+                    user = await tx.user.update({
+                        where: { id: user.id },
+                        data: {
+                            ...(shouldUpdateName ? { name: nameToUse } : {}),
+                            patientCode,
+                        },
+                    });
+                }
+            }
+
+            // E. Multi-Session Treatment Plan Linking
+            let targetPtId = explicitPtId || null;
+            let assignedSessionNumber: number | null = explicitSessionNumber || null;
+            let assignedSessionLabel: string | null = explicitSessionLabel || null;
+
+            if (!targetPtId) {
+                const activePlan = await tx.patientTreatment.findFirst({
+                    where: {
+                        patientId: user.id,
+                        treatmentId: treatment.id,
+                        clinicalStatus: "IN_PROGRESS",
                     },
+                    orderBy: { startDate: "desc" },
+                });
+                if (activePlan) {
+                    targetPtId = activePlan.id;
+                }
+            }
+
+            let appointmentPrice = treatment.price;
+
+            if (targetPtId) {
+                const plan = await tx.patientTreatment.findUnique({
+                    where: { id: targetPtId },
+                    include: {
+                        appointments: {
+                            where: { status: { notIn: ["CANCELLED"] } },
+                        },
+                    },
+                });
+
+                if (plan) {
+                    const activeSessionsCount = plan.appointments.length;
+                    if (!assignedSessionNumber) {
+                        assignedSessionNumber = activeSessionsCount + 1;
+                    }
+                    if (!assignedSessionLabel) {
+                        assignedSessionLabel = `Session ${assignedSessionNumber} of ${plan.totalSessions}`;
+                    }
+                    appointmentPrice = 0;
+                }
+            }
+
+            // F. Create Appointment Record
+            const appointment = await tx.appointment.create({
+                data: {
+                    startTime,
+                    endTime,
+                    patientId: user.id,
+                    treatmentId: treatment.id,
+                    bookedBy: bookedBy as any,
+                    status: "SCHEDULED",
+                    price: appointmentPrice,
+                    guestName: guestName || rawName || user.name,
+                    guestPhone: guestPhone || canonicalPhone || user.phone,
+                    guestEmail: guestEmail || email || user.email || null,
+                    guestDob: guestDob || dateOfBirth ? new Date((guestDob || dateOfBirth)!) : null,
+                    patientTreatmentId: targetPtId,
+                    sessionNumber: assignedSessionNumber,
+                    sessionLabel: assignedSessionLabel,
+                    plannedFee: plannedFee || null,
+                    notes: notes || (assignedSessionLabel ? `${assignedSessionLabel} — ${treatment.name}` : undefined),
+                },
+                include: {
+                    treatment: true,
+                    patient: true,
+                    patientTreatment: true,
                 },
             });
 
-            if (plan) {
-                const activeSessionsCount = plan.appointments.length;
-                if (!assignedSessionNumber) {
-                    assignedSessionNumber = activeSessionsCount + 1;
-                }
-                if (!assignedSessionLabel) {
-                    assignedSessionLabel = `Session ${assignedSessionNumber} of ${plan.totalSessions}`;
-                }
-                // For a session linked to an existing multi-session package, individual appointment price is 0
-                // (the revenue is tracked via the package totalCost and installment payments)
-                appointmentPrice = 0;
-            }
-        }
-
-        // 7. Create Appointment Record
-        const appointment = await prisma.appointment.create({
-            data: {
+            return {
+                appointment,
+                patientCode,
+                targetPtId,
+                assignedSessionNumber,
+                assignedSessionLabel,
+                treatment,
+                user,
                 startTime,
                 endTime,
-                patientId: patient.id,
-                treatmentId: treatment.id,
-                bookedBy: bookedBy as any,
-                status: "SCHEDULED",
-                price: appointmentPrice,
-                guestName: patientName || patient.name,
-                guestPhone: canonicalPhone || patient.phone,
-                patientTreatmentId: targetPtId,
-                sessionNumber: assignedSessionNumber,
-                sessionLabel: assignedSessionLabel,
-                plannedFee: plannedFee || null,
-                notes: notes || (assignedSessionLabel ? `${assignedSessionLabel} — ${treatment.name}` : undefined),
-            },
-            include: {
-                treatment: true,
-                patient: true,
-                patientTreatment: true,
-            },
+                duration,
+                canonicalPhone,
+            };
         });
 
-        // 8. Background side effects (Google Calendar sync, etc.)
+        // 4. Background non-blocking tasks (Google Calendar & Email)
+        const {
+            appointment,
+            patientCode,
+            targetPtId,
+            assignedSessionNumber,
+            assignedSessionLabel,
+            treatment,
+            user,
+            startTime,
+            endTime,
+            duration,
+            canonicalPhone,
+        } = txResult;
+
         (async () => {
             try {
-                const summary = `${treatment!.name} — ${patient.name || patientName}${assignedSessionLabel ? ` (${assignedSessionLabel})` : ""}`;
-                const description = `Patient: ${patient.name || patientName}\nTreatment: ${treatment!.name}\nDuration: ${duration} min${assignedSessionLabel ? `\nSession: ${assignedSessionLabel}` : ""}${age ? `\nAge: ${age}` : ""}`;
+                const summary = `${treatment.name} — ${user.name || patientName || guestName}${assignedSessionLabel ? ` (${assignedSessionLabel})` : ""}`;
+                const description = `Patient: ${user.name || patientName || guestName}\nTreatment: ${treatment.name}\nDuration: ${duration} min${assignedSessionLabel ? `\nSession: ${assignedSessionLabel}` : ""}${age ? `\nAge: ${age}` : ""}`;
 
                 const googleEventId = await createCalendarEvent({
                     summary,
                     description,
                     startTime,
                     endTime,
-                    patientName: patient.name || patientName || "Patient",
-                    patientPhone: canonicalPhone || patient.phone || undefined,
+                    patientName: user.name || patientName || guestName || "Patient",
+                    patientPhone: canonicalPhone || user.phone || undefined,
                 });
 
                 if (googleEventId) {
@@ -261,9 +327,25 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             } catch (err) {
                 console.error("[BookingService] Google Calendar sync non-fatal error:", err);
             }
+
+            // Non-blocking confirmation email
+            try {
+                const emailRecipient = user.email || guestEmail || email;
+                if (emailRecipient) {
+                    await sendAppointmentConfirmationEmail(
+                        emailRecipient,
+                        user.name || patientName || guestName || "Patient",
+                        treatment.name,
+                        formatDate(startTime),
+                        formatTime(startTime)
+                    );
+                }
+            } catch (emailErr) {
+                console.error("[BookingService] Email notification non-fatal error:", emailErr);
+            }
         })();
 
-        // 9. Revalidate Dashboard Views
+        // 5. Revalidate views
         revalidatePath("/admin");
         revalidatePath("/staff");
         revalidatePath("/admin/appointments");
@@ -273,12 +355,34 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             success: true,
             message: "Appointment booked successfully.",
             appointment,
-            patientCode: patient.patientCode,
+            patientCode,
             isMultiSession: Boolean(targetPtId),
             sessionNumber: assignedSessionNumber,
             sessionLabel: assignedSessionLabel,
         };
     } catch (error: any) {
+        if (error.message === "DOUBLE_BOOKING") {
+            return {
+                success: false,
+                error: "This time slot is already booked. Please choose another time.",
+                status: 409,
+            };
+        }
+        if (error.message === "TREATMENT_NOT_FOUND") {
+            return {
+                success: false,
+                error: "Treatment not found.",
+                status: 404,
+            };
+        }
+        if (error.message === "PATIENT_NOT_FOUND") {
+            return {
+                success: false,
+                error: "Patient record not found.",
+                status: 404,
+            };
+        }
+
         console.error("[BookingService] createAppointment error:", error);
         return {
             success: false,

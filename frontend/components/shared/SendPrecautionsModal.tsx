@@ -92,14 +92,15 @@ export default function SendPrecautionsModal({
             const data = await res.json();
 
             if (res.ok && data.success) {
-                if (data.n8nDispatched) {
+                const isDispatched = Boolean(data.n8nDispatched || data.dispatched?.success);
+                if (isDispatched) {
                     setSentSuccess(true);
                     toast.success("Precautions sent directly to WhatsApp!", {
-                        description: `Delivered to ${patientPhone || data.patientPhone}`
+                        description: `Delivered to ${patientPhone || data.patientPhone || "patient"}`
                     });
                 } else {
                     // n8n webhook was unreachable (e.g., service offline or error)
-                    setN8nError(data.n8nError || "Failed to reach n8n WhatsApp webhook");
+                    setN8nError(data.n8nError || data.dispatched?.error || "Failed to reach n8n WhatsApp webhook");
                     toast.warning("n8n Webhook Offline", {
                         description: "You can send manually via WhatsApp Web using the button below."
                     });

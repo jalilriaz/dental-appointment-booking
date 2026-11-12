@@ -82,10 +82,10 @@ export default function Navbar() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 lg:gap-4">
             {/* Clinic Brand Identity with Official SVG Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative size-10 rounded-xl bg-slate-950 p-1.5 flex items-center justify-center shadow-md shadow-teal-600/20 group-hover:scale-105 transition-transform duration-300">
+            <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+              <div className="relative size-9 sm:size-10 rounded-xl bg-slate-950 p-1.5 flex items-center justify-center shadow-md shadow-teal-600/20 group-hover:scale-105 transition-transform duration-300 shrink-0">
                 <Image
                   src="/logo.svg"
                   alt="Elite Dental Centre Logo"
@@ -96,24 +96,24 @@ export default function Navbar() {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-extrabold tracking-tight text-slate-950 font-sans">
+                <span className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-950 font-sans whitespace-nowrap">
                   ELITE <span className="text-teal-600">DENTAL</span>
                 </span>
-                <span className="text-[10px] tracking-wider uppercase font-semibold text-slate-500">
+                <span className="text-[9px] sm:text-[10px] tracking-wider uppercase font-semibold text-slate-500 whitespace-nowrap hidden sm:inline-block">
                   Center of Advanced Implantology
                 </span>
               </div>
             </Link>
 
             {/* Desktop Links */}
-            <div className="hidden lg:flex items-center gap-1">
+            <div className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 shrink-0">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`whitespace-nowrap px-2.5 py-1.5 xl:px-3.5 xl:py-2 rounded-lg text-xs xl:text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? "text-teal-700 bg-teal-50/80 font-semibold"
                         : "text-slate-700 hover:text-teal-700 hover:bg-slate-50"
@@ -126,14 +126,14 @@ export default function Navbar() {
             </div>
 
             {/* Direct CTAs with MUI Icons */}
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2 xl:gap-3 shrink-0">
               <a
                 href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent(
                   "Hello Elite Dental, I would like to consult or schedule an appointment."
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 transition-all duration-200 active:scale-95"
+                className="whitespace-nowrap flex items-center gap-1.5 px-3 py-2 xl:px-4 xl:py-2 text-xs font-semibold rounded-lg text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 transition-all duration-200 active:scale-95 shrink-0"
               >
                 <WhatsApp sx={{ fontSize: 16, color: "#059669" }} />
                 <span>WhatsApp Doctor</span>
@@ -141,7 +141,7 @@ export default function Navbar() {
 
               <Link
                 href="/#book"
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-slate-950 hover:bg-teal-700 shadow-md shadow-slate-950/20 hover:shadow-teal-600/30 transition-all duration-200 active:scale-95"
+                className="whitespace-nowrap flex items-center gap-1.5 xl:gap-2 px-3.5 py-2 xl:px-5 xl:py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-slate-950 hover:bg-teal-700 shadow-md shadow-slate-950/20 hover:shadow-teal-600/30 transition-all duration-200 active:scale-95 shrink-0"
               >
                 <CalendarMonthOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} />
                 <span>Book Visit</span>
@@ -149,7 +149,7 @@ export default function Navbar() {
 
               <Link
                 href="/login"
-                className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-2 py-1.5"
+                className="whitespace-nowrap text-xs font-semibold text-slate-600 hover:text-slate-900 px-2 py-1.5 shrink-0"
                 title="Staff & Doctor Login"
               >
                 Portal

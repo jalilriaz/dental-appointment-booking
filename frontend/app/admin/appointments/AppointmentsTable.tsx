@@ -188,7 +188,7 @@ function RescheduleDialog({
                     <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
                         <p className="text-xs text-slate-500 uppercase tracking-wide mb-2 font-semibold">Current Appointment</p>
                         <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div><span className="text-slate-500">Patient:</span> <span className="font-semibold text-slate-900">{appointment.patient?.name || "Unknown"}</span></div>
+                            <div><span className="text-slate-500">Patient:</span> <span className="font-semibold text-slate-900">{appointment.guestName || appointment.patient?.name || "Unknown"}</span></div>
                             <div><span className="text-slate-500">Treatment:</span> <span className="font-semibold text-slate-900">{appointment.treatment.name}</span></div>
                             <div>
                                 <span className="text-slate-500">Date:</span>{" "}
@@ -397,8 +397,10 @@ export default function AppointmentsTable({
     const filtered = useMemo(() => {
         return appointments.filter((a) => {
             const matchSearch = !search ||
+                a.guestName?.toLowerCase().includes(search.toLowerCase()) ||
                 a.patient?.name?.toLowerCase().includes(search.toLowerCase()) ||
                 a.treatment.name.toLowerCase().includes(search.toLowerCase()) ||
+                a.guestPhone?.toLowerCase().includes(search.toLowerCase()) ||
                 a.patient?.phone?.toLowerCase().includes(search.toLowerCase());
             const matchStatus = statusFilter.length === 0 || statusFilter.includes(a.status);
             const aptDate = new Date(a.startTime);
@@ -818,7 +820,7 @@ export default function AppointmentsTable({
                                             <tr className="hover:bg-slate-50/80 transition-premium">
                                                 <td className="px-4 py-3">
                                                     <p className="font-semibold text-slate-900 flex items-center gap-2">
-                                                        {apt.patient?.name || "Unknown"}
+                                                        {apt.guestName || apt.patient?.name || "Unknown"}
                                                         {(apt.patient?.noShowCount ?? 0) > 0 && (
                                                             <span className="inline-flex items-center gap-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-700 border border-red-200" title={`${apt.patient?.noShowCount} previous No-Shows`}>
                                                                 <WarningAmberOutlinedIcon className="size-3" />
@@ -826,7 +828,7 @@ export default function AppointmentsTable({
                                                             </span>
                                                         )}
                                                     </p>
-                                                    <p className="text-xs text-slate-500 font-medium">{apt.patient?.phone}</p>
+                                                    <p className="text-xs text-slate-500 font-medium">{apt.guestPhone || apt.patient?.phone}</p>
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <p className="text-slate-800 font-semibold">{apt.treatment.name}</p>
@@ -923,7 +925,7 @@ export default function AppointmentsTable({
                                                         )}
                                                         <ClinicalNoteDialog
                                                             appointmentId={apt.id}
-                                                            patientName={apt.patient?.name || "Unknown"}
+                                                            patientName={apt.guestName || apt.patient?.name || "Unknown"}
                                                             treatmentName={apt.treatment.name}
                                                             appointmentDate={formatDate(apt.startTime)}
                                                             existingNote={apt.clinicalNotes?.[0] || null}
@@ -1008,8 +1010,8 @@ export default function AppointmentsTable({
                     {selectedApt && (
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                <div><p className="text-slate-500 text-xs font-semibold uppercase">Patient</p><p className="font-semibold text-slate-900">{selectedApt.patient?.name}</p></div>
-                                <div><p className="text-slate-500 text-xs font-semibold uppercase">Phone</p><p className="font-semibold text-slate-900">{selectedApt.patient?.phone || "—"}</p></div>
+                                <div><p className="text-slate-500 text-xs font-semibold uppercase">Patient</p><p className="font-semibold text-slate-900">{selectedApt.guestName || selectedApt.patient?.name || "Unknown"}</p></div>
+                                <div><p className="text-slate-500 text-xs font-semibold uppercase">Phone</p><p className="font-semibold text-slate-900">{selectedApt.guestPhone || selectedApt.patient?.phone || "—"}</p></div>
                                 <div><p className="text-slate-500 text-xs font-semibold uppercase">Treatment</p><p className="font-semibold text-slate-900">{selectedApt.treatment.name}</p></div>
                                 <div><p className="text-slate-500 text-xs font-semibold uppercase">Duration</p><p className="font-semibold text-slate-900">{selectedApt.treatment.durationMin} minutes</p></div>
                                 <div>
@@ -1140,8 +1142,8 @@ export default function AppointmentsTable({
                 open={!!receiptApt}
                 onOpenChange={(open) => { if (!open) setReceiptApt(null); }}
                 data={receiptApt ? {
-                    patientName: receiptApt.patient?.name || "Unknown",
-                    patientPhone: receiptApt.patient?.phone || undefined,
+                    patientName: receiptApt.guestName || receiptApt.patient?.name || "Unknown",
+                    patientPhone: receiptApt.guestPhone || receiptApt.patient?.phone || undefined,
                     treatmentName: receiptApt.treatment.name,
                     appointmentDate: formatDate(receiptApt.startTime),
                     treatmentPrice: receiptApt.treatment.price,
@@ -1160,8 +1162,8 @@ export default function AppointmentsTable({
             {/* Send Precautions Modal */}
             <SendPrecautionsModal
                 appointmentId={precautionsApt?.id || null}
-                patientName={precautionsApt?.patient?.name || undefined}
-                patientPhone={precautionsApt?.patient?.phone}
+                patientName={precautionsApt?.guestName || precautionsApt?.patient?.name || undefined}
+                patientPhone={precautionsApt?.guestPhone || precautionsApt?.patient?.phone}
                 treatmentName={precautionsApt?.treatment?.name}
                 isOpen={!!precautionsApt}
                 onClose={() => setPrecautionsApt(null)}
