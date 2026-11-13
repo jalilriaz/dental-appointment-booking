@@ -1,287 +1,581 @@
 "use client";
-import { fetchApi } from "@/lib/api-client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
-import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import {
+  AddOutlined,
+  EditOutlined,
+  DeleteOutlineOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  SecurityOutlined,
+  BadgeOutlined,
+  LockOutlined,
+  PersonOutlineOutlined,
+  CheckCircleOutlineOutlined,
+  WarningAmberOutlined,
+  SupportAgentOutlined,
+  AdminPanelSettingsOutlined,
+} from "@mui/icons-material";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-    DialogDescription,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
+import { fetchApi } from "@/lib/api-client";
 
-// type WorkingHour = { ... } (Removed)
-// type WorkingHoursMap = Record<string, WorkingHour>; (Removed)
+export interface StaffMember {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  role: "ADMIN" | "STAFF";
+  createdAt?: string | Date;
+}
 
-type Staff = {
-    id: string;
-    name: string | null;
-    email: string | null;
-    phone: string | null;
-    role: "ADMIN" | "STAFF";
+interface StaffFormData {
+  name: string;
+  email: string;
+  phone: string;
+  role: "ADMIN" | "STAFF";
+  password?: string;
+}
+
+const DEFAULT_FORM: StaffFormData = {
+  name: "",
+  email: "",
+  phone: "",
+  role: "STAFF",
+  password: "",
 };
 
-// const defaultWorkingHours ... (Removed)
+export default function StaffManager({ initialStaff }: { initialStaff: any[] }) {
+  const router = useRouter();
+  const [staffList, setStaffList] = useState<StaffMember[]>(
+    initialStaff.map((s) => ({
+      ...s,
+      role: s.role as "ADMIN" | "STAFF",
+    }))
+  );
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const [formData, setFormData] = useState<StaffFormData>(DEFAULT_FORM);
+  const [isLoading, setIsLoading] = useState(false);
 
-const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  // Delete State
+  const [deleteCandidate, setDeleteCandidate] = useState<StaffMember | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-export default function StaffManager({ initialStaff }: { initialStaff: any[] }) { // Using any[] to bypass strict Prisma Role vs string mismatch
-    const router = useRouter();
-
-    // Cast initialStaff to Staff[] safely
-    const [staffList, setStaffList] = useState<Staff[]>(initialStaff.map(s => ({
-        ...s,
-        role: s.role as "ADMIN" | "STAFF"
-    })));
-
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [deleteId, setDeleteId] = useState<string | null>(null); // For delete confirmation dialog
-    const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    // Form State
-    // Form State
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        phone: "",
-        role: "STAFF" as "ADMIN" | "STAFF",
+  // ──────────────────────────────────────────────────────────────────
+  // 1. DIALOG CONTROLS
+  // ──────────────────────────────────────────────────────────────────
+  const handleOpenDialog = (staff?: StaffMember) => {
+    if (staff) {
+      setEditingStaff(staff);
+      setFormData({
+        name: staff.name || "",
+        email: staff.email || "",
+        phone: staff.phone || "",
+        role: staff.role || "STAFF",
         password: "",
-    });
+      });
+    } else {
+      setEditingStaff(null);
+      setFormData(DEFAULT_FORM);
+    }
+    setIsDialogOpen(true);
+  };
 
-    const resetForm = () => {
-        setFormData({
-            name: "",
-            email: "",
-            phone: "",
-            role: "STAFF",
-            password: "",
-        });
-        setEditingStaff(null);
-    };
+  // ──────────────────────────────────────────────────────────────────
+  // 2. FORM SUBMISSION (ADD / EDIT)
+  // ──────────────────────────────────────────────────────────────────
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    const handleOpenDialog = (staff?: Staff) => {
-        if (staff) {
-            setEditingStaff(staff);
-            setFormData({
-                name: staff.name || "",
-                email: staff.email || "",
-                phone: staff.phone || "",
-                role: staff.role || "STAFF",
-                password: "",
-            });
-        } else {
-            resetForm();
-        }
-        setIsDialogOpen(true);
-    };
+    if (!formData.name.trim() || !formData.email.trim()) {
+      toast.error("Name and Email are required");
+      return;
+    }
 
-    // handleWorkingHourChange removed
+    if (!editingStaff && (!formData.password || formData.password.length < 8)) {
+      toast.error("Password must be at least 8 characters long");
+      return;
+    }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
+    setIsLoading(true);
+    try {
+      const url = editingStaff ? `/api/staff/${editingStaff.id}` : "/api/staff";
+      const method = editingStaff ? "PUT" : "POST";
 
-        try {
-            const url = editingStaff ? `/api/staff/${editingStaff.id}` : "/api/staff";
-            const method = editingStaff ? "PUT" : "POST";
+      const payload: Record<string, any> = {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim() || null,
+        role: formData.role,
+      };
 
-            const res = await fetchApi(url, {
-                method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
+      if (formData.password && formData.password.trim().length >= 8) {
+        payload.password = formData.password.trim();
+      }
 
-            if (!res.ok) {
-                const error = await res.json();
-                throw new Error(error.error || "Failed to save staff");
-            }
+      const res = await fetchApi(url, {
+        method,
+        body: JSON.stringify(payload),
+      });
 
-            // Force reload to ensure data consistency
-            window.location.reload();
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to save staff account");
+      }
 
-        } catch (error: any) {
-            console.error(error);
-            toast.error("Save Failed", { description: error.message || "Failed to save staff member. Please try again." });
-            setIsLoading(false);
-        }
-    };
+      if (editingStaff) {
+        setStaffList((prev) =>
+          prev.map((s) => (s.id === editingStaff.id ? { ...s, ...data.staff } : s))
+        );
+        toast.success(`Account for ${formData.name} updated successfully!`);
+      } else {
+        setStaffList((prev) => [data.staff, ...prev]);
+        toast.success(`Staff account for ${formData.name} created!`);
+      }
 
-    const handleDelete = async () => {
-        if (!deleteId) return;
-        setIsDeleting(true);
-        try {
-            const res = await fetchApi(`/api/staff/${deleteId}`, { method: "DELETE" });
-            if (!res.ok) throw new Error("Failed to delete");
+      setIsDialogOpen(false);
+      setEditingStaff(null);
+      setFormData(DEFAULT_FORM);
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save staff member");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-            setStaffList((prev) => prev.filter((s) => s.id !== deleteId));
-            setDeleteId(null);
-            toast.success("Staff Deleted", { description: "Staff member has been removed." });
-            router.refresh();
-        } catch (error) {
-            console.error(error);
-            toast.error("Delete Failed", { description: "Failed to delete staff member. Please try again." });
-        } finally {
-            setIsDeleting(false);
-        }
-    };
+  // ──────────────────────────────────────────────────────────────────
+  // 3. DELETE ACCOUNT
+  // ──────────────────────────────────────────────────────────────────
+  const confirmDelete = (staff: StaffMember) => {
+    const adminCount = staffList.filter((s) => s.role === "ADMIN").length;
+    if (staff.role === "ADMIN" && adminCount <= 1) {
+      toast.error("Cannot delete the only remaining Administrator account.");
+      return;
+    }
+    setDeleteCandidate(staff);
+  };
 
-    return (
+  const handleDelete = async () => {
+    if (!deleteCandidate) return;
+    setIsDeleting(true);
+
+    try {
+      const res = await fetchApi(`/api/staff/${deleteCandidate.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to delete account");
+      }
+
+      setStaffList((prev) => prev.filter((s) => s.id !== deleteCandidate.id));
+      toast.success(`${deleteCandidate.name} removed from staff accounts.`);
+      setDeleteCandidate(null);
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Could not delete staff member");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // ──────────────────────────────────────────────────────────────────
+  // 4. METRICS
+  // ──────────────────────────────────────────────────────────────────
+  const totalStaff = staffList.length;
+  const receptionists = staffList.filter((s) => s.role === "STAFF").length;
+  const admins = staffList.filter((s) => s.role === "ADMIN").length;
+
+  return (
+    <div className="space-y-8">
+      {/* ──────────────────────────────────────────────────────────────────
+          1. HEADER & ACTIONS
+          ────────────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-white">Staff Management</h1>
-                    <p className="text-sm text-slate-400">Manage doctors, receptionists, and their access.</p>
-                </div>
-                <Button onClick={() => handleOpenDialog()} className="btn-brand border-0 shadow-lg shadow-teal-500/20 cursor-pointer">
-                    <AddOutlinedIcon className="size-4 mr-2" />
-                    Add Staff
-                </Button>
-            </div>
-
-            {/* Edit/Add Dialog */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-slate-900 border-white/[0.06] text-white">
-                    <DialogHeader>
-                        <DialogTitle>{editingStaff ? "Edit Profile" : "Add New Staff"}</DialogTitle>
-                        <DialogDescription>
-                            Configure account details, role, and working hours.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <form onSubmit={handleSubmit}>
-                        {/* Simplified Form - No Tabs */}
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Full Name</Label>
-                                    <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="role">Role</Label>
-                                    <Select value={formData.role} onValueChange={(val: "ADMIN" | "STAFF") => setFormData({ ...formData, role: val })}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select role" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="STAFF">Staff (Receptionist)</SelectItem>
-                                            <SelectItem value="ADMIN">Admin (Doctor)</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input id="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="Optional" disabled={!!editingStaff} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone <span className="text-red-500">*</span></Label>
-                                    <Input id="phone" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required placeholder="Required" />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="password">{editingStaff ? "New Password (Optional)" : "Password"}</Label>
-                                <Input id="password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required={!editingStaff} placeholder={editingStaff ? "Unchanged" : "Create password"} />
-                            </div>
-                        </div>
-
-                        <DialogFooter className="mt-6">
-                            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                            <Button type="submit" className="btn-brand border-0" disabled={isLoading}>
-                                {isLoading ? "Saving..." : "Save Staff"}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
-
-            {/* Delete Confirmation Dialog */}
-            <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Delete Staff Account?</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete this account? This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} className="bg-red-600 hover:bg-red-700">
-                            {isDeleting ? (<><AutorenewOutlinedIcon className="size-4 mr-2 animate-spin" /> Deleting...</>) : "Delete"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {staffList.map((s) => (
-                    <div key={s.id} className="glass-card rounded-xl p-6 hover:border-white/[0.1] transition-premium relative group">
-                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="icon" className="size-8 cursor-pointer" onClick={() => handleOpenDialog(s)}>
-                                <EditOutlinedIcon className="size-4 text-slate-500" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="size-8 hover:text-red-600 cursor-pointer" onClick={() => setDeleteId(s.id)}>
-                                <DeleteOutlineOutlinedIcon className="size-4" />
-                            </Button>
-                        </div>
-
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="size-14 rounded-full bg-teal-500/15 flex items-center justify-center text-teal-400 font-bold text-xl relative border-2 border-teal-500/20">
-                                {(s.name || "S").charAt(0)}
-                                {s.role === "ADMIN" && (
-                                    <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-1 rounded-full border-2 border-slate-900" title="Admin">
-                                        <SecurityOutlinedIcon className="size-3" />
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-semibold text-white">{s.name}</h3>
-                                <div className="flex items-center gap-2">
-                                    <Badge variant="secondary" className="text-[10px] font-normal">{s.role}</Badge>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2 text-sm text-slate-300">
-                            <div className="flex items-center gap-2">
-                                <PersonOutlineOutlinedIcon className="size-3.5 text-slate-400" />
-                                <span className="truncate" title={s.email || ""}>{s.email || "No Email"}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <PersonOutlineOutlinedIcon className="size-3.5 text-slate-400" />
-                                <span className="truncate">{s.phone}</span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200/80 text-teal-800 text-xs font-bold mb-2">
+            <SecurityOutlined sx={{ fontSize: 14, color: "#0d9488" }} />
+            <span>Access & Identity Governance</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            Staff & Administrative Accounts
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+            Manage front-desk receptionists, clinical administrators, and internal credentials.
+          </p>
         </div>
-    );
+
+        <Button
+          onClick={() => handleOpenDialog()}
+          className="bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-2xl h-11 px-5 shadow-xs transition-all active:scale-[0.98] cursor-pointer shrink-0"
+        >
+          <AddOutlined sx={{ fontSize: 18, mr: 1 }} />
+          <span>Add Staff Account</span>
+        </Button>
+      </div>
+
+      {/* ──────────────────────────────────────────────────────────────────
+          2. KPI SUMMARY METRICS
+          ────────────────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Accounts */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Total Accounts
+            </span>
+            <div className="size-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
+              <BadgeOutlined sx={{ fontSize: 18 }} />
+            </div>
+          </div>
+          <p className="text-2xl font-black text-slate-900 mt-2">
+            {totalStaff} {totalStaff === 1 ? "User" : "Users"}
+          </p>
+          <span className="text-[11px] font-semibold text-emerald-700 mt-0.5 block">
+            Internal Authorized Faculty
+          </span>
+        </div>
+
+        {/* Receptionists */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Reception Staff
+            </span>
+            <div className="size-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <SupportAgentOutlined sx={{ fontSize: 18 }} />
+            </div>
+          </div>
+          <p className="text-2xl font-black text-slate-900 mt-2">
+            {receptionists} {receptionists === 1 ? "Receptionist" : "Receptionists"}
+          </p>
+          <span className="text-[11px] font-semibold text-emerald-700 mt-0.5 block">
+            Front-Desk & Booking Access
+          </span>
+        </div>
+
+        {/* Administrators */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Administrators
+            </span>
+            <div className="size-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
+              <AdminPanelSettingsOutlined sx={{ fontSize: 18 }} />
+            </div>
+          </div>
+          <p className="text-2xl font-black text-slate-900 mt-2">
+            {admins} {admins === 1 ? "Admin" : "Admins"}
+          </p>
+          <span className="text-[11px] font-semibold text-blue-700 mt-0.5 block">
+            Full Clinical & Financial Access
+          </span>
+        </div>
+
+        {/* Security Standard */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Auth Security
+            </span>
+            <div className="size-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
+              <CheckCircleOutlineOutlined sx={{ fontSize: 18 }} />
+            </div>
+          </div>
+          <p className="text-2xl font-black text-teal-700 mt-2">Bcrypt + JWT</p>
+          <span className="text-[11px] font-semibold text-slate-500 mt-0.5 block">
+            Private Admin Provisioned
+          </span>
+        </div>
+      </div>
+
+      {/* ──────────────────────────────────────────────────────────────────
+          3. STAFF ACCOUNTS DIRECTORY
+          ────────────────────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
+              Authorized Team Directory
+            </h2>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Physical clinic staff with credentials to access the clinic operating system.
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-full text-xs font-black bg-teal-50 text-teal-800 border border-teal-200">
+            {totalStaff} Active Accounts
+          </span>
+        </div>
+
+        <div className="divide-y divide-slate-100">
+          {staffList.map((member) => {
+            const isAdmin = member.role === "ADMIN";
+            return (
+              <div
+                key={member.id}
+                className="p-6 sm:p-7 flex flex-col md:flex-row md:items-center justify-between gap-5 hover:bg-slate-50/70 transition-colors"
+              >
+                {/* Profile Details */}
+                <div className="flex items-start gap-4 min-w-0">
+                  <div
+                    className={`size-12 rounded-2xl flex items-center justify-center font-black text-lg shrink-0 border ${
+                      isAdmin
+                        ? "bg-blue-50 text-blue-700 border-blue-200"
+                        : "bg-teal-50 text-teal-700 border-teal-200"
+                    }`}
+                  >
+                    {(member.name || "U").charAt(0).toUpperCase()}
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center flex-wrap gap-2">
+                      <h3 className="text-base font-extrabold text-slate-900 truncate">
+                        {member.name || "Unnamed Staff"}
+                      </h3>
+                      {isAdmin ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-800 border border-blue-200 uppercase tracking-wider">
+                          <AdminPanelSettingsOutlined sx={{ fontSize: 13 }} />
+                          <span>Admin (Full Access)</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-50 text-teal-800 border border-teal-200 uppercase tracking-wider">
+                          <SupportAgentOutlined sx={{ fontSize: 13 }} />
+                          <span>Staff (Receptionist)</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-slate-500 font-medium">
+                      <span className="flex items-center gap-1">
+                        <MailOutlined sx={{ fontSize: 14, color: "#0d9488" }} />
+                        <span className="text-slate-700 font-semibold">{member.email || "No Email"}</span>
+                      </span>
+                      {member.phone && (
+                        <span className="flex items-center gap-1">
+                          <PhoneOutlined sx={{ fontSize: 14, color: "#0d9488" }} />
+                          <span>{member.phone}</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 shrink-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOpenDialog(member)}
+                    className="border-slate-200 text-slate-700 hover:bg-slate-50 h-9 px-3.5 rounded-2xl text-xs font-bold cursor-pointer"
+                  >
+                    <EditOutlined sx={{ fontSize: 15, mr: 1 }} />
+                    <span>Edit</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => confirmDelete(member)}
+                    className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 h-9 px-3 rounded-2xl text-xs font-bold cursor-pointer"
+                    title={`Delete ${member.name}`}
+                  >
+                    <DeleteOutlineOutlined sx={{ fontSize: 16, mr: 1 }} />
+                    <span>Delete</span>
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ──────────────────────────────────────────────────────────────────
+          4. ADD / EDIT DIALOG
+          ────────────────────────────────────────────────────────────────── */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-lg rounded-3xl bg-white p-6 sm:p-8">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900 tracking-tight">
+              {editingStaff ? "Edit Staff Account" : "Add New Staff Account"}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500 font-medium">
+              {editingStaff
+                ? "Update staff contact details, role, or reset password."
+                : "Provision a new internal account for reception or administrative staff."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-slate-700">
+                Full Name <span className="text-rose-500">*</span>
+              </Label>
+              <Input
+                required
+                placeholder="e.g. Receptionist Sarah"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="rounded-xl border-slate-200 text-xs h-10"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">
+                  Email Address <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  required
+                  type="email"
+                  placeholder="e.g. sarah@elitedental.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">Phone Number</Label>
+                <Input
+                  placeholder="e.g. +92 300 1234567"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-slate-700">
+                Permission Role <span className="text-rose-500">*</span>
+              </Label>
+              <Select
+                value={formData.role}
+                onValueChange={(val: "ADMIN" | "STAFF") =>
+                  setFormData({ ...formData, role: val })
+                }
+              >
+                <SelectTrigger className="rounded-xl border-slate-200 text-xs h-10 bg-white">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-slate-200 rounded-xl">
+                  <SelectItem value="STAFF" className="text-xs cursor-pointer">
+                    Staff (Receptionist) — Appointments & Walk-In Desk
+                  </SelectItem>
+                  <SelectItem value="ADMIN" className="text-xs cursor-pointer">
+                    Admin (Doctor / Lead) — Full System Management
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-slate-700">
+                {editingStaff ? "New Password (Leave blank to keep unchanged)" : "Initial Password *"}
+              </Label>
+              <Input
+                type="password"
+                placeholder={editingStaff ? "••••••••" : "Minimum 8 characters"}
+                required={!editingStaff}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="rounded-xl border-slate-200 text-xs h-10"
+              />
+              <span className="text-[11px] text-slate-400 block">
+                {editingStaff
+                  ? "Enter a new password only if resetting."
+                  : "Must be at least 8 characters. The staff member will use this to sign in."}
+              </span>
+            </div>
+
+            <DialogFooter className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isLoading}
+                onClick={() => setIsDialogOpen(false)}
+                className="rounded-2xl h-10 text-xs font-bold"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-teal-600 hover:bg-teal-700 text-white rounded-2xl h-10 px-5 text-xs font-bold cursor-pointer"
+              >
+                {isLoading ? "Saving..." : editingStaff ? "Update Account" : "Create Account"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ──────────────────────────────────────────────────────────────────
+          5. DELETE CONFIRMATION DIALOG
+          ────────────────────────────────────────────────────────────────── */}
+      <Dialog
+        open={!!deleteCandidate}
+        onOpenChange={(open) => !open && setDeleteCandidate(null)}
+      >
+        <DialogContent className="sm:max-w-md rounded-3xl bg-white p-6 sm:p-7">
+          <DialogHeader>
+            <div className="size-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-2">
+              <WarningAmberOutlined sx={{ fontSize: 26 }} />
+            </div>
+            <DialogTitle className="text-lg font-black text-slate-900 tracking-tight">
+              Delete Staff Account?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500 font-medium leading-relaxed mt-1">
+              Are you sure you want to delete the account for{" "}
+              <strong className="text-slate-900 font-bold">{deleteCandidate?.name}</strong> (
+              {deleteCandidate?.email})? They will immediately lose access to the reception and admin portals.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isDeleting}
+              onClick={() => setDeleteCandidate(null)}
+              className="rounded-2xl h-10 text-xs font-bold"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={handleDelete}
+              className="bg-rose-600 hover:bg-rose-700 text-white rounded-2xl h-10 px-5 text-xs font-bold cursor-pointer"
+            >
+              {isDeleting ? "Deleting..." : "Confirm Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

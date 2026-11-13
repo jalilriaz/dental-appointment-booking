@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { fetchApi } from "@/lib/api-client";
 import {
   MedicalServicesOutlined,
   CheckCircleOutlineOutlined,
@@ -107,17 +108,59 @@ const CLINICAL_ROSTER: DoctorStaffProfile[] = [
 export default function StaffDoctorsPage() {
   const [filter, setFilter] = useState<"ALL" | "ACTIVE" | "UPCOMING">("ALL");
   const [lastRefreshed, setLastRefreshed] = useState("Just now");
+  const [doctorsList, setDoctorsList] = useState<DoctorStaffProfile[]>([CLINICAL_ROSTER[0]]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredDoctors = CLINICAL_ROSTER.filter((doc) => {
+  const loadDoctors = async () => {
+    try {
+      const res = await fetchApi("/api/doctors");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.doctors && data.doctors.length > 0) {
+          const mapped: DoctorStaffProfile[] = data.doctors.map((d: any) => ({
+            id: d.id,
+            name: d.name,
+            role: d.role,
+            credentials: `${d.qualifications} (PMDC: ${d.pmdcReg})`,
+            experience: d.experience,
+            operatory: d.operatory,
+            chairNumber: d.operatory.split("·")[0]?.trim() || "Chair 1",
+            status: d.isActive ? "ACTIVE" : "OFF_DUTY",
+            todayShift: d.schedule,
+            phone: "+92 314 5475528",
+            patientsTodayCount: d.isLead ? 5 : 2,
+            currentPatient: d.isLead ? "Ahsan Khan" : undefined,
+            currentProcedure: d.isLead ? "Wisdom Tooth Surgical Extraction" : undefined,
+            image: d.image || "/images/dr_sheriyaar.jpg",
+            isLead: d.isLead,
+          }));
+          setDoctorsList(mapped);
+          return;
+        }
+      }
+      setDoctorsList([CLINICAL_ROSTER[0]]);
+    } catch {
+      setDoctorsList([CLINICAL_ROSTER[0]]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDoctors();
+  }, []);
+
+  const filteredDoctors = doctorsList.filter((doc) => {
     if (filter === "ACTIVE") return doc.status === "ACTIVE";
     if (filter === "UPCOMING") return doc.status === "SCHEDULED_LATER";
     return true;
   });
 
-  const activeCount = CLINICAL_ROSTER.filter((d) => d.status === "ACTIVE").length;
-  const totalPatientsQueue = CLINICAL_ROSTER.reduce((sum, d) => sum + d.patientsTodayCount, 0);
+  const activeCount = doctorsList.filter((d) => d.status === "ACTIVE").length;
+  const totalPatientsQueue = doctorsList.reduce((sum, d) => sum + d.patientsTodayCount, 0);
 
   const handleRefresh = () => {
+    loadDoctors();
     const time = new Date().toLocaleTimeString("en-PK", {
       hour: "2-digit",
       minute: "2-digit",

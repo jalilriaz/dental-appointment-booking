@@ -122,8 +122,36 @@ export default async function DoctorsPage() {
     treatments = ALL_TREATMENTS;
   }
 
-  const leadDoctor = DOCTORS_ROSTER[0];
-  const specialistDoctors = DOCTORS_ROSTER.slice(1);
+  // Fetch active doctors dynamically from database
+  let dbDoctors: any[] = [];
+  try {
+    dbDoctors = await prisma.doctor.findMany({
+      where: { isActive: true },
+      orderBy: [{ isLead: "desc" }, { createdAt: "asc" }],
+    });
+  } catch (err) {
+    console.error("Error fetching doctors from database:", err);
+  }
+
+  const doctorsList =
+    dbDoctors.length > 0
+      ? dbDoctors.map((doc) => ({
+          name: doc.name,
+          role: doc.role,
+          credentials: `${doc.qualifications} (PMDC Reg: ${doc.pmdcReg})`,
+          experience: doc.experience,
+          image: doc.image || "/images/dr_sheriyaar.jpg",
+          isLead: doc.isLead,
+          focus: doc.specialty ? doc.specialty.split(",").map((s: string) => s.trim()) : [],
+          bio: doc.isLead
+            ? "Head dentist and founder of Elite Dental Centre. Dr. Sheriyaar personally oversees all surgical and aesthetic dental procedures. Trained in modern European implantology protocols, he prioritizes minimally invasive, pain-free patient experiences with zero handoffs to uncertified assistants."
+            : `Specialist consultant at Elite Dental Centre focusing on ${doc.specialty}. Dedicated to clinical precision, high patient satisfaction, and comfort.`,
+          schedule: doc.schedule,
+        }))
+      : DOCTORS_ROSTER;
+
+  const leadDoctor = doctorsList.find((d) => d.isLead) || doctorsList[0];
+  const specialistDoctors = doctorsList.filter((d) => !d.isLead);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-teal-500 selection:text-white">
@@ -232,7 +260,7 @@ export default async function DoctorsPage() {
                     Clinical Focus & Procedures:
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {leadDoctor.focus.map((item, idx) => (
+                    {leadDoctor.focus.map((item: string, idx: number) => (
                       <div
                         key={idx}
                         className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 text-xs font-bold text-slate-800"
@@ -293,57 +321,71 @@ export default async function DoctorsPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {specialistDoctors.map((doc, idx) => (
-              <div
-                key={idx}
-                className="bg-white rounded-3xl border border-slate-200/80 shadow-md hover:shadow-lg transition-all p-6 sm:p-7 flex flex-col justify-between relative group"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="size-14 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-800 font-black text-xl shadow-2xs">
-                      {doc.name.replace("Dr. ", "").charAt(0)}
+          {specialistDoctors.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+              {specialistDoctors.map((doc, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-3xl border border-slate-200/80 shadow-md hover:shadow-lg transition-all p-6 sm:p-7 flex flex-col justify-between relative group"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="size-14 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-800 font-black text-xl shadow-2xs">
+                        {doc.name.replace("Dr. ", "").charAt(0)}
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-700">
+                        {doc.experience}
+                      </span>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-700">
-                      {doc.experience}
+
+                    <div>
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight">{doc.name}</h3>
+                      <p className="text-xs font-extrabold text-teal-700 mt-0.5">{doc.role}</p>
+                      <p className="text-[11px] font-semibold text-slate-500">{doc.credentials}</p>
+                    </div>
+
+                    <p className="text-xs text-slate-600 leading-relaxed font-normal">{doc.bio}</p>
+
+                    <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                        Key Procedures:
+                      </span>
+                      <ul className="space-y-1 text-xs text-slate-700 font-medium">
+                        {doc.focus.map((f: string, fIdx: number) => (
+                          <li key={fIdx} className="flex items-center gap-1.5">
+                            <div className="size-1 rounded-full bg-teal-600" />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="pt-5 mt-5 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1 text-slate-500">
+                      <AccessTimeOutlined sx={{ fontSize: 14, color: "#0D9488" }} />
+                      <span className="text-[11px] font-semibold">{doc.schedule}</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/60">
+                      Consultant
                     </span>
                   </div>
-
-                  <div>
-                    <h3 className="text-xl font-black text-slate-900 tracking-tight">{doc.name}</h3>
-                    <p className="text-xs font-extrabold text-teal-700 mt-0.5">{doc.role}</p>
-                    <p className="text-[11px] font-semibold text-slate-500">{doc.credentials}</p>
-                  </div>
-
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal">{doc.bio}</p>
-
-                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-                      Key Procedures:
-                    </span>
-                    <ul className="space-y-1 text-xs text-slate-700 font-medium">
-                      {doc.focus.map((f, fIdx) => (
-                        <li key={fIdx} className="flex items-center gap-1.5">
-                          <div className="size-1 rounded-full bg-teal-600" />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
                 </div>
-
-                <div className="pt-5 mt-5 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1 text-slate-500">
-                    <AccessTimeOutlined sx={{ fontSize: 14, color: "#0D9488" }} />
-                    <span className="text-[11px] font-semibold">{doc.schedule}</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/60">
-                    Consultant
-                  </span>
-                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-3xl border border-slate-200/80 p-8 sm:p-12 text-center max-w-2xl mx-auto shadow-sm">
+              <div className="size-16 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center mx-auto mb-4">
+                <MedicalServicesOutlined sx={{ fontSize: 32 }} />
               </div>
-            ))}
-          </div>
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                Dedicated One-on-One Surgeon Care
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                At Elite Dental Centre, all surgical implantology, rotary root canal therapies, and cosmetic smile makeovers are directly and personally performed by Lead Dental Surgeon <strong className="text-slate-900 font-bold">{leadDoctor.name}</strong>. Visiting consultant specialists for advanced maxillofacial surgery consult on dedicated case schedules.
+              </p>
+            </div>
+          )}
         </section>
 
         {/* ──────────────────────────────────────────────────────────────────

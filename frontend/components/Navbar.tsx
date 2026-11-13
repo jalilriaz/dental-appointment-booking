@@ -45,32 +45,34 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full transition-all duration-300">
       {/* Top Clinical Utility Bar */}
-      <div className="bg-slate-950 text-slate-300 text-xs py-2 px-4 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-6">
-            <span className="flex items-center gap-1.5 text-slate-300 font-medium">
+      <div className="bg-slate-950 text-slate-300 text-xs py-2 px-4 border-b border-slate-800 overflow-hidden">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-4 xl:gap-6 min-w-0">
+            <span className="flex items-center gap-1.5 text-slate-300 font-medium whitespace-nowrap shrink-0">
               <AccessTimeOutlined sx={{ fontSize: 15, color: "#2dd4bf" }} />
-              {clinicInfo.workingHours}
+              <span>{clinicInfo.workingHours}</span>
             </span>
             <a
               href="https://www.google.com/maps/search/?api=1&query=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:flex items-center gap-1.5 text-slate-300 hover:text-teal-300 transition-colors"
-              title="Open Elite Dental & Aesthetic Centre on Google Maps"
+              className="hidden md:flex items-center gap-1.5 text-slate-300 hover:text-teal-300 transition-colors min-w-0"
+              title={`Open on Google Maps: ${clinicInfo.address}`}
             >
-              <LocationOnOutlined sx={{ fontSize: 15, color: "#2dd4bf" }} />
-              <span className="hover:underline">{clinicInfo.address}</span>
+              <LocationOnOutlined sx={{ fontSize: 15, color: "#2dd4bf" }} className="shrink-0" />
+              <span className="truncate max-w-[180px] lg:max-w-[260px] xl:max-w-[420px] 2xl:max-w-none whitespace-nowrap hover:underline">
+                {clinicInfo.address}
+              </span>
             </a>
           </div>
-          <div className="flex items-center gap-4 text-xs font-medium">
-            <div className="flex items-center gap-1 text-teal-300 bg-teal-950/70 border border-teal-800/60 px-2 py-0.5 rounded-full">
+          <div className="flex items-center gap-3 xl:gap-4 text-xs font-medium shrink-0">
+            <div className="flex items-center gap-1 text-teal-300 bg-teal-950/70 border border-teal-800/60 px-2.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
               <VerifiedOutlined sx={{ fontSize: 14, color: "#2dd4bf" }} />
               <span>ISO 9001 Certified Sterilization</span>
             </div>
             <a
               href={`tel:${clinicInfo.phone}`}
-              className="flex items-center gap-1.5 text-white hover:text-teal-300 transition-colors"
+              className="flex items-center gap-1.5 text-white hover:text-teal-300 transition-colors whitespace-nowrap shrink-0"
             >
               <PhoneOutlined sx={{ fontSize: 14, color: "#2dd4bf" }} />
               <span>{clinicInfo.phone}</span>
@@ -88,7 +90,7 @@ export default function Navbar() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-2 lg:gap-4">
+          <div className="flex items-center justify-between gap-2 lg:gap-3 xl:gap-4">
             {/* Clinic Brand Identity with Official SVG Logo */}
             <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
               <div className="relative size-9 sm:size-10 rounded-xl bg-slate-950 p-1.5 flex items-center justify-center shadow-md shadow-teal-600/20 group-hover:scale-105 transition-transform duration-300 shrink-0">
@@ -105,21 +107,21 @@ export default function Navbar() {
                 <span className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-950 font-sans whitespace-nowrap">
                   ELITE <span className="text-teal-600">DENTAL</span>
                 </span>
-                <span className="text-[9px] sm:text-[10px] tracking-wider uppercase font-semibold text-slate-500 whitespace-nowrap hidden sm:inline-block">
+                <span className="text-[9px] sm:text-[10px] tracking-wider uppercase font-semibold text-slate-500 whitespace-nowrap hidden xl:inline-block">
                   Center of Advanced Implantology
                 </span>
               </div>
             </Link>
 
             {/* Desktop Links */}
-            <div className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 shrink-0">
+            <div className="hidden lg:flex items-center gap-0.5 xl:gap-1 shrink-0">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`whitespace-nowrap px-2.5 py-1.5 xl:px-3.5 xl:py-2 rounded-lg text-xs xl:text-sm font-medium transition-all duration-200 ${
+                    className={`whitespace-nowrap px-2 py-1.5 xl:px-3 xl:py-2 rounded-lg text-xs xl:text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? "text-teal-700 bg-teal-50/80 font-semibold"
                         : "text-slate-700 hover:text-teal-700 hover:bg-slate-50"
@@ -132,22 +134,22 @@ export default function Navbar() {
             </div>
 
             {/* Direct CTAs with MUI Icons */}
-            <div className="hidden md:flex items-center gap-2 xl:gap-3 shrink-0">
+            <div className="hidden md:flex items-center gap-1.5 xl:gap-2.5 shrink-0">
               <a
                 href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent(
                   "Hello Elite Dental, I would like to consult or schedule an appointment."
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="whitespace-nowrap flex items-center gap-1.5 px-3 py-2 xl:px-4 xl:py-2 text-xs font-semibold rounded-lg text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 transition-all duration-200 active:scale-95 shrink-0"
+                className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 xl:px-3.5 xl:py-2 text-xs font-semibold rounded-lg text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 transition-all duration-200 active:scale-95 shrink-0"
               >
                 <WhatsApp sx={{ fontSize: 16, color: "#059669" }} />
-                <span>WhatsApp Doctor</span>
+                <span>WhatsApp<span className="hidden xl:inline"> Doctor</span></span>
               </a>
 
               <Link
                 href="/#book"
-                className="whitespace-nowrap flex items-center gap-1.5 xl:gap-2 px-3.5 py-2 xl:px-5 xl:py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-slate-950 hover:bg-teal-700 shadow-md shadow-slate-950/20 hover:shadow-teal-600/30 transition-all duration-200 active:scale-95 shrink-0"
+                className="whitespace-nowrap flex items-center gap-1.5 xl:gap-2 px-3 py-1.5 xl:px-4.5 xl:py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-slate-950 hover:bg-teal-700 shadow-md shadow-slate-950/20 hover:shadow-teal-600/30 transition-all duration-200 active:scale-95 shrink-0"
               >
                 <CalendarMonthOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} />
                 <span>Book Visit</span>
@@ -155,7 +157,7 @@ export default function Navbar() {
 
               <Link
                 href="/login"
-                className="whitespace-nowrap text-xs font-semibold text-slate-600 hover:text-slate-900 px-2 py-1.5 shrink-0"
+                className="whitespace-nowrap text-xs font-semibold text-slate-600 hover:text-slate-900 px-1.5 py-1 shrink-0"
                 title="Staff & Doctor Login"
               >
                 Portal

@@ -244,4 +244,25 @@ model Inventory {
   updatedAt    DateTime @updatedAt
 }
 
+// ─── Clinical Staff & Doctors ────────────────────────────
+
+model Doctor {
+  id                String   @id @default(uuid())
+  name              String
+  role              String   // e.g. "Chief Dental Surgeon & Head of Implantology"
+  pmdcReg           String   // e.g. "14820-D"
+  qualifications    String   // e.g. "BDS, RDS, FCPS"
+  experience        String   // e.g. "12+ Years"
+  specialty         String   // e.g. "Implantology, Cosmetic Dentistry"
+  operatory         String   // e.g. "Chair 1 · Surgical Suite A"
+  schedule          String   // e.g. "Mon – Sat: 12:00 PM – 8:00 PM"
+  consultationFee   Int      @default(2000)
+  patientsThisMonth Int      @default(0)
+  image             String?  @default("/images/dr_sheriyaar.jpg")
+  isLead            Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
 

@@ -11,10 +11,7 @@ export default async function AdminStaffPage() {
             email: true,
             phone: true,
             role: true,
-            // specialization: true,
-            // bio: true,
-            // workingHours: true,
-            // _count: { select: { appointments: true } } // This tracks patient appointments, not staff assignments
+            createdAt: true,
         },
         orderBy: { createdAt: "asc" },
     });

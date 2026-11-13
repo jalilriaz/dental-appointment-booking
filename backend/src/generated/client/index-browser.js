@@ -244,6 +244,25 @@ exports.Prisma.InventoryScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DoctorScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  role: 'role',
+  pmdcReg: 'pmdcReg',
+  qualifications: 'qualifications',
+  experience: 'experience',
+  specialty: 'specialty',
+  operatory: 'operatory',
+  schedule: 'schedule',
+  consultationFee: 'consultationFee',
+  patientsThisMonth: 'patientsThisMonth',
+  image: 'image',
+  isLead: 'isLead',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -322,7 +341,8 @@ exports.Prisma.ModelName = {
   PatientTreatment: 'PatientTreatment',
   PlanChangeLog: 'PlanChangeLog',
   Payment: 'Payment',
-  Inventory: 'Inventory'
+  Inventory: 'Inventory',
+  Doctor: 'Doctor'
 };
 
 /**

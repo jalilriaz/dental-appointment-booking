@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -33,7 +33,7 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className="font-sans antialiased bg-slate-50 text-slate-900 selection:bg-teal-500 selection:text-white"
+        className="font-sans antialiased bg-slate-50 text-slate-900 selection:bg-teal-500 selection:text-white overflow-x-hidden min-h-screen"
       >
         <Providers>
           {children}

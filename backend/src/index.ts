@@ -23,6 +23,7 @@ import settingsRoutes from './routes/settings.routes';
 import feedbackRoutes from './routes/feedback.routes';
 import medicalRecordsRoutes from './routes/medical-records.routes';
 import uploadRoutes from './routes/upload.routes';
+import doctorsRoutes from './routes/doctors.routes';
 
 const app = express();
 const port = parseInt(process.env.PORT || '4000', 10);
@@ -87,6 +88,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/medical-records', medicalRecordsRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/doctors', doctorsRoutes);
 
 // Centralized error handler
 app.use(errorHandler);

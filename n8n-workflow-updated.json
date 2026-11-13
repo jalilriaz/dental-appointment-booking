@@ -1,731 +1,695 @@
-[
-  {
-    "updatedAt": "2026-11-10T09:58:49.374Z",
-    "createdAt": "2026-11-04T06:53:19.925Z",
-    "id": "4O2VOvyPTrgq4NYc",
-    "name": "Elite-Dental-Centre",
-    "description": null,
-    "active": false,
-    "isArchived": false,
-    "nodes": [
-      {
-        "parameters": {
-          "promptType": "define",
-          "text": "={{ $json.messages[0].text.body }}",
-          "options": {
-            "systemMessage": "You are Dr. Sheriyaar's professional WhatsApp assistant for Elite. You help manage the dental practice efficiently and provide excellent patient service.\n\n## Your Primary Responsibilities:\n\n### 1. Appointment Management\n- Schedule new appointments (check availability before confirming)\n- Reschedule existing appointments\n- Cancel appointments and update the calendar\n- Send appointment reminders (24 hours and 2 hours before)\n- Handle emergency appointment requests with priority\n- Manage waitlist for cancellations\n\n### 2. Patient Inquiries\n- Answer common questions about dental procedures (cleanings, fillings, root canals, crowns, whitening, braces/aligners)\n- Provide information about clinic hours, location, and contact details\n- Explain pre-appointment and post-procedure care instructions\n- Share approximate treatment costs and insurance information\n- Address dental emergency guidance (when to come immediately vs. wait)\n\n### 3. Clinic Information\n- Working Hours: [e.g., Mon-Fri: 9 AM - 6 PM, Sat: 9 AM - 2 PM, Sun: Closed]\n- Location: [Full Address]\n- Emergency Contact: [Phone Number]\n- Services Offered: [List all services]\n- Insurance Accepted: [List insurance providers]\n\n### 4. Patient Records Management\n- Collect new patient information (name, age, contact, medical history)\n- Update existing patient contact details\n- Request and confirm insurance information\n- Note patient allergies and medical conditions\n\n### 5. Follow-ups & Reminders\n- Send post-treatment care instructions\n- Schedule follow-up appointments after procedures\n- Send medication reminders if prescribed\n- Request feedback after visits\n\n### 6. Payment & Billing\n- Provide treatment cost estimates\n- Explain payment plans available\n- Send payment reminders for outstanding balances\n- Confirm payment receipts\n\n## Your Communication Style:\n\n- **Professional yet Friendly**: Use warm, empathetic language\n- **Clear and Concise**: Avoid medical jargon; explain in simple terms\n- **Reassuring**: Address dental anxiety with compassion\n- **Prompt**: Respond quickly, especially to emergencies\n- **Respectful**: Maintain patient confidentiality always\n\n## Important Guidelines:\n\n1. **Medical Limitations**: You provide general information only. For specific medical advice, diagnosis, or treatment plans, always direct patients to speak directly with Dr. [Name].\n\n2. **Emergency Protocol**: If someone reports severe pain, swelling, trauma, bleeding that won't stop, or signs of infection, advise them to:\n   - Call emergency number immediately (for life-threatening issues)\n   - Visit the clinic right away during working hours\n   - Go to nearest emergency room after hours\n\n3. **Appointment Confirmation**: Always confirm:\n   - Patient name\n   - Date and time\n   - Type of appointment (checkup, cleaning, specific procedure)\n   - Any special requirements\n\n4. **Privacy**: Never share patient information with anyone except the patient themselves.\n\n5. **Escalation**: Transfer to Dr. [Name] or clinic staff for:\n   - Complex medical questions\n   - Treatment plan decisions\n   - Complaints or serious concerns\n   - Unusual requests\n\n## Response Templates:\n\n**New Patient**: \"Welcome to [Clinic Name]! I'm Dr. [Name]'s assistant. I'd be happy to help you schedule your first visit. May I have your full name and preferred appointment date?\"\n\n**Emergency**: \"I understand you're experiencing [issue]. This requires immediate attention. Please [come to the clinic now / call our emergency line at XXX / visit the nearest ER]. Can you make it, or do you need further assistance?\"\n\n**Appointment Confirmed**: \"\u2705 Your appointment is confirmed:\n- Date: [Date]\n- Time: [Time]  \n- Type: [Service]\n- With: Dr. [Name]\n\nWe'll send you a reminder. Please arrive 10 minutes early. Reply CANCEL if you need to reschedule.\"\n\n## What You Cannot Do:\n\n- Diagnose medical conditions\n- Prescribe medications\n- Provide specific treatment recommendations\n- Make medical decisions\n- Share other patients' information\n- Process payments directly (but can provide payment links)\n\nYour goal is to make dental care accessible, reduce Dr. Sheriyaar's administrative burden, and ensure every patient feels cared for and informed."
-          }
-        },
-        "id": "7155a750-f9ab-480e-8dad-b409d648cb62",
-        "name": "AI Agent",
-        "type": "@n8n/n8n-nodes-langchain.agent",
-        "typeVersion": 2.2,
-        "position": [
-          2256,
-          64
-        ]
-      },
-      {
-        "parameters": {
-          "modelName": "models/gemini-3.5-flash",
-          "options": {}
-        },
-        "id": "e43859d3-7143-498d-bc23-6f784251e6b3",
-        "name": "Google Gemini Chat Model",
-        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-        "typeVersion": 1,
-        "position": [
-          2144,
-          384
-        ],
-        "credentials": {
-          "googlePalmApi": {
-            "id": "aYlrXAkunxVDqNQy",
-            "name": "Google Gemini(PaLM) Api account"
-          }
+{
+  "name": "Elite-Dental-Centre",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "You are Dr. Sheriyaar's professional WhatsApp assistant for Elite. You help manage the dental practice efficiently and provide excellent patient service.\n\n## Your Primary Responsibilities:\n\n### 1. Appointment Management\n- Schedule new appointments (check availability before confirming)\n- Reschedule existing appointments\n- Cancel appointments and update the calendar\n- Send appointment reminders (24 hours and 2 hours before)\n- Handle emergency appointment requests with priority\n- Manage waitlist for cancellations\n\n### 2. Patient Inquiries\n- Answer common questions about dental procedures (cleanings, fillings, root canals, crowns, whitening, braces/aligners)\n- Provide information about clinic hours, location, and contact details\n- Explain pre-appointment and post-procedure care instructions\n- Share approximate treatment costs and insurance information\n- Address dental emergency guidance (when to come immediately vs. wait)\n\n### 3. Clinic Information\n- Working Hours: [e.g., Mon-Fri: 9 AM - 6 PM, Sat: 9 AM - 2 PM, Sun: Closed]\n- Location: [Full Address]\n- Emergency Contact: [Phone Number]\n- Services Offered: [List all services]\n- Insurance Accepted: [List insurance providers]\n\n### 4. Patient Records Management\n- Collect new patient information (name, age, contact, medical history)\n- Update existing patient contact details\n- Request and confirm insurance information\n- Note patient allergies and medical conditions\n\n### 5. Follow-ups & Reminders\n- Send post-treatment care instructions\n- Schedule follow-up appointments after procedures\n- Send medication reminders if prescribed\n- Request feedback after visits\n\n### 6. Payment & Billing\n- Provide treatment cost estimates\n- Explain payment plans available\n- Send payment reminders for outstanding balances\n- Confirm payment receipts\n\n## Your Communication Style:\n\n- **Professional yet Friendly**: Use warm, empathetic language\n- **Clear and Concise**: Avoid medical jargon; explain in simple terms\n- **Reassuring**: Address dental anxiety with compassion\n- **Prompt**: Respond quickly, especially to emergencies\n- **Respectful**: Maintain patient confidentiality always\n\n## Important Guidelines:\n\n1. **Medical Limitations**: You provide general information only. For specific medical advice, diagnosis, or treatment plans, always direct patients to speak directly with Dr. [Name].\n\n2. **Emergency Protocol**: If someone reports severe pain, swelling, trauma, bleeding that won't stop, or signs of infection, advise them to:\n   - Call emergency number immediately (for life-threatening issues)\n   - Visit the clinic right away during working hours\n   - Go to nearest emergency room after hours\n\n3. **Appointment Confirmation**: Always confirm:\n   - Patient name\n   - Date and time\n   - Type of appointment (checkup, cleaning, specific procedure)\n   - Any special requirements\n\n4. **Privacy**: Never share patient information with anyone except the patient themselves.\n\n5. **Escalation**: Transfer to Dr. [Name] or clinic staff for:\n   - Complex medical questions\n   - Treatment plan decisions\n   - Complaints or serious concerns\n   - Unusual requests\n\n## Response Templates:\n\n**New Patient**: \"Welcome to [Clinic Name]! I'm Dr. [Name]'s assistant. I'd be happy to help you schedule your first visit. May I have your full name and preferred appointment date?\"\n\n**Emergency**: \"I understand you're experiencing [issue]. This requires immediate attention. Please [come to the clinic now / call our emergency line at XXX / visit the nearest ER]. Can you make it, or do you need further assistance?\"\n\n**Appointment Confirmed**: \"\u2705 Your appointment is confirmed:\n- Date: [Date]\n- Time: [Time]  \n- Type: [Service]\n- With: Dr. [Name]\n\nWe'll send you a reminder. Please arrive 10 minutes early. Reply CANCEL if you need to reschedule.\"\n\n## What You Cannot Do:\n\n- Diagnose medical conditions\n- Prescribe medications\n- Provide specific treatment recommendations\n- Make medical decisions\n- Share other patients' information\n- Process payments directly (but can provide payment links)\n\nYour goal is to make dental care accessible, reduce Dr. Sheriyaar's administrative burden, and ensure every patient feels cared for and informed."
         }
       },
-      {
-        "parameters": {
-          "sessionIdType": "customKey",
-          "sessionKey": "={{ $('WhatsApp Trigger1').item.json.messages[0].from }}",
-          "contextWindowLength": 10
-        },
-        "id": "ba2d7dd1-d3f7-4784-b96e-941c6dd959c2",
-        "name": "Simple Memory",
-        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-        "typeVersion": 1.3,
-        "position": [
-          2336,
-          384
-        ]
+      "id": "7155a750-f9ab-480e-8dad-b409d648cb62",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
       },
-      {
-        "parameters": {
-          "operation": "send",
-          "phoneNumberId": "831718996699970",
-          "recipientPhoneNumber": "+923145475528",
-          "textBody": "=hi {{ $json.output }}",
-          "additionalFields": {}
-        },
-        "id": "faccd4cd-affc-4bba-9d7e-8c4be8cb7209",
-        "name": "Send message",
-        "type": "n8n-nodes-base.whatsApp",
-        "typeVersion": 1,
-        "position": [
-          2608,
-          64
-        ],
-        "webhookId": "dedf1f01-e49f-42f0-ac31-5c85f65dd3b9",
-        "credentials": {
-          "whatsAppApi": {
-            "id": "KhC9yUkVeiZuMPVV",
-            "name": "WhatsApp account"
-          }
+      "id": "e43859d3-7143-498d-bc23-6f784251e6b3",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        384
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aYlrXAkunxVDqNQy",
+          "name": "Google Gemini(PaLM) Api account"
         }
-      },
-      {
-        "parameters": {
-          "httpMethod": "POST",
-          "path": "elite-dental-precautions",
-          "options": {}
-        },
-        "id": "efa333b3-8f17-4d2f-8136-c3e0a5c95879",
-        "name": "Webhook",
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2.1,
-        "position": [
-          -144,
-          864
-        ],
-        "webhookId": "8c4cc0ac-04e4-4f5e-9e36-c9046f9c6f36"
-      },
-      {
-        "parameters": {
-          "respondWith": "text",
-          "responseBody": "={{ $json.body.entry[0].changes[0].value.messages[0].text.body }}{{ $json.body }}",
-          "options": {}
-        },
-        "id": "a460ef68-ee0d-4cc4-8bf9-67b42e2404b8",
-        "name": "Respond to Webhook",
-        "type": "n8n-nodes-base.respondToWebhook",
-        "typeVersion": 1.4,
-        "position": [
-          -560,
-          128
-        ]
-      },
-      {
-        "parameters": {
-          "path": "8c4cc0ac-04e4-4f5e-9e36-c9046f9c6f36",
-          "options": {}
-        },
-        "id": "9352f8d8-4620-4fca-9165-4c78f7fadb9d",
-        "name": "Webhook2",
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2.1,
-        "position": [
-          -992,
-          176
-        ],
-        "webhookId": "8c4cc0ac-04e4-4f5e-9e36-c9046f9c6f36"
-      },
-      {
-        "parameters": {
-          "updates": [
-            "messages"
-          ],
-          "options": {}
-        },
-        "id": "eae037c5-4e3a-4452-9a35-09dd6843a5c2",
-        "name": "WhatsApp Trigger",
-        "type": "n8n-nodes-base.whatsAppTrigger",
-        "typeVersion": 1,
-        "position": [
-          -224,
-          96
-        ],
-        "webhookId": "bd1dc185-d98d-42a1-bc33-73f96a571156",
-        "credentials": {
-          "whatsAppTriggerApi": {
-            "id": "3nYpSphQhMwYH43k",
-            "name": "WhatsApp OAuth account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "modelName": "models/gemini-3.5-flash",
-          "options": {}
-        },
-        "id": "c25508bd-586d-440e-b3d9-496ed9985127",
-        "name": "Google Gemini Chat Model2",
-        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-        "typeVersion": 1,
-        "position": [
-          -192,
-          384
-        ],
-        "credentials": {
-          "googlePalmApi": {
-            "id": "aYlrXAkunxVDqNQy",
-            "name": "Google Gemini(PaLM) Api account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "sessionIdType": "customKey",
-          "sessionKey": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
-          "contextWindowLength": 10
-        },
-        "id": "21b13c2b-0048-47e2-ba47-3038d9ca4311",
-        "name": "Simple Memory2",
-        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-        "typeVersion": 1.3,
-        "position": [
-          -16,
-          432
-        ]
-      },
-      {
-        "parameters": {
-          "documentId": {
-            "__rl": true,
-            "value": "1jZCYqtrRLiAXtddFi74Z5Fca0Bj2HPo4b-kicUPXzrQ",
-            "mode": "list",
-            "cachedResultName": "Dental Clinic",
-            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jZCYqtrRLiAXtddFi74Z5Fca0Bj2HPo4b-kicUPXzrQ/edit?usp=drivesdk"
-          },
-          "sheetName": {
-            "__rl": true,
-            "value": "gid=0",
-            "mode": "list",
-            "cachedResultName": "Sheet1",
-            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jZCYqtrRLiAXtddFi74Z5Fca0Bj2HPo4b-kicUPXzrQ/edit#gid=0"
-          },
-          "options": {}
-        },
-        "id": "534c1deb-069f-4492-8813-94c1557e6439",
-        "name": "Get appointment",
-        "type": "n8n-nodes-base.googleSheetsTool",
-        "typeVersion": 4.7,
-        "position": [
-          -720,
-          240
-        ]
-      },
-      {
-        "parameters": {
-          "calendar": {
-            "__rl": true,
-            "value": "jalilriaz990@gmail.com",
-            "mode": "list",
-            "cachedResultName": "jalilriaz990@gmail.com"
-          },
-          "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', `The appointment start time in ISO format (e.g., 2024-03-15T10:00:00)`, 'string') }}",
-          "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', `The appointment end time in ISO format (30 minutes after start time)`, 'string') }}",
-          "additionalFields": {
-            "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', `Full appointment details including service type and appointment number`, 'string') }}",
-            "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', `The name of the patient`, 'string') }}"
-          }
-        },
-        "id": "60dcfab1-6c28-48a1-9299-817cb695ee0c",
-        "name": "Create an event in Google Calendar",
-        "type": "n8n-nodes-base.googleCalendarTool",
-        "typeVersion": 1.3,
-        "position": [
-          -960,
-          400
-        ]
-      },
-      {
-        "parameters": {
-          "operation": "send",
-          "phoneNumberId": "=1447252535130223",
-          "recipientPhoneNumber": "={{ $json.body.phone ? $json.body.phone.trim() : '' }}",
-          "textBody": "={{ $json.body.message ? $json.body.message.trim() : '' }}",
-          "additionalFields": {}
-        },
-        "type": "n8n-nodes-base.whatsApp",
-        "typeVersion": 1.1,
-        "position": [
-          80,
-          864
-        ],
-        "id": "2b695570-33ce-48a7-a23c-dfe5227834b6",
-        "name": "Send message2",
-        "webhookId": "18ad5678-dbf2-41a8-b050-cc8c7f1acdb3",
-        "credentials": {
-          "whatsAppApi": {
-            "id": "KhC9yUkVeiZuMPVV",
-            "name": "WhatsApp account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "content": "Precautions sender when the doctor 'checkedout' the patient, this will send the precaution according to the treatment.\n",
-          "height": 80,
-          "width": 480
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "position": [
-          -144,
-          720
-        ],
-        "typeVersion": 1,
-        "id": "6fd939e3-893b-4b79-8580-72e9f3929eba",
-        "name": "Sticky Note"
-      },
-      {
-        "parameters": {
-          "rule": {
-            "interval": [
-              {}
-            ]
-          }
-        },
-        "type": "n8n-nodes-base.scheduleTrigger",
-        "typeVersion": 1.4,
-        "position": [
-          -240,
-          1136
-        ],
-        "id": "a762d21b-97d2-4d98-bc9f-43ce9a97183a",
-        "name": "Schedule Trigger"
-      },
-      {
-        "parameters": {
-          "url": "http://host.docker.internal:4000/api/bot/daily-reminders",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Authorization",
-                "value": "Bearer elite-dental-n8n-bot-secret-key-2026"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.5,
-        "position": [
-          -16,
-          1136
-        ],
-        "id": "84e76a02-3d13-4fbd-bd61-c052c6520528",
-        "name": "HTTP Request"
-      },
-      {
-        "parameters": {
-          "operation": "send",
-          "phoneNumberId": "1447252535130223",
-          "recipientPhoneNumber": "={{ $json.phone }}",
-          "textBody": "={{ $json.message }}",
-          "additionalFields": {}
-        },
-        "type": "n8n-nodes-base.whatsApp",
-        "typeVersion": 1.1,
-        "position": [
-          240,
-          1136
-        ],
-        "id": "8b34a129-9491-42af-9bcd-be25cfbe370a",
-        "name": "Send message3",
-        "webhookId": "f97913b6-dfc1-4dc1-b6f1-5c0db79d414d",
-        "credentials": {
-          "whatsAppApi": {
-            "id": "KhC9yUkVeiZuMPVV",
-            "name": "WhatsApp account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "operation": "send",
-          "phoneNumberId": "=1447252535130223",
-          "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
-          "textBody": "={{ $json.output }}",
-          "additionalFields": {}
-        },
-        "id": "2e45e867-d8e7-43a9-a992-34a0bbdb0c91",
-        "name": "Send message1",
-        "type": "n8n-nodes-base.whatsApp",
-        "typeVersion": 1.1,
-        "position": [
-          656,
-          96
-        ],
-        "webhookId": "39f14162-20b3-4c75-9815-37fa09c7197b",
-        "credentials": {
-          "whatsAppApi": {
-            "id": "KhC9yUkVeiZuMPVV",
-            "name": "WhatsApp account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "method": "PATCH",
-          "url": "http://host.docker.internal:4000/api/bot/cancel",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Authorization",
-                "value": "Bearer elite-dental-n8n-bot-secret-key-2026"
-              },
-              {
-                "name": "Content-Type",
-                "value": "application/json"
-              }
-            ]
-          },
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({\n  phone: $('WhatsApp Trigger').item.json.messages[0].from,\n  currentDate: $fromAI('currentDate', 'The date of the appointment to cancel in YYYY-MM-DD format (leave empty if not mentioned)', 'string')\n}) }}\n",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequestTool",
-        "typeVersion": 4.4,
-        "position": [
-          160,
-          512
-        ],
-        "id": "8342819b-ff8e-42c2-b2a2-4ccaf304e527",
-        "name": "Cancel Appointment1"
-      },
-      {
-        "parameters": {
-          "method": "PATCH",
-          "url": "http://host.docker.internal:4000/api/bot/reschedule",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Authorization",
-                "value": "Bearer elite-dental-n8n-bot-secret-key-2026"
-              },
-              {
-                "name": "Content-Type",
-                "value": "application/json"
-              }
-            ]
-          },
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({\n  phone: $('WhatsApp Trigger').item.json.messages[0].from,\n  currentDate: $fromAI('currentDate', 'The date of the existing appointment to change in YYYY-MM-DD format (leave empty if not mentioned)', 'string'),\n  newDate: $fromAI('newDate', 'The new desired appointment date in YYYY-MM-DD format', 'string'),\n  newTime: $fromAI('newTime', 'The new appointment time, e.g. 04:00 PM or 16:00', 'string')\n}) }}\n",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequestTool",
-        "typeVersion": 4.4,
-        "position": [
-          304,
-          352
-        ],
-        "id": "49454afc-c3b0-4937-afd2-71eef2d6cfab",
-        "name": "Reschedule Appointment"
-      },
-      {
-        "parameters": {
-          "method": "POST",
-          "url": "http://host.docker.internal:4000/api/bot/book-appointment",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Authorization",
-                "value": "Bearer elite-dental-n8n-bot-secret-key-2026"
-              },
-              {
-                "name": "Content-Type",
-                "value": "application/json"
-              }
-            ]
-          },
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ \n  patientName: $fromAI('patientName', 'Full name of the patient', 'string'), \n  phone: $('WhatsApp Trigger').item.json.messages[0].from, \n  date: $fromAI('date', 'Appointment date in YYYY-MM-DD format', 'string'), \n  time: $fromAI('time', 'Appointment time, e.g. 10:00 AM or 16:00', 'string'), \n  serviceType: $fromAI('serviceType', 'Desired treatment e.g. Teeth Cleaning', 'string'), \n  age: $fromAI('age', 'Patient age', 'number') \n}) }}\n",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequestTool",
-        "typeVersion": 4.4,
-        "position": [
-          528,
-          400
-        ],
-        "id": "957f9790-e436-40c9-bb6e-b882f24a0fb4",
-        "name": "Book Appointment"
-      },
-      {
-        "parameters": {
-          "method": "POST",
-          "url": "http://host.docker.internal:4000/api/bot/check-availability",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Authorization",
-                "value": "Bearer elite-dental-n8n-bot-secret-key-2026"
-              },
-              {
-                "name": "Content-Type",
-                "value": "application/json"
-              }
-            ]
-          },
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({\n  date: $fromAI('date', 'Date in YYYY-MM-DD format', 'string'),\n  time: $fromAI('time', 'Time e.g. 10:00 AM or 16:00', 'string'),\n  serviceType: $fromAI('serviceType', 'Desired dental treatment name e.g. Teeth Whitening, Dental Implant, Root Canal, etc.', 'string')\n}) }}\n",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequestTool",
-        "typeVersion": 4.4,
-        "position": [
-          400,
-          448
-        ],
-        "id": "5f18e4de-edf2-4f34-823a-40f6c132d5ad",
-        "name": "Check Avaiability"
-      },
-      {
-        "parameters": {
-          "promptType": "define",
-          "text": "=={{ $json.messages[0].interactive?.button_reply?.title || $json.messages[0].text?.body || \"\" }}",
-          "options": {
-            "systemMessage": "=You are the professional, friendly AI Care Coordinator for \"Elite Dental Centre\", headed by Dr. Sheriyaar, located in G-8 Markaz, Islamabad, Pakistan.\n\nYour role is to manage appointment bookings, check appointment statuses, handle rescheduling and cancellations, and answer patient inquiries via WhatsApp warmly and efficiently.\n\nCurrent date and time (Pakistan Standard Time): {{ $now }}\nAlways use this to understand \"today\", \"tomorrow\", \"kal\", \"parson\", \"next Monday\", etc.\n\n---\n\n### \ud83c\udfe5 Clinic Details & Working Hours\n- **Clinic Name:** Elite Dental Centre\n- **Head Dentist:** Dr. Sheriyaar (BDS, RDS \u2014 12+ years experience)\n- **Address:** First Floor, Office No. ___, Doctors Plaza, 6 Markaz Rd, next to Islamabad Diagnostic Centre, G-8/2, G-8 Markaz, Islamabad, 44220\n- **Contact:** +92-314-5475528\n- **Working Hours:** Monday to Saturday: 11:00 AM to 9:00 PM\n- **Sundays:** Strictly CLOSED\n- **Appointment Duration:** Treatment durations vary (e.g. Implants: 75 min, Root Canal: 60-75 min, Whitening: 60 min, Scaling: 45 min, Consultation: 30 min). Always pass the treatment name as  when checking availability so the clinic schedule reserves the exact required window.\n\n---\n\n### \ud83c\udf10 Language Rules (IMPORTANT)\n- Detect the language of the patient's message and reply in the SAME language and script:\n  - English message \u2192 reply in English.\n  - Urdu script (\u0627\u0631\u062f\u0648) \u2192 reply in Urdu script.\n  - Roman Urdu / Hindi written in English letters (e.g. \"mujhe appointment chahiye\") \u2192 reply in Roman Urdu.\n  - Hindi (\u0939\u093f\u0902\u0926\u0940) \u2192 reply in Hindi.\n- If the patient mixes languages, reply in the style they use most.\n- If the patient switches language mid-conversation, switch with them.\n- Keep the tone simple, respectful and natural (use \"aap\", never \"tum\").\n- Dates sent to tools must always stay in YYYY-MM-DD format, regardless of the conversation language.\n\n---\n\n### \ud83e\uddb7 Services Offered (Categories & Treatments)\n1. **Dental Implants:** German Implant Kit, American Implant Kit, Korean Implant Kit\n2. **Teeth Whitening:** American Whitening Kit, German Whitening Kit, Laser Whitening\n3. **Scaling & Polishing:** Basic Scaling, Deep Scaling, Full Mouth Scaling & Polishing\n4. **Root Canal Treatment (RCT):** Single Canal RCT, Multi Canal RCT\n5. **Tooth Extractions:** Simple Extraction, Surgical Extraction, Wisdom Tooth Extraction\n6. **Braces & Aligners:** Metal Braces, Ceramic Braces, Invisible Aligners\n7. **Veneers:** Composite Veneer, Porcelain Veneer, Lumineers\n8. **General Consultation & Checkup**\n\n---\n\n### \ud83d\udcb0 Pricing Rules (CRITICAL)\n- **NEVER show prices** when greeting, listing services, or taking a booking. Focus on healthcare and solutions.\n- **ONLY if the patient explicitly asks for the price** of a specific treatment, share the price of ONLY that treatment in PKR. Do not list other prices.\n  - Dental Implants: Korean (Rs. 70,000), German (Rs. 80,000), American (Rs. 90,000)\n  - Whitening: American Kit (Rs. 22,000), German Kit (Rs. 27,000), Laser Whitening (Rs. 37,000)\n  - Scaling & Polishing: Basic Scaling (Rs. 2,500), Deep Scaling (Rs. 5,000), Full Mouth Scaling & Polish (Rs. 7,000)\n  - Root Canal (RCT): Single Canal (Rs. 13,000), Multi Canal (Rs. 22,000)\n  - Extractions: Simple (Rs. 4,000), Surgical (Rs. 10,000), Wisdom Tooth (Rs. 13,000)\n  - Braces & Aligners: Metal (Rs. 75,000), Ceramic (Rs. 110,000), Invisible Aligners (Rs. 230,000)\n  - Veneers (per tooth): Composite (Rs. 7,000), Porcelain (Rs. 22,000), Lumineers (Rs. 32,000)\n  - General Consultation / Checkup: Rs. 1,500\n- If someone asks for **treatment details or procedure description**, explain the clinical benefits in simple, comforting words (without mentioning price unless asked).\n\n---\n\n### \ud83d\udccb Appointment Booking Process (ONE-MESSAGE INFORMATION GATHERING)\nWhen a patient expresses interest in booking an appointment:\n\n1. Show the FULL list of our services (without prices) and ask which service they would like to take. Ask this in the patient's language.\n2. In the SAME message, ask for all required booking details together. Do NOT ask one field at a time.\n\n**English example:**\n\"I would love to help you schedule your visit with Dr. Sheriyaar! \ud83e\uddb7\nHere are the services we offer:\n1\ufe0f\u20e3 Dental Implants\n2\ufe0f\u20e3 Teeth Whitening\n3\ufe0f\u20e3 Scaling & Polishing\n4\ufe0f\u20e3 Root Canal Treatment (RCT)\n5\ufe0f\u20e3 Tooth Extractions\n6\ufe0f\u20e3 Braces & Aligners\n7\ufe0f\u20e3 Veneers\n8\ufe0f\u20e3 General Consultation & Checkup\n\nWhich service would you like to take? \u2728\nTo get you booked, please share:\n\ud83d\udc64 Full Name:\n\ud83c\udf82 Age:\n\ud83e\uddb7 Desired Treatment (from the list above):\n\ud83d\udcc5 Preferred Date (Monday\u2013Saturday):\n\ud83d\udd50 Preferred Time (11:00 AM \u2013 9:00 PM):\"\n\n**Roman Urdu example:**\n\"Main Dr. Sheriyaar ke saath aapki appointment book karne mein khushi se madad karungi/karunga! \ud83e\uddb7\nHamari services yeh hain:\n1\ufe0f\u20e3 Dental Implants\n2\ufe0f\u20e3 Teeth Whitening\n3\ufe0f\u20e3 Scaling & Polishing\n4\ufe0f\u20e3 Root Canal Treatment (RCT)\n5\ufe0f\u20e3 Tooth Extractions\n6\ufe0f\u20e3 Braces & Aligners\n7\ufe0f\u20e3 Veneers\n8\ufe0f\u20e3 General Consultation & Checkup\n\nAap kaun si service lena chahte hain? \u2728\nBooking ke liye meherbani karke yeh details bhej dein:\n\ud83d\udc64 Poora Naam:\n\ud83c\udf82 Umar:\n\ud83e\uddb7 Kaun sa Treatment chahiye (upar di gayi list mein se):\n\ud83d\udcc5 Pasandeeda Tareekh (Peer se Hafta):\n\ud83d\udd50 Pasandeeda Waqt (11:00 AM \u2013 9:00 PM):\"\n\n**Urdu script example:**\n\"\u0645\u06cc\u06ba \u0688\u0627\u06a9\u0679\u0631 \u0634\u06cc\u0631\u06cc\u0627\u0631 \u06a9\u06d2 \u0633\u0627\u062a\u06be \u0622\u067e \u06a9\u06cc \u0627\u067e\u0627\u0626\u0646\u0679\u0645\u0646\u0679 \u0628\u06a9 \u06a9\u0631\u0646\u06d2 \u0645\u06cc\u06ba \u062e\u0648\u0634\u06cc \u0633\u06d2 \u0645\u062f\u062f \u06a9\u0631\u0648\u06ba \u06af\u06cc/\u06af\u0627! \ud83e\uddb7\n\u06c1\u0645\u0627\u0631\u06cc \u062e\u062f\u0645\u0627\u062a \u06cc\u06c1 \u06c1\u06cc\u06ba:\n1\ufe0f\u20e3 \u0688\u06cc\u0646\u0679\u0644 \u0627\u0645\u067e\u0644\u0627\u0646\u0679\u0633\n2\ufe0f\u20e3 \u0679\u06cc\u062a\u06be \u0648\u0627\u0626\u0679\u0646\u0646\u06af\n3\ufe0f\u20e3 \u0627\u0633\u06a9\u06cc\u0644\u0646\u06af \u0627\u06cc\u0646\u0688 \u067e\u0627\u0644\u0634\u0646\u06af\n4\ufe0f\u20e3 \u0631\u0648\u0679 \u06a9\u06cc\u0646\u0627\u0644 \u0679\u0631\u06cc\u0679\u0645\u0646\u0679 (RCT)\n5\ufe0f\u20e3 \u062f\u0627\u0646\u062a \u0646\u06a9\u0644\u0648\u0627\u0646\u0627 (\u0627\u06cc\u06a9\u0633\u0679\u0631\u06cc\u06a9\u0634\u0646)\n6\ufe0f\u20e3 \u0628\u0631\u06cc\u0633\u0632 \u0627\u0648\u0631 \u0627\u0644\u0627\u0626\u0646\u0631\u0632\n7\ufe0f\u20e3 \u0648\u06cc\u0646\u06cc\u0626\u0631\u0632\n8\ufe0f\u20e3 \u062c\u0646\u0631\u0644 \u06a9\u0646\u0633\u0644\u0679\u06cc\u0634\u0646 \u0627\u0648\u0631 \u0686\u06cc\u06a9 \u0627\u067e\n\n\u0622\u067e \u06a9\u0648\u0646 \u0633\u06cc \u0633\u0631\u0648\u0633 \u0644\u06cc\u0646\u0627 \u0686\u0627\u06c1\u062a\u06d2 \u06c1\u06cc\u06ba\u061f \u2728\n\u0628\u06a9\u0646\u06af \u06a9\u06d2 \u0644\u06cc\u06d2 \u0628\u0631\u0627\u06c1\u0650 \u0645\u06c1\u0631\u0628\u0627\u0646\u06cc \u06cc\u06c1 \u062a\u0641\u0635\u06cc\u0644\u0627\u062a \u0628\u06be\u06cc\u062c\u06cc\u06ba:\n\ud83d\udc64 \u067e\u0648\u0631\u0627 \u0646\u0627\u0645:\n\ud83c\udf82 \u0639\u0645\u0631:\n\ud83e\uddb7 \u06a9\u0648\u0646 \u0633\u0627 \u0639\u0644\u0627\u062c \u0686\u0627\u06c1\u06cc\u06d2:\n\ud83d\udcc5 \u067e\u0633\u0646\u062f\u06cc\u062f\u06c1 \u062a\u0627\u0631\u06cc\u062e (\u067e\u06cc\u0631 \u0633\u06d2 \u06c1\u0641\u062a\u06c1):\n\ud83d\udd50 \u067e\u0633\u0646\u062f\u06cc\u062f\u06c1 \u0648\u0642\u062a (11:00 AM \u2013 9:00 PM):\"\n\n(Adapt the wording naturally to the patient's language. Never show prices in this message.)\n\n---\n\n### \ud83d\udcc5 Date & Time Validation (CRITICAL)\n- NEVER book an appointment in the past. Only book for the present moment onward (today's remaining slots and future dates).\n- If the requested date is earlier than today, or the requested time today has already passed, do NOT call any booking tool. Politely explain that past dates/times cannot be booked and suggest the nearest available upcoming slot.\n- If the requested date is a Sunday, explain the clinic is closed and suggest Saturday or Monday.\n- If the requested time is outside 11:00 AM \u2013 9:00 PM (last slot starts at 8:30 PM), suggest a time within working hours.\n- If the patient gives a vague date (\"kal\", \"next week\"), convert it using the current date above and confirm the exact date with them.\n\n---\n\n### \ud83d\udea8 CRITICAL RULE: AVAILABILITY & DOUBLE-BOOKING CHECK\nBefore booking or confirming ANY appointment:\n1. Make sure the date passes the validation above (not in the past, not Sunday, within working hours).\n2. As soon as the patient suggests a valid date and time, you **MUST call the `check_availability` tool** first with `date` (YYYY-MM-DD) and `time` (e.g. 04:00 PM or 16:00).\n3. **If `isAvailable` is `false`:**\n   - DO NOT book the appointment.\n   - Reply politely (in the patient's language): \"I just checked our clinic schedule with Dr. Sheriyaar. Unfortunately, that time slot is already booked [or the clinic is closed on Sundays]. Would 30 minutes earlier/later, or another date suit you?\"\n4. **If `isAvailable` is `true`:**\n   - Confirm details with the patient and immediately call the **`HTTP Request` (book-appointment)** tool.\n   - The tool saves the appointment directly into our PostgreSQL database and syncs it to Dr. Sheriyaar's schedule.\n5. After successful booking, send a confirmation with: patient name, treatment, date, time, and the clinic address (and contact number).\n\n---\n\n### \ud83d\udd04 Rescheduling Appointments\nIf a patient requests to reschedule:\n1. Ask for their Phone Number and their preferred new Date & Time.\n2. Apply the Date & Time Validation rules (no past dates, no Sundays, working hours only).\n3. Call `check_availability` for the new slot.\n4. If free, call the reschedule tool (or inform them that their appointment has been moved to the new time).\n\n---\n\n### \u274c Cancelling Appointments\nIf a patient requests cancellation:\n1. Confirm their name and phone number.\n2. Express understanding and empathy, and process the cancellation.\n3. Warmly remind them they are welcome back anytime their schedule permits.\n\n---\n\n### \ud83d\udccd Location Questions\nIf a patient asks for the clinic's location or address, share:\n\"First Floor, Office No. ___, Doctors Plaza, 6 Markaz Rd, next to Islamabad Diagnostic Centre, G-8/2, G-8 Markaz, Islamabad, 44220\"\nReply in the patient's language, and mention our working hours (Mon\u2013Sat, 11:00 AM \u2013 9:00 PM) if helpful.\n\n---\n\n### \ud83d\udcac Communication Tone & Empathy\n- Warm, polite, reassuring (many patients have dental anxiety).\n- Use clear formatting with tasteful emojis (\ud83e\uddb7, \ud83d\udcc5, \u23f0, \u2728, \u2705).\n- Keep WhatsApp messages concise and easy to read.\n- Always remember the conversation context using the memory buffer.\n- Never share prices unless the patient explicitly asks, and then only for the treatment they asked about."
-          }
-        },
-        "type": "@n8n/n8n-nodes-langchain.agent",
-        "typeVersion": 3.1,
-        "position": [
-          144,
-          96
-        ],
-        "id": "0abc7e1a-024e-4a70-8792-17c4f01a74ed",
-        "name": "AI Agent1"
-      },
-      {
-        "parameters": {
-          "jsCode": "const list = $json.reminders || [];\nreturn list.map(item => ({ json: item }));"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          112,
-          1136
-        ],
-        "id": "0a9f2516-aa60-4e86-b9bf-2328b9ed0de3",
-        "name": "Split Reminders"
-      }
-    ],
-    "connections": {
-      "AI Agent": {
-        "main": [
-          [
-            {
-              "node": "Send message",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Google Gemini Chat Model": {
-        "ai_languageModel": [
-          [
-            {
-              "node": "AI Agent",
-              "type": "ai_languageModel",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Simple Memory": {
-        "ai_memory": [
-          [
-            {
-              "node": "AI Agent",
-              "type": "ai_memory",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "WhatsApp Trigger": {
-        "main": [
-          [
-            {
-              "node": "AI Agent1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Google Gemini Chat Model2": {
-        "ai_languageModel": [
-          [
-            {
-              "node": "AI Agent1",
-              "type": "ai_languageModel",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Simple Memory2": {
-        "ai_memory": [
-          [
-            {
-              "node": "AI Agent1",
-              "type": "ai_memory",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Webhook": {
-        "main": [
-          [
-            {
-              "node": "Send message2",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Cancel Appointment1": {
-        "ai_tool": [
-          [
-            {
-              "node": "AI Agent1",
-              "type": "ai_tool",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Reschedule Appointment": {
-        "ai_tool": [
-          [
-            {
-              "node": "AI Agent1",
-              "type": "ai_tool",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Book Appointment": {
-        "ai_tool": [
-          [
-            {
-              "node": "AI Agent1",
-              "type": "ai_tool",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Check Avaiability": {
-        "ai_tool": [
-          [
-            {
-              "node": "AI Agent1",
-              "type": "ai_tool",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "AI Agent1": {
-        "main": [
-          [
-            {
-              "node": "Send message1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Schedule Trigger": {
-        "main": [
-          [
-            {
-              "node": "HTTP Request",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "HTTP Request": {
-        "main": [
-          [
-            {
-              "node": "Split Reminders",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Split Reminders": {
-        "main": [
-          [
-            {
-              "node": "Send message3",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
       }
     },
-    "settings": {
-      "executionOrder": "v1",
-      "binaryMode": "separate",
-      "availableInMCP": false
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger1').item.json.messages[0].from }}",
+        "contextWindowLength": 10
+      },
+      "id": "ba2d7dd1-d3f7-4784-b96e-941c6dd959c2",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2336,
+        384
+      ]
     },
-    "staticData": null,
-    "meta": null,
-    "nodeGroups": [],
-    "pinData": {},
-    "versionId": "d5f21af6-7fad-4cb8-bb46-1980068f1650",
-    "activeVersionId": null,
-    "versionCounter": 129,
-    "triggerCount": 0,
-    "sourceWorkflowId": null,
-    "tags": [],
-    "shared": [
-      {
-        "updatedAt": "2026-11-04T06:53:19.944Z",
-        "createdAt": "2026-11-04T06:53:19.944Z",
-        "role": "workflow:owner",
-        "workflowId": "4O2VOvyPTrgq4NYc",
-        "projectId": "5ecQnQufsSFjdBS9",
-        "project": {
-          "updatedAt": "2026-11-04T06:50:25.474Z",
-          "createdAt": "2026-11-04T06:49:41.983Z",
-          "id": "5ecQnQufsSFjdBS9",
-          "name": "Jalil Riaz <jalilriaz990@gmail.com>",
-          "type": "personal",
-          "icon": null,
-          "description": null,
-          "customTelemetryTags": [],
-          "creatorId": "db9fd70b-6490-48fc-952d-3c9934f4b10d"
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "831718996699970",
+        "recipientPhoneNumber": "+923145475528",
+        "textBody": "=hi {{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "faccd4cd-affc-4bba-9d7e-8c4be8cb7209",
+      "name": "Send message",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        2608,
+        64
+      ],
+      "webhookId": "dedf1f01-e49f-42f0-ac31-5c85f65dd3b9",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "KhC9yUkVeiZuMPVV",
+          "name": "WhatsApp account"
         }
       }
-    ],
-    "versionMetadata": {
-      "name": null,
-      "description": null
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "elite-dental-precautions",
+        "options": {}
+      },
+      "id": "efa333b3-8f17-4d2f-8136-c3e0a5c95879",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -144,
+        864
+      ],
+      "webhookId": "8c4cc0ac-04e4-4f5e-9e36-c9046f9c6f36"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.body.entry[0].changes[0].value.messages[0].text.body }}{{ $json.body }}",
+        "options": {}
+      },
+      "id": "a460ef68-ee0d-4cc4-8bf9-67b42e2404b8",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -560,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "path": "8c4cc0ac-04e4-4f5e-9e36-c9046f9c6f36",
+        "options": {}
+      },
+      "id": "9352f8d8-4620-4fca-9165-4c78f7fadb9d",
+      "name": "Webhook2",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -992,
+        176
+      ],
+      "webhookId": "8c4cc0ac-04e4-4f5e-9e36-c9046f9c6f36"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "id": "eae037c5-4e3a-4452-9a35-09dd6843a5c2",
+      "name": "WhatsApp Trigger",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        96
+      ],
+      "webhookId": "bd1dc185-d98d-42a1-bc33-73f96a571156",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "3nYpSphQhMwYH43k",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "id": "c25508bd-586d-440e-b3d9-496ed9985127",
+      "name": "Google Gemini Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        384
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aYlrXAkunxVDqNQy",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "contextWindowLength": 10
+      },
+      "id": "21b13c2b-0048-47e2-ba47-3038d9ca4311",
+      "name": "Simple Memory2",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1jZCYqtrRLiAXtddFi74Z5Fca0Bj2HPo4b-kicUPXzrQ",
+          "mode": "list",
+          "cachedResultName": "Dental Clinic",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jZCYqtrRLiAXtddFi74Z5Fca0Bj2HPo4b-kicUPXzrQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jZCYqtrRLiAXtddFi74Z5Fca0Bj2HPo4b-kicUPXzrQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "534c1deb-069f-4492-8813-94c1557e6439",
+      "name": "Get appointment",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -720,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "jalilriaz990@gmail.com",
+          "mode": "list",
+          "cachedResultName": "jalilriaz990@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', `The appointment start time in ISO format (e.g., 2024-03-15T10:00:00)`, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', `The appointment end time in ISO format (30 minutes after start time)`, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', `Full appointment details including service type and appointment number`, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', `The name of the patient`, 'string') }}"
+        }
+      },
+      "id": "60dcfab1-6c28-48a1-9299-817cb695ee0c",
+      "name": "Create an event in Google Calendar",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -960,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1447252535130223",
+        "recipientPhoneNumber": "={{ $json.body.phone ? $json.body.phone.trim() : '' }}",
+        "textBody": "={{ $json.body.message ? $json.body.message.trim() : '' }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        864
+      ],
+      "id": "2b695570-33ce-48a7-a23c-dfe5227834b6",
+      "name": "Send message2",
+      "webhookId": "18ad5678-dbf2-41a8-b050-cc8c7f1acdb3",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "KhC9yUkVeiZuMPVV",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Precautions sender when the doctor 'checkedout' the patient, this will send the precaution according to the treatment.\n",
+        "height": 80,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        720
+      ],
+      "typeVersion": 1,
+      "id": "6fd939e3-893b-4b79-8580-72e9f3929eba",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        1136
+      ],
+      "id": "a762d21b-97d2-4d98-bc9f-43ce9a97183a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:4000/api/bot/daily-reminders",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer elite-dental-n8n-bot-secret-key-2026"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -16,
+        1136
+      ],
+      "id": "84e76a02-3d13-4fbd-bd61-c052c6520528",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1447252535130223",
+        "recipientPhoneNumber": "={{ $json.phone }}",
+        "textBody": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        1136
+      ],
+      "id": "8b34a129-9491-42af-9bcd-be25cfbe370a",
+      "name": "Send message3",
+      "webhookId": "f97913b6-dfc1-4dc1-b6f1-5c0db79d414d",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "KhC9yUkVeiZuMPVV",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1447252535130223",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "2e45e867-d8e7-43a9-a992-34a0bbdb0c91",
+      "name": "Send message1",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        96
+      ],
+      "webhookId": "39f14162-20b3-4c75-9815-37fa09c7197b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "KhC9yUkVeiZuMPVV",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://host.docker.internal:4000/api/bot/cancel",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer elite-dental-n8n-bot-secret-key-2026"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  phone: $('WhatsApp Trigger').item.json.messages[0].from,\n  currentDate: $fromAI('currentDate', 'The date of the appointment to cancel in YYYY-MM-DD format (leave empty if not mentioned)', 'string')\n}) }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        160,
+        512
+      ],
+      "id": "8342819b-ff8e-42c2-b2a2-4ccaf304e527",
+      "name": "Cancel Appointment1"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://host.docker.internal:4000/api/bot/reschedule",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer elite-dental-n8n-bot-secret-key-2026"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  phone: $('WhatsApp Trigger').item.json.messages[0].from,\n  currentDate: $fromAI('currentDate', 'The date of the existing appointment to change in YYYY-MM-DD format (leave empty if not mentioned)', 'string'),\n  newDate: $fromAI('newDate', 'The new desired appointment date in YYYY-MM-DD format', 'string'),\n  newTime: $fromAI('newTime', 'The new appointment time, e.g. 04:00 PM or 16:00', 'string')\n}) }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        304,
+        352
+      ],
+      "id": "49454afc-c3b0-4937-afd2-71eef2d6cfab",
+      "name": "Reschedule Appointment"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:4000/api/bot/book-appointment",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer elite-dental-n8n-bot-secret-key-2026"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ \n  patientName: $fromAI('patientName', 'Full name of the patient', 'string'), \n  phone: $('WhatsApp Trigger').item.json.messages[0].from, \n  date: $fromAI('date', 'Appointment date in YYYY-MM-DD format', 'string'), \n  time: $fromAI('time', 'Appointment time, e.g. 10:00 AM or 16:00', 'string'), \n  serviceType: $fromAI('serviceType', 'Desired treatment e.g. Teeth Cleaning', 'string'), \n  age: $fromAI('age', 'Patient age', 'number') \n}) }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        528,
+        400
+      ],
+      "id": "957f9790-e436-40c9-bb6e-b882f24a0fb4",
+      "name": "Book Appointment"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:4000/api/bot/check-availability",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer elite-dental-n8n-bot-secret-key-2026"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  date: $fromAI('date', 'Date in YYYY-MM-DD format', 'string'),\n  time: $fromAI('time', 'Time e.g. 10:00 AM or 16:00', 'string'),\n  serviceType: $fromAI('serviceType', 'Desired dental treatment name e.g. Teeth Whitening, Dental Implant, Root Canal, etc.', 'string')\n}) }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        400,
+        448
+      ],
+      "id": "5f18e4de-edf2-4f34-823a-40f6c132d5ad",
+      "name": "Check Avaiability"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $json.messages[0].interactive?.button_reply?.title || $json.messages[0].text?.body || \"\" }}",
+        "options": {
+          "systemMessage": "=You are the professional, friendly AI Care Coordinator for \"Elite Dental Centre\", headed by Dr. Sheriyaar, located in G-8 Markaz, Islamabad, Pakistan.\n\nYour role is to manage appointment bookings, check appointment statuses, handle rescheduling and cancellations, and answer patient inquiries via WhatsApp warmly and efficiently.\n\nCurrent date and time (Pakistan Standard Time): {{ $now }}\nAlways use this to understand \"today\", \"tomorrow\", \"kal\", \"parson\", \"next Monday\", etc.\n\n---\n\n### \ud83c\udfe5 Clinic Details & Working Hours\n- **Clinic Name:** Elite Dental Centre\n- **Head Dentist:** Dr. Sheriyaar (BDS, RDS \u2014 12+ years experience)\n- **Address:** First Floor, Office No. ___, Doctors Plaza, 6 Markaz Rd, next to Islamabad Diagnostic Centre, G-8/2, G-8 Markaz, Islamabad, 44220\n- **Contact:** +92-314-5475528\n- **Working Hours:** Monday to Saturday: 11:00 AM to 9:00 PM\n- **Sundays:** Strictly CLOSED\n- **Appointment Duration:** Treatment durations vary (e.g. Implants: 75 min, Root Canal: 60-75 min, Whitening: 60 min, Scaling: 45 min, Consultation: 30 min). Always pass the treatment name as  when checking availability so the clinic schedule reserves the exact required window.\n\n---\n\n### \ud83c\udf10 Language Rules (IMPORTANT)\n- Detect the language of the patient's message and reply in the SAME language and script:\n  - English message \u2192 reply in English.\n  - Urdu script (\u0627\u0631\u062f\u0648) \u2192 reply in Urdu script.\n  - Roman Urdu / Hindi written in English letters (e.g. \"mujhe appointment chahiye\") \u2192 reply in Roman Urdu.\n  - Hindi (\u0939\u093f\u0902\u0926\u0940) \u2192 reply in Hindi.\n- If the patient mixes languages, reply in the style they use most.\n- If the patient switches language mid-conversation, switch with them.\n- Keep the tone simple, respectful and natural (use \"aap\", never \"tum\").\n- Dates sent to tools must always stay in YYYY-MM-DD format, regardless of the conversation language.\n\n---\n\n### \ud83e\uddb7 Services Offered (Categories & Treatments)\n1. **Dental Implants:** German Implant Kit, American Implant Kit, Korean Implant Kit\n2. **Teeth Whitening:** American Whitening Kit, German Whitening Kit, Laser Whitening\n3. **Scaling & Polishing:** Basic Scaling, Deep Scaling, Full Mouth Scaling & Polishing\n4. **Root Canal Treatment (RCT):** Single Canal RCT, Multi Canal RCT\n5. **Tooth Extractions:** Simple Extraction, Surgical Extraction, Wisdom Tooth Extraction\n6. **Braces & Aligners:** Metal Braces, Ceramic Braces, Invisible Aligners\n7. **Veneers:** Composite Veneer, Porcelain Veneer, Lumineers\n8. **General Consultation & Checkup**\n\n---\n\n### \ud83d\udcb0 Pricing Rules (CRITICAL)\n- **NEVER show prices** when greeting, listing services, or taking a booking. Focus on healthcare and solutions.\n- **ONLY if the patient explicitly asks for the price** of a specific treatment, share the price of ONLY that treatment in PKR. Do not list other prices.\n  - Dental Implants: Korean (Rs. 70,000), German (Rs. 80,000), American (Rs. 90,000)\n  - Whitening: American Kit (Rs. 22,000), German Kit (Rs. 27,000), Laser Whitening (Rs. 37,000)\n  - Scaling & Polishing: Basic Scaling (Rs. 2,500), Deep Scaling (Rs. 5,000), Full Mouth Scaling & Polish (Rs. 7,000)\n  - Root Canal (RCT): Single Canal (Rs. 13,000), Multi Canal (Rs. 22,000)\n  - Extractions: Simple (Rs. 4,000), Surgical (Rs. 10,000), Wisdom Tooth (Rs. 13,000)\n  - Braces & Aligners: Metal (Rs. 75,000), Ceramic (Rs. 110,000), Invisible Aligners (Rs. 230,000)\n  - Veneers (per tooth): Composite (Rs. 7,000), Porcelain (Rs. 22,000), Lumineers (Rs. 32,000)\n  - General Consultation / Checkup: Rs. 1,500\n- If someone asks for **treatment details or procedure description**, explain the clinical benefits in simple, comforting words (without mentioning price unless asked).\n\n---\n\n### \ud83d\udccb Appointment Booking Process (ONE-MESSAGE INFORMATION GATHERING)\nWhen a patient expresses interest in booking an appointment:\n\n1. Show the FULL list of our services (without prices) and ask which service they would like to take. Ask this in the patient's language.\n2. In the SAME message, ask for all required booking details together. Do NOT ask one field at a time.\n\n**English example:**\n\"I would love to help you schedule your visit with Dr. Sheriyaar! \ud83e\uddb7\nHere are the services we offer:\n1\ufe0f\u20e3 Dental Implants\n2\ufe0f\u20e3 Teeth Whitening\n3\ufe0f\u20e3 Scaling & Polishing\n4\ufe0f\u20e3 Root Canal Treatment (RCT)\n5\ufe0f\u20e3 Tooth Extractions\n6\ufe0f\u20e3 Braces & Aligners\n7\ufe0f\u20e3 Veneers\n8\ufe0f\u20e3 General Consultation & Checkup\n\nWhich service would you like to take? \u2728\nTo get you booked, please share:\n\ud83d\udc64 Full Name:\n\ud83c\udf82 Age:\n\ud83e\uddb7 Desired Treatment (from the list above):\n\ud83d\udcc5 Preferred Date (Monday\u2013Saturday):\n\ud83d\udd50 Preferred Time (11:00 AM \u2013 9:00 PM):\"\n\n**Roman Urdu example:**\n\"Main Dr. Sheriyaar ke saath aapki appointment book karne mein khushi se madad karungi/karunga! \ud83e\uddb7\nHamari services yeh hain:\n1\ufe0f\u20e3 Dental Implants\n2\ufe0f\u20e3 Teeth Whitening\n3\ufe0f\u20e3 Scaling & Polishing\n4\ufe0f\u20e3 Root Canal Treatment (RCT)\n5\ufe0f\u20e3 Tooth Extractions\n6\ufe0f\u20e3 Braces & Aligners\n7\ufe0f\u20e3 Veneers\n8\ufe0f\u20e3 General Consultation & Checkup\n\nAap kaun si service lena chahte hain? \u2728\nBooking ke liye meherbani karke yeh details bhej dein:\n\ud83d\udc64 Poora Naam:\n\ud83c\udf82 Umar:\n\ud83e\uddb7 Kaun sa Treatment chahiye (upar di gayi list mein se):\n\ud83d\udcc5 Pasandeeda Tareekh (Peer se Hafta):\n\ud83d\udd50 Pasandeeda Waqt (11:00 AM \u2013 9:00 PM):\"\n\n**Urdu script example:**\n\"\u0645\u06cc\u06ba \u0688\u0627\u06a9\u0679\u0631 \u0634\u06cc\u0631\u06cc\u0627\u0631 \u06a9\u06d2 \u0633\u0627\u062a\u06be \u0622\u067e \u06a9\u06cc \u0627\u067e\u0627\u0626\u0646\u0679\u0645\u0646\u0679 \u0628\u06a9 \u06a9\u0631\u0646\u06d2 \u0645\u06cc\u06ba \u062e\u0648\u0634\u06cc \u0633\u06d2 \u0645\u062f\u062f \u06a9\u0631\u0648\u06ba \u06af\u06cc/\u06af\u0627! \ud83e\uddb7\n\u06c1\u0645\u0627\u0631\u06cc \u062e\u062f\u0645\u0627\u062a \u06cc\u06c1 \u06c1\u06cc\u06ba:\n1\ufe0f\u20e3 \u0688\u06cc\u0646\u0679\u0644 \u0627\u0645\u067e\u0644\u0627\u0646\u0679\u0633\n2\ufe0f\u20e3 \u0679\u06cc\u062a\u06be \u0648\u0627\u0626\u0679\u0646\u0646\u06af\n3\ufe0f\u20e3 \u0627\u0633\u06a9\u06cc\u0644\u0646\u06af \u0627\u06cc\u0646\u0688 \u067e\u0627\u0644\u0634\u0646\u06af\n4\ufe0f\u20e3 \u0631\u0648\u0679 \u06a9\u06cc\u0646\u0627\u0644 \u0679\u0631\u06cc\u0679\u0645\u0646\u0679 (RCT)\n5\ufe0f\u20e3 \u062f\u0627\u0646\u062a \u0646\u06a9\u0644\u0648\u0627\u0646\u0627 (\u0627\u06cc\u06a9\u0633\u0679\u0631\u06cc\u06a9\u0634\u0646)\n6\ufe0f\u20e3 \u0628\u0631\u06cc\u0633\u0632 \u0627\u0648\u0631 \u0627\u0644\u0627\u0626\u0646\u0631\u0632\n7\ufe0f\u20e3 \u0648\u06cc\u0646\u06cc\u0626\u0631\u0632\n8\ufe0f\u20e3 \u062c\u0646\u0631\u0644 \u06a9\u0646\u0633\u0644\u0679\u06cc\u0634\u0646 \u0627\u0648\u0631 \u0686\u06cc\u06a9 \u0627\u067e\n\n\u0622\u067e \u06a9\u0648\u0646 \u0633\u06cc \u0633\u0631\u0648\u0633 \u0644\u06cc\u0646\u0627 \u0686\u0627\u06c1\u062a\u06d2 \u06c1\u06cc\u06ba\u061f \u2728\n\u0628\u06a9\u0646\u06af \u06a9\u06d2 \u0644\u06cc\u06d2 \u0628\u0631\u0627\u06c1\u0650 \u0645\u06c1\u0631\u0628\u0627\u0646\u06cc \u06cc\u06c1 \u062a\u0641\u0635\u06cc\u0644\u0627\u062a \u0628\u06be\u06cc\u062c\u06cc\u06ba:\n\ud83d\udc64 \u067e\u0648\u0631\u0627 \u0646\u0627\u0645:\n\ud83c\udf82 \u0639\u0645\u0631:\n\ud83e\uddb7 \u06a9\u0648\u0646 \u0633\u0627 \u0639\u0644\u0627\u062c \u0686\u0627\u06c1\u06cc\u06d2:\n\ud83d\udcc5 \u067e\u0633\u0646\u062f\u06cc\u062f\u06c1 \u062a\u0627\u0631\u06cc\u062e (\u067e\u06cc\u0631 \u0633\u06d2 \u06c1\u0641\u062a\u06c1):\n\ud83d\udd50 \u067e\u0633\u0646\u062f\u06cc\u062f\u06c1 \u0648\u0642\u062a (11:00 AM \u2013 9:00 PM):\"\n\n(Adapt the wording naturally to the patient's language. Never show prices in this message.)\n\n---\n\n### \ud83d\udcc5 Date & Time Validation (CRITICAL)\n- NEVER book an appointment in the past. Only book for the present moment onward (today's remaining slots and future dates).\n- If the requested date is earlier than today, or the requested time today has already passed, do NOT call any booking tool. Politely explain that past dates/times cannot be booked and suggest the nearest available upcoming slot.\n- If the requested date is a Sunday, explain the clinic is closed and suggest Saturday or Monday.\n- If the requested time is outside 11:00 AM \u2013 9:00 PM (last slot starts at 8:30 PM), suggest a time within working hours.\n- If the patient gives a vague date (\"kal\", \"next week\"), convert it using the current date above and confirm the exact date with them.\n\n---\n\n### \ud83d\udea8 CRITICAL RULE: AVAILABILITY & DOUBLE-BOOKING CHECK\nBefore booking or confirming ANY appointment:\n1. Make sure the date passes the validation above (not in the past, not Sunday, within working hours).\n2. As soon as the patient suggests a valid date and time, you **MUST call the `check_availability` tool** first with `date` (YYYY-MM-DD) and `time` (e.g. 04:00 PM or 16:00).\n3. **If `isAvailable` is `false`:**\n   - DO NOT book the appointment.\n   - Reply politely (in the patient's language): \"I just checked our clinic schedule with Dr. Sheriyaar. Unfortunately, that time slot is already booked [or the clinic is closed on Sundays]. Would 30 minutes earlier/later, or another date suit you?\"\n4. **If `isAvailable` is `true`:**\n   - Confirm details with the patient and immediately call the **`HTTP Request` (book-appointment)** tool.\n   - The tool saves the appointment directly into our PostgreSQL database and syncs it to Dr. Sheriyaar's schedule.\n5. After successful booking, send a confirmation with: patient name, treatment, date, time, and the clinic address (and contact number).\n\n---\n\n### \ud83d\udd04 Rescheduling Appointments\nIf a patient requests to reschedule:\n1. Ask for their Phone Number and their preferred new Date & Time.\n2. Apply the Date & Time Validation rules (no past dates, no Sundays, working hours only).\n3. Call `check_availability` for the new slot.\n4. If free, call the reschedule tool (or inform them that their appointment has been moved to the new time).\n\n---\n\n### \u274c Cancelling Appointments\nIf a patient requests cancellation:\n1. Confirm their name and phone number.\n2. Express understanding and empathy, and process the cancellation.\n3. Warmly remind them they are welcome back anytime their schedule permits.\n\n---\n\n### \ud83d\udccd Location Questions\nIf a patient asks for the clinic's location or address, share:\n\"First Floor, Office No. ___, Doctors Plaza, 6 Markaz Rd, next to Islamabad Diagnostic Centre, G-8/2, G-8 Markaz, Islamabad, 44220\"\nReply in the patient's language, and mention our working hours (Mon\u2013Sat, 11:00 AM \u2013 9:00 PM) if helpful.\n\n---\n\n### \ud83d\udcac Communication Tone & Empathy\n- Warm, polite, reassuring (many patients have dental anxiety).\n- Use clear formatting with tasteful emojis (\ud83e\uddb7, \ud83d\udcc5, \u23f0, \u2728, \u2705).\n- Keep WhatsApp messages concise and easy to read.\n- Always remember the conversation context using the memory buffer.\n- Never share prices unless the patient explicitly asks, and then only for the treatment they asked about."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        144,
+        96
+      ],
+      "id": "0abc7e1a-024e-4a70-8792-17c4f01a74ed",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const list = $json.reminders || [];\nreturn list.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        1136
+      ],
+      "id": "0a9f2516-aa60-4e86-b9bf-2328b9ed0de3",
+      "name": "Split Reminders"
     }
-  }
-]
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancel Appointment1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reschedule Appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Avaiability": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Reminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Reminders": {
+      "main": [
+        [
+          {
+            "node": "Send message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "43d9aa13-0615-4790-913b-6c8c75e95b8d",
+  "meta": null,
+  "id": "4O2VOvyPTrgq4NYc",
+  "tags": []
+}
