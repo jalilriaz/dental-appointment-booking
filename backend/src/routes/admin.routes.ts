@@ -24,6 +24,7 @@ const walkInSchema = z.object({
     treatmentId: z.string().min(1, 'Treatment is required'),
     patientTreatmentId: z.string().optional(),
     notes: z.string().optional(),
+    doctorId: z.string().optional(),
 }).superRefine((data, ctx) => {
     if (!data.patientId) {
         if (!data.phone) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Phone is required for new patients', path: ['phone'] });
@@ -267,7 +268,7 @@ router.post('/walk-in', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: 
             });
         }
 
-        const { patientId, phone, fullName, age, date, time, treatmentId, patientTreatmentId, notes } = validationResult.data;
+        const { patientId, phone, fullName, age, date, time, treatmentId, patientTreatmentId, notes, doctorId } = validationResult.data;
 
         const bookingResult = await createAppointment({
             patientId,
@@ -275,6 +276,7 @@ router.post('/walk-in', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: 
             phone,
             age,
             treatmentId,
+            doctorId,
             date,
             time,
             bookedBy: 'WALK_IN',

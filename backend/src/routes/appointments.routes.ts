@@ -329,6 +329,7 @@ router.post('/', optionalAuth, async (req: Request, res: Response) => {
             guestEmail,
             guestDob,
             treatmentId,
+            doctorId: body.doctorId,
             date,
             time,
             bookedBy,

@@ -39,6 +39,7 @@ export default async function AdminDashboard() {
     monthlyRealizedAgg,
     todayAppts,
     recentAppointments,
+    doctorsList,
   ] = await Promise.all([
     prisma.user.count({ where: { role: "PATIENT" } }),
     prisma.appointment.count(),
@@ -83,6 +84,10 @@ export default async function AdminDashboard() {
         patient: { select: { name: true, phone: true } },
         treatment: { select: { name: true, price: true, category: true } },
       },
+    }),
+    prisma.doctor.findMany({
+      where: { isActive: true },
+      orderBy: [{ isLead: "desc" }, { createdAt: "asc" }],
     }),
   ]);
 
@@ -329,94 +334,82 @@ export default async function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Dr. Sheriyaar */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0B1528] via-[#0E2438] to-teal-950 border border-teal-500/40 hover:border-teal-400/80 text-white transition-all shadow-sm flex flex-col justify-between relative overflow-hidden group">
-            <div className="flex items-center gap-3 relative z-10">
-              <div className="relative size-13 rounded-xl overflow-hidden ring-2 ring-teal-400/70 shrink-0 bg-slate-800 shadow-md">
-                <Image
-                  src="/images/dr_sheriyaar.jpg"
-                  alt="Dr. Sheriyaar"
-                  fill
-                  className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <p className="text-xs font-black text-white truncate">Dr. Sheriyaar</p>
-                  <span className="size-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+          {doctorsList.map((doc) => {
+            if (doc.isLead) {
+              return (
+                <div
+                  key={doc.id}
+                  className="p-4 rounded-2xl bg-gradient-to-br from-[#0B1528] via-[#0E2438] to-teal-950 border border-teal-500/40 hover:border-teal-400/80 text-white transition-all shadow-sm flex flex-col justify-between relative overflow-hidden group"
+                >
+                  <div className="flex items-center gap-3 relative z-10">
+                    <div className="relative size-13 rounded-xl overflow-hidden ring-2 ring-teal-400/70 shrink-0 bg-slate-800 shadow-md">
+                      <Image
+                        src={doc.image || "/images/dr_sheriyaar.jpg"}
+                        alt={doc.name}
+                        fill
+                        className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="text-xs font-black text-white truncate">{doc.name}</p>
+                        <span className="size-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                      </div>
+                      <p className="text-[11px] font-bold text-teal-300 truncate">Lead Surgeon</p>
+                      <p className="text-[10px] text-slate-300 font-medium truncate">{doc.operatory}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-2.5 border-t border-teal-500/30 flex items-center justify-between text-[11px] relative z-10">
+                    <span className="font-semibold text-slate-300">{doc.schedule.split(":")[1]?.trim() || "12 PM – 8 PM"}</span>
+                    <span className="font-extrabold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded">Active</span>
+                  </div>
                 </div>
-                <p className="text-[11px] font-bold text-teal-300 truncate">Lead Surgeon</p>
-                <p className="text-[10px] text-slate-300 font-medium">Chair 1 · Surgical Suite</p>
-              </div>
-            </div>
-            <div className="mt-3 pt-2.5 border-t border-teal-500/30 flex items-center justify-between text-[11px] relative z-10">
-              <span className="font-semibold text-slate-300">12 PM – 8 PM</span>
-              <span className="font-extrabold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded">Active</span>
-            </div>
-          </div>
+              );
+            }
 
-          {/* Dr. Ayesha Malik */}
-          <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 transition-all flex flex-col justify-between">
-            <div className="flex items-center gap-3">
-              <div className="size-12 rounded-xl bg-teal-100 text-teal-800 font-black text-sm flex items-center justify-center shrink-0">
-                AM
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-black text-slate-900 truncate">Dr. Ayesha Malik</p>
-                  <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
+            return (
+              <div
+                key={doc.id}
+                className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 transition-all flex flex-col justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="size-12 rounded-xl bg-teal-100 text-teal-800 font-black text-sm flex items-center justify-center shrink-0">
+                    {doc.name.replace("Dr. ", "").charAt(0)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-black text-slate-900 truncate">{doc.name}</p>
+                      <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
+                    </div>
+                    <p className="text-[11px] font-bold text-slate-700 truncate">{doc.role}</p>
+                    <p className="text-[10px] text-slate-500 font-medium truncate">{doc.operatory}</p>
+                  </div>
                 </div>
-                <p className="text-[11px] font-bold text-slate-700 truncate">Consultant Orthodontist</p>
-                <p className="text-[10px] text-slate-500 font-medium">Chair 2 · Orthodontics</p>
+                <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-slate-600">{doc.schedule.split(":")[1]?.trim() || doc.schedule}</span>
+                  <span className="font-extrabold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded">In Operatory</span>
+                </div>
               </div>
-            </div>
-            <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
-              <span className="font-semibold text-slate-600">2 PM – 6 PM</span>
-              <span className="font-extrabold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded">In Operatory</span>
-            </div>
-          </div>
+            );
+          })}
 
-          {/* Dr. Hamza Tariq */}
-          <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 transition-all flex flex-col justify-between">
-            <div className="flex items-center gap-3">
-              <div className="size-12 rounded-xl bg-slate-200 text-slate-800 font-black text-sm flex items-center justify-center shrink-0">
-                HT
+          {/* Quick-Action slot to register visiting specialists if less than 4 */}
+          {doctorsList.length < 4 && (
+            <Link
+              href="/admin/doctors"
+              className="p-4 rounded-2xl border-2 border-dashed border-slate-200 hover:border-teal-400 bg-slate-50/40 hover:bg-teal-50/30 transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
+            >
+              <div className="size-10 rounded-xl bg-white border border-slate-200 group-hover:border-teal-300 text-slate-400 group-hover:text-teal-600 flex items-center justify-center mb-2 transition-colors shadow-2xs">
+                <PersonAddAlt1Outlined sx={{ fontSize: 20 }} />
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-black text-slate-900 truncate">Dr. Hamza Tariq</p>
-                  <span className="size-2 rounded-full bg-blue-500 shrink-0" />
-                </div>
-                <p className="text-[11px] font-bold text-slate-700 truncate">Consultant Endodontist</p>
-                <p className="text-[10px] text-slate-500 font-medium">Chair 3 · Rotary Endo</p>
-              </div>
-            </div>
-            <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
-              <span className="font-semibold text-slate-600">4 PM – 8 PM</span>
-              <span className="font-extrabold text-blue-700 bg-blue-100/60 px-1.5 py-0.5 rounded">Next Shift</span>
-            </div>
-          </div>
-
-          {/* Dr. Fatima Noor */}
-          <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 transition-all flex flex-col justify-between">
-            <div className="flex items-center gap-3">
-              <div className="size-12 rounded-xl bg-emerald-100 text-emerald-800 font-black text-sm flex items-center justify-center shrink-0">
-                FN
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-black text-slate-900 truncate">Dr. Fatima Noor</p>
-                  <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
-                </div>
-                <p className="text-[11px] font-bold text-slate-700 truncate">Specialist Periodontist</p>
-                <p className="text-[10px] text-slate-500 font-medium">Chair 4 · Laser Hygiene</p>
-              </div>
-            </div>
-            <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
-              <span className="font-semibold text-slate-600">12 PM – 4 PM</span>
-              <span className="font-extrabold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded">Active</span>
-            </div>
-          </div>
+              <p className="text-xs font-extrabold text-slate-700 group-hover:text-teal-700">
+                + Add Dental Specialist
+              </p>
+              <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                Assign to Operatory Chairs 2–4
+              </p>
+            </Link>
+          )}
         </div>
       </div>
 

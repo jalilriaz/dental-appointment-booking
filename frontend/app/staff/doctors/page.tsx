@@ -44,7 +44,7 @@ interface DoctorStaffProfile {
 
 const CLINICAL_ROSTER: DoctorStaffProfile[] = [
   {
-    id: "doc-1",
+    id: "doc-sheriyaar",
     name: "Dr. Sheriyaar",
     role: "Lead Dental Surgeon & Implantologist",
     credentials: "BDS, RDS (PMDC Reg: 14820-D)",
@@ -53,55 +53,10 @@ const CLINICAL_ROSTER: DoctorStaffProfile[] = [
     chairNumber: "Chair 1 (Main Surgical)",
     status: "ACTIVE",
     todayShift: "12:00 PM – 8:00 PM",
-    phone: "+92 300 555 8921",
+    phone: "+92 314 5475528",
     patientsTodayCount: 5,
-    currentPatient: "Ahsan Khan",
-    currentProcedure: "Wisdom Tooth Surgical Extraction",
     image: "/images/dr_sheriyaar.jpg",
     isLead: true,
-  },
-  {
-    id: "doc-2",
-    name: "Dr. Ayesha Malik",
-    role: "Consultant Orthodontist",
-    credentials: "BDS, FCPS (Orthodontics)",
-    experience: "9+ Years Experience",
-    operatory: "Orthodontics & Aligner Bay",
-    chairNumber: "Chair 2 (Digital Scan Bay)",
-    status: "ACTIVE",
-    todayShift: "2:00 PM – 6:00 PM",
-    phone: "+92 333 444 1920",
-    patientsTodayCount: 4,
-    currentPatient: "Zainab Bibi",
-    currentProcedure: "Clear Aligner Tray Fitting & Check",
-  },
-  {
-    id: "doc-3",
-    name: "Dr. Hamza Tariq",
-    role: "Consultant Endodontist",
-    credentials: "BDS, MDS (Endodontics)",
-    experience: "8+ Years Experience",
-    operatory: "Microscopic Rotary Endo Room",
-    chairNumber: "Chair 3 (Microscope Bay)",
-    status: "SCHEDULED_LATER",
-    todayShift: "4:00 PM – 8:00 PM",
-    phone: "+92 321 888 4712",
-    patientsTodayCount: 3,
-  },
-  {
-    id: "doc-4",
-    name: "Dr. Fatima Noor",
-    role: "Specialist Periodontist & Laser Surgeon",
-    credentials: "BDS, MSc (Periodontology)",
-    experience: "7+ Years Experience",
-    operatory: "Hygiene & Laser Therapy Suite",
-    chairNumber: "Chair 4 (Laser Operatory)",
-    status: "ACTIVE",
-    todayShift: "12:00 PM – 4:00 PM",
-    phone: "+92 345 777 9011",
-    patientsTodayCount: 4,
-    currentPatient: "Mehwish Hayat",
-    currentProcedure: "Ultrasonic Scaling & Polishing",
   },
 ];
 
@@ -113,7 +68,7 @@ export default function StaffDoctorsPage() {
 
   const loadDoctors = async () => {
     try {
-      const res = await fetchApi("/api/doctors");
+      const res = await fetchApi("/api/doctors/admin/all");
       if (res.ok) {
         const data = await res.json();
         if (data.doctors && data.doctors.length > 0) {
@@ -128,9 +83,30 @@ export default function StaffDoctorsPage() {
             status: d.isActive ? "ACTIVE" : "OFF_DUTY",
             todayShift: d.schedule,
             phone: "+92 314 5475528",
-            patientsTodayCount: d.isLead ? 5 : 2,
-            currentPatient: d.isLead ? "Ahsan Khan" : undefined,
-            currentProcedure: d.isLead ? "Wisdom Tooth Surgical Extraction" : undefined,
+            patientsTodayCount: d._count?.appointments ?? (d.isLead ? 5 : 0),
+            image: d.image || "/images/dr_sheriyaar.jpg",
+            isLead: d.isLead,
+          }));
+          setDoctorsList(mapped);
+          return;
+        }
+      }
+      const pubRes = await fetchApi("/api/doctors");
+      if (pubRes.ok) {
+        const pubData = await pubRes.json();
+        if (pubData.doctors && pubData.doctors.length > 0) {
+          const mapped: DoctorStaffProfile[] = pubData.doctors.map((d: any) => ({
+            id: d.id,
+            name: d.name,
+            role: d.role,
+            credentials: `${d.qualifications} (PMDC: ${d.pmdcReg})`,
+            experience: d.experience,
+            operatory: d.operatory,
+            chairNumber: d.operatory.split("·")[0]?.trim() || "Chair 1",
+            status: d.isActive ? "ACTIVE" : "OFF_DUTY",
+            todayShift: d.schedule,
+            phone: "+92 314 5475528",
+            patientsTodayCount: d._count?.appointments ?? (d.isLead ? 5 : 0),
             image: d.image || "/images/dr_sheriyaar.jpg",
             isLead: d.isLead,
           }));

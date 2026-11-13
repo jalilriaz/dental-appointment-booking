@@ -32,6 +32,7 @@ export interface CreateAppointmentInput {
     durationMin?: number;
     bookedBy: "WEBSITE" | "WALK_IN" | "WHATSAPP_BOT" | "ADMIN" | "RECEPTIONIST" | "STAFF";
     notes?: string;
+    doctorId?: string;
 
     // Multi-session treatment plan linking
     patientTreatmentId?: string;
@@ -75,6 +76,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             durationMin: customDuration,
             bookedBy,
             notes,
+            doctorId,
             patientTreatmentId: explicitPtId,
             sessionNumber: explicitSessionNumber,
             sessionLabel: explicitSessionLabel,
@@ -120,9 +122,15 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                 }
             }
             if (!treatment) {
+                // Default fallback to General Consultation & Dental Checkup first
                 treatment = await tx.treatment.findFirst({
-                    where: { isActive: true },
+                    where: { name: { contains: "Consultation", mode: "insensitive" }, isActive: true },
                 });
+                if (!treatment) {
+                    treatment = await tx.treatment.findFirst({
+                        where: { isActive: true },
+                    });
+                }
             }
             if (!treatment) {
                 throw new Error("TREATMENT_NOT_FOUND");
@@ -247,6 +255,16 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                 }
             }
 
+            // Resolve attending doctor: use explicitly selected doctor or default to active lead doctor
+            let targetDoctorId = doctorId || null;
+            if (!targetDoctorId) {
+                const defaultDoc = await tx.doctor.findFirst({
+                    where: { isActive: true },
+                    orderBy: [{ isLead: "desc" }, { createdAt: "asc" }],
+                });
+                targetDoctorId = defaultDoc?.id || null;
+            }
+
             // F. Create Appointment Record
             const appointment = await tx.appointment.create({
                 data: {
@@ -254,6 +272,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                     endTime,
                     patientId: user.id,
                     treatmentId: treatment.id,
+                    doctorId: targetDoctorId,
                     bookedBy: bookedBy as any,
                     status: "SCHEDULED",
                     price: appointmentPrice,
@@ -269,6 +288,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                 },
                 include: {
                     treatment: true,
+                    doctor: true,
                     patient: true,
                     patientTreatment: true,
                 },

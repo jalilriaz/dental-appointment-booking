@@ -330,7 +330,7 @@ export default function AdminDoctorsPage() {
       {/* ──────────────────────────────────────────────────────────────────
           2. KPI SUMMARY METRICS (DYNAMICALLY COMPUTED)
           ────────────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Active Doctors */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between">
@@ -449,142 +449,174 @@ export default function AdminDoctorsPage() {
               return (
                 <div
                   key={doc.id}
-                  className={`p-6 sm:p-8 flex flex-col xl:flex-row xl:items-center justify-between gap-6 transition-colors ${
-                    doc.isLead ? "bg-teal-50/25" : "hover:bg-slate-50/70"
+                  className={`p-5 sm:p-7 transition-colors ${
+                    doc.isLead ? "bg-teal-50/20" : "hover:bg-slate-50/60"
                   } ${!doc.isActive ? "opacity-75 bg-slate-50/40" : ""}`}
                 >
-                  {/* Doctor Profile Info */}
-                  <div className="flex items-start gap-4 sm:gap-5 min-w-0 max-w-2xl">
-                    {doc.image ? (
-                      <div className="relative size-16 sm:size-20 rounded-2xl overflow-hidden ring-2 ring-teal-500/20 shrink-0 bg-slate-100">
-                        <Image
-                          src={doc.image}
-                          alt={doc.name}
-                          fill
-                          className="object-cover object-top"
+                  {/* TOP SECTION: Doctor Profile Info (Left) + Actions (Right) */}
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 sm:gap-6">
+                    {/* Doctor Profile Info */}
+                    <div className="flex items-start gap-3.5 sm:gap-5 min-w-0 flex-1">
+                      {doc.image ? (
+                        <div className="relative size-16 sm:size-20 rounded-2xl overflow-hidden ring-2 ring-teal-500/20 shrink-0 bg-slate-100 shadow-2xs">
+                          <Image
+                            src={doc.image}
+                            alt={doc.name}
+                            fill
+                            className="object-cover object-top"
+                          />
+                        </div>
+                      ) : (
+                        <div className="size-16 sm:size-20 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center font-black text-xl sm:text-2xl shrink-0 shadow-2xs">
+                          {doc.name
+                            .replace("Dr.", "")
+                            .trim()
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("") || "D"}
+                        </div>
+                      )}
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center flex-wrap gap-2">
+                          <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                            {doc.name}
+                          </h3>
+                          {doc.isLead && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-teal-600 text-white uppercase tracking-wider shadow-2xs">
+                              Lead Surgeon
+                            </span>
+                          )}
+                          {doc.isActive ? (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                              Active
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200">
+                              Inactive / On Leave
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-xs sm:text-sm font-bold text-teal-800 mt-1">
+                          {doc.role}
+                        </p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                          {doc.qualifications} · {doc.experience}
+                        </p>
+
+                        <div className="flex items-center flex-wrap gap-2 mt-2.5">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                            <ShieldOutlined sx={{ fontSize: 13, color: "#0d9488" }} />
+                            <span>PMDC: {doc.pmdcReg}</span>
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-800 bg-teal-50/80 border border-teal-200/70 px-2.5 py-1 rounded-lg">
+                            {doc.specialty}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Admin Actions: Active Switch & Delete Button / Lead Pill */}
+                    <div className="flex items-center justify-between md:justify-end gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
+                      {/* Active/Inactive Switch */}
+                      <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-2xl shadow-2xs">
+                        <Label
+                          htmlFor={`toggle-${doc.id}`}
+                          className="text-[11px] font-bold text-slate-600 cursor-pointer"
+                        >
+                          {doc.isActive ? "Active" : "Inactive"}
+                        </Label>
+                        <Switch
+                          id={`toggle-${doc.id}`}
+                          checked={doc.isActive}
+                          disabled={isBusy}
+                          onCheckedChange={() => handleToggleActive(doc)}
                         />
                       </div>
-                    ) : (
-                      <div className="size-16 sm:size-20 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center font-black text-2xl shrink-0">
-                        {doc.name
-                          .replace("Dr.", "")
-                          .trim()
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("") || "D"}
-                      </div>
-                    )}
 
-                    <div className="min-w-0">
-                      <div className="flex items-center flex-wrap gap-2">
-                        <h3 className="text-lg font-black text-slate-900 truncate">
-                          {doc.name}
-                        </h3>
-                        {doc.isLead && (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-teal-600 text-white uppercase tracking-wider">
-                            Lead Surgeon
-                          </span>
-                        )}
-                        {doc.isActive ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                            Active
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200">
-                            Inactive / On Leave
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="text-xs font-bold text-teal-800 mt-1">
-                        {doc.role}
-                      </p>
-                      <p className="text-xs text-slate-500 font-medium mt-0.5">
-                        {doc.qualifications} · {doc.experience}
-                      </p>
-                      <div className="flex items-center flex-wrap gap-2 mt-2">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200">
-                          <ShieldOutlined sx={{ fontSize: 13, color: "#0d9488" }} />
-                          <span>PMDC: {doc.pmdcReg}</span>
-                        </span>
-                        <span className="text-[11px] font-semibold text-teal-700">
-                          {doc.specialty}
-                        </span>
-                      </div>
+                      {/* Delete Doctor Button or Lead Protection Pill */}
+                      {doc.isLead ? (
+                        <div
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 text-xs font-bold shadow-2xs"
+                          title="The clinic Lead Surgeon profile cannot be deleted"
+                        >
+                          <LockOutlined sx={{ fontSize: 14 }} />
+                          <span className="text-[11px]">Protected Lead</span>
+                        </div>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => confirmDelete(doc)}
+                          className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 h-9 px-3 rounded-2xl text-xs font-bold cursor-pointer"
+                          title={`Delete ${doc.name}`}
+                        >
+                          <DeleteOutlineOutlined sx={{ fontSize: 16, mr: 1 }} />
+                          <span>Delete</span>
+                        </Button>
+                      )}
                     </div>
                   </div>
 
-                  {/* Operatory & Practice Telemetry */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 xl:gap-6 border-t xl:border-t-0 pt-4 xl:pt-0 border-slate-100 text-xs shrink-0">
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                        Operatory Chair
-                      </span>
-                      <p className="font-extrabold text-slate-900 mt-0.5 flex items-center gap-1">
-                        <ChairOutlined sx={{ fontSize: 14, color: "#0d9488" }} />
-                        <span>{doc.operatory}</span>
-                      </p>
-                    </div>
-
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                        Consultation Hours
-                      </span>
-                      <p className="font-bold text-slate-700 mt-0.5 flex items-center gap-1">
-                        <AccessTimeOutlined sx={{ fontSize: 14, color: "#0d9488" }} />
-                        <span>{doc.schedule}</span>
-                      </p>
-                    </div>
-
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                        Monthly Visits
-                      </span>
-                      <p className="font-extrabold text-teal-700 mt-0.5">
-                        {doc.patientsThisMonth} consultations
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Admin Actions: Active Switch & Delete */}
-                  <div className="flex items-center justify-between xl:justify-end gap-3.5 border-t xl:border-t-0 pt-4 xl:pt-0 border-slate-100 shrink-0">
-                    {/* Active/Inactive Switch */}
-                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-2xl">
-                      <Label
-                        htmlFor={`toggle-${doc.id}`}
-                        className="text-[11px] font-bold text-slate-600 cursor-pointer"
-                      >
-                        {doc.isActive ? "Active" : "Inactive"}
-                      </Label>
-                      <Switch
-                        id={`toggle-${doc.id}`}
-                        checked={doc.isActive}
-                        disabled={isBusy}
-                        onCheckedChange={() => handleToggleActive(doc)}
-                      />
-                    </div>
-
-                    {/* Delete Doctor Button or Lead Protection Pill */}
-                    {doc.isLead ? (
-                      <div
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 text-xs font-bold"
-                        title="The clinic Lead Surgeon profile cannot be deleted"
-                      >
-                        <LockOutlined sx={{ fontSize: 14 }} />
-                        <span className="text-[11px]">Protected Lead</span>
+                  {/* BOTTOM SECTION: Dedicated Responsive Telemetry Bar */}
+                  <div className="mt-4 pt-3.5 border-t border-slate-100/90 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50/60 rounded-2xl p-3.5 sm:p-4 border border-slate-200/60">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="size-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 border border-teal-100/80">
+                        <ChairOutlined sx={{ fontSize: 16 }} />
                       </div>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => confirmDelete(doc)}
-                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 h-9 px-3 rounded-2xl text-xs font-bold cursor-pointer"
-                        title={`Delete ${doc.name}`}
-                      >
-                        <DeleteOutlineOutlined sx={{ fontSize: 16, mr: 1 }} />
-                        <span>Delete</span>
-                      </Button>
-                    )}
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Operatory Chair
+                        </span>
+                        <p className="font-extrabold text-xs text-slate-900 truncate">
+                          {doc.operatory}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="size-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100/80">
+                        <AccessTimeOutlined sx={{ fontSize: 16 }} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Consultation Hours
+                        </span>
+                        <p className="font-bold text-xs text-slate-700 truncate">
+                          {doc.schedule}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="size-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-100/80">
+                        <AttachMoneyOutlined sx={{ fontSize: 16 }} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Consult Fee
+                        </span>
+                        <p className="font-extrabold text-xs text-emerald-700 truncate">
+                          Rs. {doc.consultationFee.toLocaleString()}
+                          <span className="text-[10px] font-normal text-slate-400 ml-1">(Waived)</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="size-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 border border-teal-100/80">
+                        <CheckCircleOutlineOutlined sx={{ fontSize: 16 }} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Monthly Consults
+                        </span>
+                        <p className="font-extrabold text-xs text-teal-700 truncate">
+                          {doc.patientsThisMonth} visits
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );

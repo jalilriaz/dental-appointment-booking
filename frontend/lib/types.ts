@@ -35,6 +35,9 @@ export interface Treatment {
     instructions?: string | null;
     isActive?: boolean;
     imageUrl?: string | null;
+    category?: string | null;
+    isMultiSession?: boolean | null;
+    defaultSessions?: number | null;
     _count?: { appointments: number };
 }
 
@@ -71,6 +74,15 @@ export interface Appointment {
         price: number;
         durationMin: number;
     };
+    doctorId?: string | null;
+    doctor?: {
+        id: string;
+        name: string;
+        role: string;
+        operatory?: string | null;
+        image?: string | null;
+        isLead?: boolean;
+    } | null;
     clinicalNotes?: ClinicalNote[];
     patientTreatmentId?: string | null;
     sessionNumber?: number | null;
@@ -83,6 +95,17 @@ export interface Appointment {
         clinicalStatus: string;
         financialStatus: string;
     } | null;
+}
+
+export interface DoctorOption {
+    id: string;
+    name: string;
+    role: string;
+    operatory: string;
+    schedule?: string;
+    consultationFee?: number;
+    isLead?: boolean;
+    isActive?: boolean;
 }
 
 export interface ClinicalNote {

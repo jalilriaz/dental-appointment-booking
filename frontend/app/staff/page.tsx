@@ -34,6 +34,7 @@ export default async function StaffDashboard() {
     pastWeekAppointments,
     allCompletedCount,
     allNoShowCount,
+    doctors,
   ] = await Promise.all([
     prisma.appointment.findMany({
       where: { startTime: { gte: todayStart, lt: todayEnd }, status: { not: "CANCELLED" } },
@@ -61,6 +62,19 @@ export default async function StaffDashboard() {
     }),
     prisma.appointment.count({ where: { status: "COMPLETED" } }),
     prisma.appointment.count({ where: { status: "NO_SHOW" } }),
+    prisma.doctor.findMany({
+      where: { isActive: true },
+      orderBy: [{ isLead: "desc" }, { createdAt: "asc" }],
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        operatory: true,
+        schedule: true,
+        isLead: true,
+        image: true,
+      },
+    }),
   ]);
 
   const todayTotal = todayAppointments.length;
@@ -158,6 +172,7 @@ export default async function StaffDashboard() {
       tomorrowAppointments={serializedTomorrow}
       weeklyTrend={weeklyTrend}
       hourlyDistribution={hourlyDistribution}
+      doctors={doctors}
     />
   );
 }

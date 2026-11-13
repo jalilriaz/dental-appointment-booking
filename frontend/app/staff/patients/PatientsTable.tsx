@@ -26,6 +26,13 @@ import { Input } from "@/components/ui/input";
 import { formatDate, formatPKR } from "@/lib/utils";
 import PatientHistoryDialog from "@/components/shared/PatientHistoryDialog";
 import RegisterPatientDialog from "@/components/admin/RegisterPatientDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface PatientRow {
     id: string;
@@ -139,7 +146,7 @@ export default function PatientsTable({
                     }
                 }
             });
-    }, [patients, searchQuery, filterMode, sortBy]);
+    }, [records, searchQuery, filterMode, sortBy]);
 
     // ─── Pagination ───
     const totalPages = Math.ceil(filteredPatients.length / perPage) || 1;
@@ -164,7 +171,7 @@ export default function PatientsTable({
             {/* ─── Header Section ─── */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
                 <div>
-                    <div className="flex items-center gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                         <span className="text-[11px] font-extrabold uppercase tracking-wider text-teal-800 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200/90 inline-flex items-center gap-1.5 shadow-2xs">
                             <MedicalServicesOutlined sx={{ fontSize: 13 }} className="text-teal-600" />
                             Clinical Patient Registry
@@ -186,7 +193,7 @@ export default function PatientsTable({
                     <Button
                         type="button"
                         onClick={() => setIsRegisterOpen(true)}
-                        className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs gap-1.5 cursor-pointer px-4 h-9"
+                        className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs gap-1.5 cursor-pointer px-4 h-9"
                     >
                         <AddOutlined sx={{ fontSize: 16 }} />
                         <span>Register New Patient</span>
@@ -195,29 +202,29 @@ export default function PatientsTable({
             </div>
 
             {/* ─── Top 4 Metric KPI Cards (1-Click Filters) ─── */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
                 {/* 1. Total Patients */}
                 <button
                     type="button"
                     onClick={() => handleFilterModeChange("ALL")}
-                    className={`p-4 rounded-3xl border transition-all text-left cursor-pointer group ${
+                    className={`p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all text-left cursor-pointer group ${
                         filterMode === "ALL"
                             ? "bg-teal-50/70 border-teal-400 ring-2 ring-teal-500/20 shadow-xs"
                             : "bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs"
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-800 transition-colors">
+                        <span className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-800 transition-colors">
                             Total Patients
                         </span>
-                        <div className="size-8 rounded-xl bg-teal-50 text-teal-700 border border-teal-200/80 flex items-center justify-center">
+                        <div className="size-7 sm:size-8 rounded-xl bg-teal-50 text-teal-700 border border-teal-200/80 flex items-center justify-center">
                             <PeopleAltOutlined sx={{ fontSize: 16 }} />
                         </div>
                     </div>
-                    <p className="text-2xl sm:text-3xl font-black text-[#0B1528] tracking-tight mt-2">
+                    <p className="text-2xl sm:text-3xl font-black text-[#0B1528] tracking-tight mt-1.5 sm:mt-2">
                         {kpiMetrics.total}
                     </p>
-                    <p className="text-[11px] font-medium text-slate-500 mt-1 flex items-center gap-1.5">
+                    <p className="text-[10.5px] sm:text-[11px] font-medium text-slate-500 mt-1 flex items-center gap-1.5">
                         <span className="size-1.5 rounded-full bg-teal-500" />
                         <span>All registered records</span>
                     </p>
@@ -227,24 +234,24 @@ export default function PatientsTable({
                 <button
                     type="button"
                     onClick={() => handleFilterModeChange("ACTIVE_PLANS")}
-                    className={`p-4 rounded-3xl border transition-all text-left cursor-pointer group ${
+                    className={`p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all text-left cursor-pointer group ${
                         filterMode === "ACTIVE_PLANS"
                             ? "bg-teal-50/70 border-teal-400 ring-2 ring-teal-500/20 shadow-xs"
                             : "bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs"
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 group-hover:text-teal-900 transition-colors">
+                        <span className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-teal-700 group-hover:text-teal-900 transition-colors">
                             Active Plans
                         </span>
-                        <div className="size-8 rounded-xl bg-teal-50 text-teal-700 border border-teal-200/80 flex items-center justify-center">
+                        <div className="size-7 sm:size-8 rounded-xl bg-teal-50 text-teal-700 border border-teal-200/80 flex items-center justify-center">
                             <AutoAwesomeOutlined sx={{ fontSize: 16 }} />
                         </div>
                     </div>
-                    <p className="text-2xl sm:text-3xl font-black text-[#0B1528] tracking-tight mt-2">
+                    <p className="text-2xl sm:text-3xl font-black text-[#0B1528] tracking-tight mt-1.5 sm:mt-2">
                         {kpiMetrics.activePlans}
                     </p>
-                    <p className="text-[11px] font-medium text-teal-700 mt-1 flex items-center gap-1.5">
+                    <p className="text-[10.5px] sm:text-[11px] font-medium text-teal-700 mt-1 flex items-center gap-1.5">
                         <span className="size-1.5 rounded-full bg-teal-600 animate-pulse" />
                         <span>Multi-session treatments</span>
                     </p>
@@ -254,24 +261,24 @@ export default function PatientsTable({
                 <button
                     type="button"
                     onClick={() => handleFilterModeChange("MEDICAL_ALERTS")}
-                    className={`p-4 rounded-3xl border transition-all text-left cursor-pointer group ${
+                    className={`p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all text-left cursor-pointer group ${
                         filterMode === "MEDICAL_ALERTS"
                             ? "bg-amber-50/80 border-amber-400 ring-2 ring-amber-500/20 shadow-xs"
                             : "bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs"
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800 group-hover:text-amber-950 transition-colors">
+                        <span className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-800 group-hover:text-amber-950 transition-colors">
                             Medical Alerts
                         </span>
-                        <div className="size-8 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/80 flex items-center justify-center">
+                        <div className="size-7 sm:size-8 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/80 flex items-center justify-center">
                             <WarningAmberOutlined sx={{ fontSize: 16 }} />
                         </div>
                     </div>
-                    <p className="text-2xl sm:text-3xl font-black text-[#0B1528] tracking-tight mt-2">
+                    <p className="text-2xl sm:text-3xl font-black text-[#0B1528] tracking-tight mt-1.5 sm:mt-2">
                         {kpiMetrics.medicalAlerts}
                     </p>
-                    <p className="text-[11px] font-bold text-amber-700 mt-1 flex items-center gap-1.5">
+                    <p className="text-[10.5px] sm:text-[11px] font-bold text-amber-700 mt-1 flex items-center gap-1.5">
                         <span className="size-1.5 rounded-full bg-amber-600" />
                         <span>Allergies &amp; precautions</span>
                     </p>
@@ -281,24 +288,24 @@ export default function PatientsTable({
                 <button
                     type="button"
                     onClick={() => handleFilterModeChange("WITH_VISITS")}
-                    className={`p-4 rounded-3xl border transition-all text-left cursor-pointer group ${
+                    className={`p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all text-left cursor-pointer group ${
                         filterMode === "WITH_VISITS"
                             ? "bg-teal-50/70 border-teal-400 ring-2 ring-teal-500/20 shadow-xs"
                             : "bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs"
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-800 transition-colors">
+                        <span className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-800 transition-colors">
                             Visit History
                         </span>
-                        <div className="size-8 rounded-xl bg-slate-50 text-slate-700 border border-slate-200/80 flex items-center justify-center">
+                        <div className="size-7 sm:size-8 rounded-xl bg-slate-50 text-slate-700 border border-slate-200/80 flex items-center justify-center">
                             <CalendarMonthOutlined sx={{ fontSize: 16 }} />
                         </div>
                     </div>
-                    <p className="text-2xl sm:text-3xl font-black text-[#0B1528] tracking-tight mt-2">
+                    <p className="text-2xl sm:text-3xl font-black text-[#0B1528] tracking-tight mt-1.5 sm:mt-2">
                         {kpiMetrics.withVisits}
                     </p>
-                    <p className="text-[11px] font-medium text-slate-500 mt-1 flex items-center gap-1.5">
+                    <p className="text-[10.5px] sm:text-[11px] font-medium text-slate-500 mt-1 flex items-center gap-1.5">
                         <span className="size-1.5 rounded-full bg-emerald-500" />
                         <span>Completed appointments</span>
                     </p>
@@ -306,8 +313,8 @@ export default function PatientsTable({
             </div>
 
             {/* ─── Search & Filter Command Center ─── */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs p-4 sm:p-5 space-y-3.5">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-5 space-y-3.5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3">
                     <div className="flex items-center gap-2">
                         <h2 className="text-sm font-black text-slate-900 tracking-tight">Patient Directory</h2>
                         <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200">
@@ -315,7 +322,7 @@ export default function PatientsTable({
                         </span>
                     </div>
 
-                    <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <div className="flex items-center gap-2">
                         <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                             Filter Mode:
                         </span>
@@ -325,7 +332,7 @@ export default function PatientsTable({
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 sm:gap-3">
                     {/* Live Omnisearch Input */}
                     <div className="sm:col-span-8 relative">
                         <SearchOutlined className="size-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -350,23 +357,27 @@ export default function PatientsTable({
 
                     {/* Sort Order Selector */}
                     <div className="sm:col-span-4">
-                        <select
+                        <Select
                             value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as SortOption)}
-                            className="w-full h-10 px-3.5 text-xs font-bold text-slate-800 bg-slate-50/70 border border-slate-200/90 rounded-2xl focus:bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-500/10 cursor-pointer outline-none transition-all"
+                            onValueChange={(val) => setSortBy(val as SortOption)}
                         >
-                            <option value="RECENT_VISIT">Sort: Most Recent Visit</option>
-                            <option value="NAME_ASC">Sort: Patient Name (A – Z)</option>
-                            <option value="NAME_DESC">Sort: Patient Name (Z – A)</option>
-                            <option value="MOST_VISITS">Sort: Most Visits</option>
-                            <option value="CODE_ASC">Sort: Patient Code (#1001+)</option>
-                        </select>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Sort Order" />
+                            </SelectTrigger>
+                            <SelectContent position="popper" align="start">
+                                <SelectItem value="RECENT_VISIT">Sort: Most Recent Visit</SelectItem>
+                                <SelectItem value="NAME_ASC">Sort: Patient Name (A – Z)</SelectItem>
+                                <SelectItem value="NAME_DESC">Sort: Patient Name (Z – A)</SelectItem>
+                                <SelectItem value="MOST_VISITS">Sort: Most Visits</SelectItem>
+                                <SelectItem value="CODE_ASC">Sort: Patient Code (#1001+)</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 
                 {/* Filter Pills */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 text-xs">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">
+                <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100 text-xs">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 w-full sm:w-auto">
                         Quick Views:
                     </span>
                     <button
@@ -418,24 +429,175 @@ export default function PatientsTable({
                 </div>
             </div>
 
-            {/* ─── Patient Directory Table ─── */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+            {/* ─── Patient Directory Container ─── */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                {/* 1. Mobile Cards View (Hidden on md and up) */}
+                <div className="block md:hidden divide-y divide-slate-100">
+                    {pagedPatients.length === 0 ? (
+                        <div className="py-12 px-4 text-center text-slate-500">
+                            <div className="size-12 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-2.5">
+                                <PersonOutlineOutlined sx={{ fontSize: 24, color: "#94a3b8" }} />
+                            </div>
+                            <p className="font-extrabold text-slate-800 text-sm">No matching patient records</p>
+                            <p className="text-xs text-slate-400 mt-1">
+                                Try adjusting your search keywords or active quick-view filter.
+                            </p>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    setSearchQuery("");
+                                    setFilterMode("ALL");
+                                }}
+                                className="mt-3 rounded-xl border-slate-300 text-xs font-bold cursor-pointer"
+                            >
+                                Reset Filters
+                            </Button>
+                        </div>
+                    ) : (
+                        pagedPatients.map((p) => {
+                            const age = getAge(p.dateOfBirth);
+                            const cleanPhone = (p.phone || "").replace(/[^0-9]/g, "");
+
+                            return (
+                                <div
+                                    key={p.id}
+                                    className="p-4 space-y-3 hover:bg-slate-50/60 transition-colors cursor-pointer"
+                                    onClick={() => setDossierPatientId(p.id)}
+                                >
+                                    {/* Mobile Card Header */}
+                                    <div className="flex items-start justify-between gap-2.5">
+                                        <div className="flex items-start gap-2.5 min-w-0">
+                                            <div className="size-9 rounded-xl bg-teal-50 text-teal-800 font-black text-xs border border-teal-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                                                {(p.name || "P").charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <span className="font-mono bg-teal-50 text-teal-800 border border-teal-200/80 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                                        #{p.patientCode || p.id.slice(-4).toUpperCase()}
+                                                    </span>
+                                                    <span className="font-extrabold text-slate-900 text-sm truncate">
+                                                        {p.name || "Anonymous Patient"}
+                                                    </span>
+                                                    {(p.gender || age) && (
+                                                        <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">
+                                                            {[p.gender, age ? `${age}y` : null].filter(Boolean).join(" · ")}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {p.email && (
+                                                    <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                                                        {p.email}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Action Buttons */}
+                                        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setDossierPatientId(p.id)}
+                                                className="size-8 p-0 rounded-xl border-slate-200 bg-white hover:bg-teal-50 hover:text-teal-800 text-slate-600 hover:border-teal-300 transition-all cursor-pointer shadow-2xs"
+                                                title="Quick Dossier Modal"
+                                                aria-label="Quick Dossier Modal"
+                                            >
+                                                <VisibilityOutlined sx={{ fontSize: 15 }} />
+                                            </Button>
+
+                                            <Link href={`${baseRoute}/patients/${p.id}`}>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="size-8 p-0 rounded-xl border-slate-200 bg-white hover:bg-teal-50 hover:text-teal-800 text-slate-600 hover:border-teal-300 transition-all cursor-pointer shadow-2xs"
+                                                    title="Full Health Record & Dossier"
+                                                    aria-label="Full Health Record & Dossier"
+                                                >
+                                                    <BadgeOutlined sx={{ fontSize: 15 }} />
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    </div>
+
+                                    {/* Medical Alert Pill if present */}
+                                    {p.medicalAlerts && (
+                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-300 font-bold text-[11px] shadow-2xs w-full">
+                                            <WarningAmberOutlined sx={{ fontSize: 13 }} className="text-amber-600 shrink-0" />
+                                            <span className="truncate">{p.medicalAlerts}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Contact & WhatsApp */}
+                                    {p.phone && (
+                                        <div
+                                            className="flex items-center justify-between gap-2 text-xs pt-2 border-t border-slate-100"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                                                <PhoneOutlined sx={{ fontSize: 13 }} className="text-teal-600 shrink-0" />
+                                                <span>{p.phone}</span>
+                                            </div>
+                                            <a
+                                                href={`https://wa.me/${cleanPhone}?text=Hello%20${encodeURIComponent(p.name || "Patient")},%20this%20is%20Elite%20Dental%20Centre.`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 text-[10.5px] font-extrabold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/90 px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                                            >
+                                                <WhatsApp sx={{ fontSize: 12 }} className="text-emerald-600 shrink-0" />
+                                                <span>WhatsApp Reach</span>
+                                            </a>
+                                        </div>
+                                    )}
+
+                                    {/* Active Plan & Visits */}
+                                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
+                                        <div className="min-w-0 flex-1">
+                                            {p.activePlan ? (
+                                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 text-teal-900 font-bold text-[10.5px] border border-teal-200/80 truncate max-w-full">
+                                                    <AutoAwesomeOutlined sx={{ fontSize: 12 }} className="text-teal-600 shrink-0" />
+                                                    <span className="truncate">{p.activePlan.treatmentName}</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-[11px] text-slate-400 font-medium">Routine General Care</span>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center gap-1.5 shrink-0 text-right">
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-slate-100 text-slate-700 border border-slate-200">
+                                                {p.appointmentCount} {p.appointmentCount === 1 ? "Visit" : "Visits"}
+                                            </span>
+                                            {p.lastAppointment ? (
+                                                <span className="text-[10.5px] text-slate-500 font-semibold">
+                                                    {formatDate(p.lastAppointment.startTime)}
+                                                </span>
+                                            ) : (
+                                                <span className="text-[10px] text-slate-400">First-time</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+
+                {/* 2. Desktop & Laptop Table View (Hidden on mobile) */}
+                <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse table-fixed">
                         <thead>
                             <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10.5px] font-black uppercase tracking-wider text-slate-500">
-                                <th className="py-3 px-4 w-16"># Code</th>
-                                <th className="py-3 px-4 min-w-[260px]">Patient Profile &amp; Alerts</th>
-                                <th className="py-3 px-4 min-w-[190px]">Contact &amp; Reach</th>
-                                <th className="py-3 px-4 min-w-[220px]">Active Clinical Plan</th>
-                                <th className="py-3 px-4 min-w-[160px]">Visit Timeline</th>
-                                <th className="py-3 px-4 text-right min-w-[170px]">Actions</th>
+                                <th className="py-3 px-4 w-[36%] min-w-[240px]">Patient Profile &amp; Alerts</th>
+                                <th className="py-3 px-4 w-[22%] min-w-[170px]">Contact &amp; Reach</th>
+                                <th className="py-3 px-4 w-[24%] min-w-[180px]">Active Clinical Plan</th>
+                                <th className="py-3 px-4 w-[11%] min-w-[110px]">Visit Timeline</th>
+                                <th className="py-3 px-4 w-[7%] min-w-[76px] text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-xs">
                             {pagedPatients.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="py-16 text-center text-slate-500">
+                                    <td colSpan={5} className="py-16 text-center text-slate-500">
                                         <div className="size-14 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-3">
                                             <PersonOutlineOutlined sx={{ fontSize: 28, color: "#94a3b8" }} />
                                         </div>
@@ -467,14 +629,7 @@ export default function PatientsTable({
                                             className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
                                             onClick={() => setDossierPatientId(p.id)}
                                         >
-                                            {/* 1. Patient Code */}
-                                            <td className="py-3.5 px-4 font-black text-slate-400 text-xs group-hover:text-teal-700 transition-colors">
-                                                <span className="font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-200">
-                                                    #{p.patientCode || p.id.slice(-4).toUpperCase()}
-                                                </span>
-                                            </td>
-
-                                            {/* 2. Patient Profile & Demographics */}
+                                            {/* 1. Patient Profile & Demographics (with Code badge integrated) */}
                                             <td className="py-3.5 px-4">
                                                 <div className="flex items-start gap-3">
                                                     <div className="size-10 rounded-2xl bg-teal-50 text-teal-800 font-black text-sm border border-teal-200/80 flex items-center justify-center shrink-0 shadow-2xs group-hover:border-teal-400 group-hover:scale-105 transition-all">
@@ -482,11 +637,14 @@ export default function PatientsTable({
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <div className="flex items-center gap-1.5 flex-wrap">
-                                                            <span className="font-extrabold text-slate-900 text-sm group-hover:text-teal-700 transition-colors">
+                                                            <span className="font-mono bg-teal-50 text-teal-800 border border-teal-200/80 px-1.5 py-0.5 rounded text-[10.5px] font-bold shrink-0">
+                                                                #{p.patientCode || p.id.slice(-4).toUpperCase()}
+                                                            </span>
+                                                            <span className="font-extrabold text-slate-900 text-sm group-hover:text-teal-700 transition-colors truncate">
                                                                 {p.name || "Anonymous Patient"}
                                                             </span>
                                                             {(p.gender || age) && (
-                                                                <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.2 rounded border border-slate-200">
+                                                                <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">
                                                                     {[p.gender, age ? `${age}y` : null].filter(Boolean).join(" · ")}
                                                                 </span>
                                                             )}
@@ -501,8 +659,8 @@ export default function PatientsTable({
                                                         {/* Medical Alert Warning Pill */}
                                                         {p.medicalAlerts ? (
                                                             <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 font-extrabold text-[10px] shadow-2xs">
-                                                                <WarningAmberOutlined sx={{ fontSize: 12 }} className="text-amber-600" />
-                                                                <span className="truncate max-w-[210px]">{p.medicalAlerts}</span>
+                                                                <WarningAmberOutlined sx={{ fontSize: 12 }} className="text-amber-600 shrink-0" />
+                                                                <span className="truncate max-w-[200px]">{p.medicalAlerts}</span>
                                                             </div>
                                                         ) : (
                                                             <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
@@ -513,13 +671,13 @@ export default function PatientsTable({
                                                 </div>
                                             </td>
 
-                                            {/* 3. Contact & Reach */}
+                                            {/* 2. Contact & Reach */}
                                             <td className="py-3.5 px-4" onClick={(e) => e.stopPropagation()}>
                                                 {p.phone ? (
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                                                            <PhoneOutlined sx={{ fontSize: 13 }} className="text-teal-600" />
-                                                            <span>{p.phone}</span>
+                                                            <PhoneOutlined sx={{ fontSize: 13 }} className="text-teal-600 shrink-0" />
+                                                            <span className="truncate">{p.phone}</span>
                                                         </div>
                                                         <a
                                                             href={`https://wa.me/${cleanPhone}?text=Hello%20${encodeURIComponent(p.name || "Patient")},%20this%20is%20Elite%20Dental%20Centre.`}
@@ -527,7 +685,7 @@ export default function PatientsTable({
                                                             rel="noopener noreferrer"
                                                             className="inline-flex items-center gap-1 text-[10.5px] font-extrabold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/90 px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
                                                         >
-                                                            <WhatsApp sx={{ fontSize: 12 }} className="text-emerald-600" />
+                                                            <WhatsApp sx={{ fontSize: 12 }} className="text-emerald-600 shrink-0" />
                                                             <span>WhatsApp Reach</span>
                                                         </a>
                                                     </div>
@@ -536,15 +694,15 @@ export default function PatientsTable({
                                                 )}
                                             </td>
 
-                                            {/* 4. Active Clinical Plan */}
+                                            {/* 3. Active Clinical Plan */}
                                             <td className="py-3.5 px-4">
                                                 {p.activePlan ? (
                                                     <div className="p-2 rounded-xl bg-teal-50/70 border border-teal-200/80 space-y-0.5">
                                                         <div className="flex items-center gap-1 text-teal-900 font-extrabold text-xs">
-                                                            <AutoAwesomeOutlined sx={{ fontSize: 13 }} className="text-teal-600" />
+                                                            <AutoAwesomeOutlined sx={{ fontSize: 13 }} className="text-teal-600 shrink-0" />
                                                             <span className="truncate">{p.activePlan.treatmentName}</span>
                                                         </div>
-                                                        <p className="text-[10px] text-teal-700 font-semibold">
+                                                        <p className="text-[10px] text-teal-700 font-semibold truncate">
                                                             Multi-Session Plan ({p.activePlan.totalSessions} Sessions)
                                                         </p>
                                                     </div>
@@ -556,15 +714,15 @@ export default function PatientsTable({
                                                 )}
                                             </td>
 
-                                            {/* 5. Visit Timeline & History */}
+                                            {/* 4. Visit Timeline & History */}
                                             <td className="py-3.5 px-4">
                                                 <div className="space-y-1">
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-black bg-slate-100 text-slate-800 border border-slate-200">
                                                         {p.appointmentCount} {p.appointmentCount === 1 ? "Encounter" : "Encounters"}
                                                     </span>
                                                     {p.lastAppointment ? (
-                                                        <p className="text-[11px] text-slate-600 font-semibold flex items-center gap-1">
-                                                            <CalendarMonthOutlined sx={{ fontSize: 12 }} className="text-slate-400" />
+                                                        <p className="text-[11px] text-slate-600 font-semibold flex items-center gap-1 truncate">
+                                                            <CalendarMonthOutlined sx={{ fontSize: 12 }} className="text-slate-400 shrink-0" />
                                                             <span>{formatDate(p.lastAppointment.startTime)}</span>
                                                         </p>
                                                     ) : (
@@ -573,14 +731,14 @@ export default function PatientsTable({
                                                 </div>
                                             </td>
 
-                                            {/* 6. Action Suite (Icon-Only Actions) */}
+                                            {/* 5. Actions (Snug fit, no empty gap) */}
                                             <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
                                                         onClick={() => setDossierPatientId(p.id)}
-                                                        className="size-8 p-0 rounded-xl border-slate-200 bg-white hover:bg-teal-50 hover:text-teal-800 text-slate-600 hover:border-teal-300 transition-all cursor-pointer shadow-2xs"
+                                                        className="size-8 p-0 rounded-xl border-slate-200 bg-white hover:bg-teal-50 hover:text-teal-800 text-slate-600 hover:border-teal-300 transition-all cursor-pointer shadow-2xs shrink-0"
                                                         title="Quick Dossier Modal"
                                                         aria-label="Quick Dossier Modal"
                                                     >
@@ -591,7 +749,7 @@ export default function PatientsTable({
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            className="size-8 p-0 rounded-xl border-slate-200 bg-white hover:bg-teal-50 hover:text-teal-800 text-slate-600 hover:border-teal-300 transition-all cursor-pointer shadow-2xs"
+                                                            className="size-8 p-0 rounded-xl border-slate-200 bg-white hover:bg-teal-50 hover:text-teal-800 text-slate-600 hover:border-teal-300 transition-all cursor-pointer shadow-2xs shrink-0"
                                                             title="Full Health Record & Dossier"
                                                             aria-label="Full Health Record & Dossier"
                                                         >
@@ -610,11 +768,11 @@ export default function PatientsTable({
 
                 {/* ─── Pagination Footer ─── */}
                 {totalPages > 1 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50/70 gap-3">
-                        <p className="text-xs font-semibold text-slate-500">
+                    <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 border-t border-slate-200 bg-slate-50/70 gap-3">
+                        <p className="text-xs font-semibold text-slate-500 text-center sm:text-left">
                             Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, filteredPatients.length)} of {filteredPatients.length} patients
                         </p>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap justify-center">
                             <Button
                                 variant="outline"
                                 size="sm"

@@ -7,6 +7,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
@@ -67,7 +74,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import EmptyState from "@/components/shared/EmptyState";
 import { formatPKR, formatDate, formatTime, statusColors } from "@/lib/utils";
-import type { Appointment, TimeSlot } from "@/lib/types";
+import type { Appointment, TimeSlot, DoctorOption } from "@/lib/types";
 
 
 
@@ -319,9 +326,11 @@ function RescheduleDialog({
 
 export default function AppointmentsTable({
     appointments: initialAppointments,
+    doctors = [],
     userRole = "ADMIN"
 }: {
     appointments: Appointment[],
+    doctors?: DoctorOption[],
     userRole?: string
 }) {
     const router = useRouter();
@@ -395,16 +404,24 @@ export default function AppointmentsTable({
     }, [appointments, getAptBucket]);
 
     // Assigned specialist mapping
-    const getDoctorForAppointment = useCallback((treatmentName: string) => {
-        const t = treatmentName.toLowerCase();
-        if (t.includes("brace") || t.includes("ortho") || t.includes("align")) {
-            return { name: "Dr. Ayesha Malik", role: "Orthodontist", operatory: "Chair 2 · Ortho Bay" };
+    const getDoctorForAppointment = useCallback((apt: Appointment) => {
+        if (apt.doctor) {
+            return {
+                name: apt.doctor.name,
+                role: apt.doctor.role.split("&")[0].trim(),
+                operatory: apt.doctor.operatory || "Clinical Operatory",
+            };
         }
-        if (t.includes("rct") || t.includes("canal") || t.includes("scaling") || t.includes("cleaning")) {
-            return { name: "Dr. Hamza Tariq", role: "Endodontist", operatory: "Chair 3 · Rotary Bay" };
+        const lead = doctors.find((d) => d.isLead) || doctors[0];
+        if (lead) {
+            return {
+                name: lead.name,
+                role: lead.role.split("&")[0].trim(),
+                operatory: lead.operatory || "Chair 1 · Surgical Suite",
+            };
         }
         return { name: "Dr. Sheriyaar", role: "Lead Surgeon", operatory: "Chair 1 · Surgical Suite" };
-    }, []);
+    }, [doctors]);
 
     // Quick counts for the timeline switcher
     const timelineCounts = useMemo(() => {
@@ -452,10 +469,11 @@ export default function AppointmentsTable({
             const matchDateTo = !dateTo || aptDate <= new Date(dateTo + "T23:59:59");
             const matchTreatment = !treatmentFilter || a.treatment.name === treatmentFilter;
 
+            const assignedDoc = getDoctorForAppointment(a);
             const matchDoctor = !doctorFilter || (
-                doctorFilter === "sheriyaar" ? (a.treatment.name.toLowerCase().includes("implant") || a.treatment.name.toLowerCase().includes("surgery") || a.treatment.name.toLowerCase().includes("whitening") || a.bookedBy === "WEBSITE") :
-                    doctorFilter === "ayesha" ? (a.treatment.name.toLowerCase().includes("brace") || a.treatment.name.toLowerCase().includes("ortho") || a.treatment.name.toLowerCase().includes("align")) :
-                        doctorFilter === "hamza" ? (a.treatment.name.toLowerCase().includes("rct") || a.treatment.name.toLowerCase().includes("canal") || a.treatment.name.toLowerCase().includes("scaling") || a.treatment.name.toLowerCase().includes("cleaning")) : true
+                a.doctorId === doctorFilter ||
+                (a.doctor && a.doctor.id === doctorFilter) ||
+                assignedDoc.name.toLowerCase().includes(doctorFilter.toLowerCase())
             );
 
             // Timeline filter
@@ -843,32 +861,42 @@ export default function AppointmentsTable({
                         />
                     </div>
 
-                    {/* Doctor Selector (From Screen 1) */}
+                    {/* Doctor Selector */}
                     <div className="md:col-span-3">
-                        <select
-                            value={doctorFilter}
-                            onChange={(e) => { setDoctorFilter(e.target.value); setPage(1); }}
-                            className="w-full h-10 px-3 rounded-xl bg-slate-50/80 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 focus:outline-none"
+                        <Select
+                            value={doctorFilter || "ALL"}
+                            onValueChange={(val) => { setDoctorFilter(val === "ALL" ? "" : val); setPage(1); }}
                         >
-                            <option value="">All Doctors (On-Duty Roster)</option>
-                            <option value="sheriyaar">Dr. Sheriyaar (Lead Surgeon)</option>
-                            <option value="ayesha">Dr. Ayesha Malik (Orthodontist)</option>
-                            <option value="hamza">Dr. Hamza Tariq (Endodontist)</option>
-                        </select>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="All Doctors (On-Duty Roster)" />
+                            </SelectTrigger>
+                            <SelectContent position="popper" align="start">
+                                <SelectItem value="ALL">All Doctors (On-Duty Roster)</SelectItem>
+                                {doctors.map((d) => (
+                                    <SelectItem key={d.id} value={d.id}>
+                                        {d.name} {d.role ? `(${d.role.split("&")[0].trim()})` : ""}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Treatment Selector */}
                     <div className="md:col-span-4">
-                        <select
-                            value={treatmentFilter}
-                            onChange={(e) => { setTreatmentFilter(e.target.value); setPage(1); }}
-                            className="w-full h-10 px-3 rounded-xl bg-slate-50/80 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:border-teal-600 focus:ring-teal-500/20 focus:outline-none truncate"
+                        <Select
+                            value={treatmentFilter || "ALL"}
+                            onValueChange={(val) => { setTreatmentFilter(val === "ALL" ? "" : val); setPage(1); }}
                         >
-                            <option value="">All Procedures &amp; Treatments</option>
-                            {uniqueTreatments.map((t) => (
-                                <option key={t} value={t}>{t}</option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="w-full truncate">
+                                <SelectValue placeholder="All Procedures &amp; Treatments" />
+                            </SelectTrigger>
+                            <SelectContent position="popper" align="start" className="max-h-72">
+                                <SelectItem value="ALL">All Procedures &amp; Treatments</SelectItem>
+                                {uniqueTreatments.map((t) => (
+                                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 
@@ -940,14 +968,13 @@ export default function AppointmentsTable({
                         <table className="w-full text-sm">
                             <thead className="bg-slate-50/95 border-b border-slate-200/90">
                                 <tr>
-                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider w-12">#</th>
                                     <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Patient Name</th>
                                     <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Doctor</th>
                                     <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Department / Treatment</th>
                                     <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Appointment Date</th>
                                     <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Appointment Time</th>
                                     <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Status</th>
-                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Action</th>
+                                    <th className="text-right px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100/90">
@@ -960,14 +987,14 @@ export default function AppointmentsTable({
                                     const isNewDayGroup = currentDateKey !== prevDateKey;
                                     const bucket = getAptBucket(apt.startTime);
                                     const patientInitial = (apt.patient?.name || "P").charAt(0).toUpperCase();
-                                    const assignedDoc = getDoctorForAppointment(apt.treatment.name);
+                                    const assignedDoc = getDoctorForAppointment(apt);
                                     const rowNumber = (page - 1) * perPage + index + 1;
 
                                     return (
                                         <Fragment key={apt.id}>
                                             {isNewDayGroup && (
                                                 <tr key={`header-${currentDateKey}`} className="bg-slate-50/90 border-y border-slate-200/90">
-                                                    <td colSpan={8} className="px-5 py-3">
+                                                    <td colSpan={7} className="px-5 py-3">
                                                         <div className="flex items-center justify-between flex-wrap gap-2">
                                                             <div className="flex items-center gap-2.5">
                                                                 {bucket === "today" ? (
@@ -1006,44 +1033,51 @@ export default function AppointmentsTable({
                                                 </tr>
                                             )}
                                             <tr className="hover:bg-slate-50/80 transition-premium">
-                                                <td className="px-4 py-3">
-                                                    <p className="font-semibold text-slate-900 flex items-center gap-2">
-                                                        {apt.guestName || apt.patient?.name || "Unknown"}
+                                                {/* 1. Patient Name & Phone (Single Line) */}
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-slate-900 text-xs sm:text-sm">
+                                                            {apt.guestName || apt.patient?.name || "Unknown"}
+                                                        </span>
                                                         {(apt.patient?.noShowCount ?? 0) > 0 && (
                                                             <span className="inline-flex items-center gap-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-700 border border-red-200" title={`${apt.patient?.noShowCount} previous No-Shows`}>
                                                                 <WarningAmberOutlinedIcon className="size-3" />
                                                                 {apt.patient?.noShowCount} No-Show
                                                             </span>
                                                         )}
-                                                    </p>
-                                                    <p className="text-xs text-slate-500 font-medium">{apt.guestPhone || apt.patient?.phone}</p>
+                                                        <span className="text-[11px] text-slate-400 font-medium">· {apt.guestPhone || apt.patient?.phone}</span>
+                                                    </div>
                                                 </td>
 
-                                                {/* Doctor (From Screen 1) */}
-                                                <td className="px-4 py-3.5">
-                                                    <p className="font-extrabold text-slate-900 text-xs">{assignedDoc.name}</p>
-                                                    <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 mt-0.5">
-                                                        {assignedDoc.role}
-                                                    </span>
+                                                {/* 2. Doctor & Role Badge (Single Line) */}
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="font-extrabold text-slate-900 text-xs">{assignedDoc.name}</span>
+                                                        <span className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                                                            {assignedDoc.role}
+                                                        </span>
+                                                    </div>
                                                 </td>
 
-                                                {/* Department & Treatment (From Screen 1) */}
-                                                <td className="px-4 py-3.5">
-                                                    <p className="font-bold text-slate-900 text-xs leading-snug">{apt.treatment.name}</p>
-                                                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                                        <span className="text-[10px] text-teal-800 font-extrabold">{assignedDoc.operatory}</span>
-                                                        <span className="text-slate-300">·</span>
-                                                        <span className="text-[11px] font-black text-slate-700">{formatPKR(apt.price || apt.treatment.price)}</span>
+                                                {/* 3. Department, Treatment & Price (Single Line) */}
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-slate-900 text-xs truncate max-w-[200px]" title={apt.treatment.name}>
+                                                            {apt.treatment.name}
+                                                        </span>
+                                                        <span className="text-[10px] text-teal-800 font-bold bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">
+                                                            {formatPKR(apt.price || apt.treatment.price)}
+                                                        </span>
                                                         {apt.sessionNumber ? (
-                                                            <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-teal-50 text-teal-800 border border-teal-200/90 shadow-2xs">
-                                                                Session {apt.sessionNumber}{apt.patientTreatment?.totalSessions ? ` of ${apt.patientTreatment.totalSessions}` : ""}
+                                                            <span className="inline-flex items-center text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 border border-blue-200/90 shadow-2xs">
+                                                                S{apt.sessionNumber}{apt.patientTreatment?.totalSessions ? `/${apt.patientTreatment.totalSessions}` : ""}
                                                             </span>
                                                         ) : null}
                                                     </div>
                                                 </td>
 
-                                                {/* Appointment Date (From Screen 1) */}
-                                                <td className="px-4 py-3.5 text-xs font-semibold text-slate-700">
+                                                {/* 4. Appointment Date (Single Line) */}
+                                                <td className="px-4 py-3 whitespace-nowrap text-xs font-semibold text-slate-700">
                                                     <div className="flex items-center gap-1.5">
                                                         <span>{formatDate(start)}</span>
                                                         {bucket === "today" && (
@@ -1059,8 +1093,8 @@ export default function AppointmentsTable({
                                                     </div>
                                                 </td>
 
-                                                {/* Appointment Time (From Screen 1) */}
-                                                <td className="px-4 py-3.5 text-slate-700">
+                                                {/* 5. Appointment Time & Duration (Single Line) */}
+                                                <td className="px-4 py-3 whitespace-nowrap text-slate-700">
                                                     <div className="flex items-center gap-1.5">
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-teal-50/90 border border-teal-200/90 text-teal-950 font-black text-xs shadow-2xs">
                                                             <AccessTimeOutlinedIcon sx={{ fontSize: 13 }} className="text-teal-700" />
@@ -1072,15 +1106,15 @@ export default function AppointmentsTable({
                                                     </div>
                                                 </td>
 
-                                                {/* Status (From Screen 1) */}
-                                                <td className="px-4 py-3.5">
+                                                {/* 6. Status (Single Line) */}
+                                                <td className="px-4 py-3 whitespace-nowrap">
                                                     <StatusBadge status={apt.status} />
                                                 </td>
 
-                                                {/* Action (From Screen 1) */}
-                                                <td className="px-4 py-3.5">
-                                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                                        {/* Primary View Button (Exact Screen 1 Style) */}
+                                                {/* 7. Action Controls (Strict Single-Line Horizontal Row) */}
+                                                <td className="px-4 py-3 whitespace-nowrap text-right">
+                                                    <div className="inline-flex items-center justify-end gap-1.5">
+                                                        {/* Primary View Button */}
                                                         <button
                                                             onClick={() => setDetailId(apt.id)}
                                                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white hover:bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
@@ -1133,6 +1167,7 @@ export default function AppointmentsTable({
                                                             </>
                                                         )}
 
+                                                        {/* Compact Clinical Notes Dialog (30px Icon Trigger) */}
                                                         <ClinicalNoteDialog
                                                             appointmentId={apt.id}
                                                             patientName={apt.guestName || apt.patient?.name || "Unknown"}
@@ -1141,6 +1176,7 @@ export default function AppointmentsTable({
                                                             existingNote={apt.clinicalNotes?.[0] || null}
                                                             onNoteSaved={() => router.refresh()}
                                                             readOnly={userRole !== "ADMIN"}
+                                                            compact
                                                         />
 
                                                         {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
@@ -1165,7 +1201,7 @@ export default function AppointmentsTable({
                                                                     title="Cancel Appointment"
                                                                     disabled={cancellingId === apt.id}
                                                                 >
-                                                                    {cancellingId === apt.id ? <AutorenewOutlinedIcon sx={{ fontSize: 15 }} className="animate-spin" /> : <DeleteOutlineOutlinedIcon sx={{ fontSize: 15 }} />}
+                                                                    {cancellingId === apt.id ? <AutorenewOutlinedIcon sx={{ fontSize: 13 }} className="animate-spin" /> : <DeleteOutlineOutlinedIcon sx={{ fontSize: 15 }} />}
                                                                 </button>
                                                             </>
                                                         )}
@@ -1176,7 +1212,7 @@ export default function AppointmentsTable({
                                     );
                                 })}
                                 {paged.length === 0 && (
-                                    <tr><td colSpan={8} className="py-0"><EmptyState icon={EventBusyOutlinedIcon} title="No Appointments Found" description="No appointments match your current filters. Try adjusting your search or status filter." /></td></tr>
+                                    <tr><td colSpan={7} className="py-0"><EmptyState icon={EventBusyOutlinedIcon} title="No Appointments Found" description="No appointments match your current filters. Try adjusting your search or status filter." /></td></tr>
                                 )}
                             </tbody>
                         </table>

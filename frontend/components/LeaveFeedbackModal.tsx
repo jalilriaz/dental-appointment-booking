@@ -13,6 +13,13 @@ import {
   MedicalServicesOutlined,
 } from "@mui/icons-material";
 import { FeedbackItem } from "@/lib/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface LeaveFeedbackModalProps {
   isOpen: boolean;
@@ -231,22 +238,21 @@ export default function LeaveFeedbackModal({
               <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Treatment / Procedure Visited
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <MedicalServicesOutlined sx={{ fontSize: 18 }} />
-                </div>
-                <select
-                  value={procedure}
-                  onChange={(e) => setProcedure(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:border-teal-600 focus:ring-1 focus:ring-teal-600 outline-hidden transition-colors appearance-none cursor-pointer"
-                >
+              <Select
+                value={procedure}
+                onValueChange={(val) => setProcedure(val)}
+              >
+                <SelectTrigger className="w-full bg-white">
+                  <SelectValue placeholder="Select procedure..." />
+                </SelectTrigger>
+                <SelectContent position="popper" align="start" className="max-h-60">
                   {PROCEDURES.map((proc) => (
-                    <option key={proc} value={proc}>
+                    <SelectItem key={proc} value={proc}>
                       {proc}
-                    </option>
+                    </SelectItem>
                   ))}
-                </select>
-              </div>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Review Comment */}

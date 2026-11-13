@@ -43,6 +43,7 @@ interface ClinicalNoteDialogProps {
     existingNote?: ClinicalNote | null;
     onNoteSaved?: () => void;
     readOnly?: boolean;
+    compact?: boolean;
 }
 
 export default function ClinicalNoteDialog({
@@ -53,6 +54,7 @@ export default function ClinicalNoteDialog({
     existingNote,
     onNoteSaved,
     readOnly = false,
+    compact = false,
 }: ClinicalNoteDialogProps) {
     const [open, setOpen] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -118,17 +120,34 @@ export default function ClinicalNoteDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button
-                    variant={hasNote ? "outline" : "default"}
-                    size="sm"
-                    className={hasNote
-                        ? "text-emerald-700 border-emerald-300 hover:bg-emerald-50 gap-1.5 cursor-pointer transition-premium bg-emerald-50/50"
-                        : "bg-teal-600 hover:bg-teal-700 text-white gap-1.5 cursor-pointer transition-premium shadow-xs border-0"
-                    }
-                >
-                    <DescriptionOutlinedIcon className="size-3.5" />
-                    {hasNote ? "View Notes" : "Add Notes"}
-                </Button>
+                {compact ? (
+                    <button
+                        type="button"
+                        className={`p-1.5 rounded-xl border transition-all cursor-pointer relative inline-flex items-center justify-center shrink-0 ${
+                            hasNote
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100/70"
+                                : "bg-white text-slate-600 border-slate-200 hover:text-teal-700 hover:bg-teal-50"
+                        }`}
+                        title={hasNote ? "View Clinical Notes" : "Add Clinical Notes"}
+                    >
+                        <DescriptionOutlinedIcon sx={{ fontSize: 15 }} />
+                        {hasNote && (
+                            <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+                        )}
+                    </button>
+                ) : (
+                    <Button
+                        variant={hasNote ? "outline" : "default"}
+                        size="sm"
+                        className={hasNote
+                            ? "text-emerald-700 border-emerald-300 hover:bg-emerald-50 gap-1.5 cursor-pointer transition-premium bg-emerald-50/50"
+                            : "bg-teal-600 hover:bg-teal-700 text-white gap-1.5 cursor-pointer transition-premium shadow-xs border-0"
+                        }
+                    >
+                        <DescriptionOutlinedIcon className="size-3.5" />
+                        {hasNote ? "View Notes" : "Add Notes"}
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-2xl bg-white border-slate-200 text-slate-900 shadow-2xl flex flex-col p-0 max-h-[90vh] overflow-hidden">
                 {/* Sticky Header */}

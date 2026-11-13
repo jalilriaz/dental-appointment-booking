@@ -2,6 +2,7 @@
   "name": "dental-appointment-booking-monorepo",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@10.34.4",
   "scripts": {
     "dev": "turbo run dev",
     "dev:frontend": "pnpm --filter frontend dev",

@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
 };
 
-const DOCTORS_ROSTER = [
+const LEAD_DOCTOR_FALLBACK = [
   {
     name: "Dr. Sheriyaar",
     role: "Lead Dental Surgeon & Implantologist",
@@ -54,51 +54,6 @@ const DOCTORS_ROSTER = [
     ],
     bio: "Head dentist and founder of Elite Dental Centre. Dr. Sheriyaar personally oversees all surgical and aesthetic dental procedures. Trained in modern European implantology protocols, he prioritizes minimally invasive, pain-free patient experiences with zero handoffs to uncertified assistants.",
     schedule: "Monday – Saturday: 12:00 PM – 8:00 PM",
-  },
-  {
-    name: "Dr. Ayesha Malik",
-    role: "Consultant Orthodontist & Dentofacial Orthopedics",
-    credentials: "BDS, FCPS (Orthodontics)",
-    experience: "9+ Years Experience",
-    isLead: false,
-    focus: [
-      "Invisible Aligners & Clear Trays",
-      "Ceramic & Self-Ligating Braces",
-      "Malocclusion & Bite Alignment",
-      "Pediatric & Adolescent Orthodontics",
-    ],
-    bio: "Specializing in contemporary digital orthodontics and aesthetic smile symmetry. Dr. Ayesha works in tandem with Dr. Sheriyaar to craft tailored non-extraction clear aligner trajectories and discreet ceramic bracket plans.",
-    schedule: "Tuesday & Friday: 2:00 PM – 6:00 PM",
-  },
-  {
-    name: "Dr. Hamza Tariq",
-    role: "Consultant Endodontist (Root Canal Specialist)",
-    credentials: "BDS, MDS (Endodontics & Operative Dentistry)",
-    experience: "8+ Years Experience",
-    isLead: false,
-    focus: [
-      "Complex Multi-Canal Molar Retreatment",
-      "Microscopic Endodontic Surgery",
-      "Bioceramic Perforation Repair",
-      "Broken Instrument Retrieval",
-    ],
-    bio: "Focused exclusively on preserving natural dentition through high-magnification computerized rotary endodontics. Dr. Hamza ensures even severely infected multi-rooted teeth are treated comfortably without extraction.",
-    schedule: "Wednesday & Saturday: 4:00 PM – 8:00 PM",
-  },
-  {
-    name: "Dr. Fatima Noor",
-    role: "Specialist Periodontist & Aesthetic Laser Surgeon",
-    credentials: "BDS, MSc (Periodontology & Laser Dentistry)",
-    experience: "7+ Years Experience",
-    isLead: false,
-    focus: [
-      "Laser Gingival Depigmentation",
-      "Deep Ultrasonic Periodontal Therapy",
-      "Gummy Smile Laser Contouring",
-      "Bone Grafting & Socket Preservation",
-    ],
-    bio: "Expert in soft tissue aesthetics and periodontal health. Dr. Fatima utilizes medical laser therapies to eliminate gum bleeding, sculpt symmetric gumlines, and treat advanced periodontal bone loss.",
-    schedule: "Monday & Thursday: 1:00 PM – 5:00 PM",
   },
 ];
 
@@ -148,7 +103,7 @@ export default async function DoctorsPage() {
             : `Specialist consultant at Elite Dental Centre focusing on ${doc.specialty}. Dedicated to clinical precision, high patient satisfaction, and comfort.`,
           schedule: doc.schedule,
         }))
-      : DOCTORS_ROSTER;
+      : LEAD_DOCTOR_FALLBACK;
 
   const leadDoctor = doctorsList.find((d) => d.isLead) || doctorsList[0];
   const specialistDoctors = doctorsList.filter((d) => !d.isLead);

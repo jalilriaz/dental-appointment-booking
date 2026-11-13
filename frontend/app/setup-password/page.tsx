@@ -17,6 +17,7 @@ import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import SimpleNavbar from "@/components/SimpleNavbar";
 
 function SetupPasswordForm() {
@@ -168,17 +169,12 @@ function SetupPasswordForm() {
 
                     <div className="space-y-1.5">
                         <Label htmlFor="dob" className="text-slate-700 text-xs font-semibold">Date of Birth</Label>
-                        <div className="relative">
-                            <CalendarTodayOutlinedIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                            <Input
-                                id="dob"
-                                type="date"
-                                required
-                                value={dob}
-                                onChange={(e) => setDob(e.target.value)}
-                                className="pl-9 h-10 bg-white border-slate-300 text-slate-900 text-xs focus:border-teal-600"
-                            />
-                        </div>
+                        <DatePicker
+                            value={dob}
+                            onChange={setDob}
+                            max={new Date().toISOString().split("T")[0]}
+                            placeholder="Select date of birth"
+                        />
                     </div>
 
                     <div className="space-y-1.5">

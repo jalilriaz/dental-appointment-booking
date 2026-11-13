@@ -250,4 +250,17 @@ export const ALL_TREATMENTS: TreatmentSeedItem[] = [
     imageUrl: null,
     isMultiSession: false,
   },
+  {
+    id: "treatment-21",
+    name: "General Consultation & Dental Checkup",
+    price: 2000,
+    maxPrice: 2000,
+    durationMin: 30,
+    description:
+      "Comprehensive oral examination, digital intraoral inspection, and personalized treatment plan with Dr. Sheriyaar. Consultation fee waived if procedure is initiated.",
+    instructions: "Please arrive 10 minutes early. Bring any previous dental X-rays if available.",
+    imageUrl: null,
+    isMultiSession: false,
+    defaultSessions: 1,
+  },
 ];

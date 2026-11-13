@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
 import { registerNewPatient } from "@/app/actions/patients";
 import type { PatientRow } from "@/app/staff/patients/PatientsTable";
 
@@ -231,15 +232,16 @@ export default function RegisterPatientDialog({
 
                             <div className="space-y-1.5">
                                 <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                    <CalendarMonthOutlined sx={{ fontSize: 14 }} className="text-slate-500" />
+                                    <CalendarMonthOutlined sx={{ fontSize: 14 }} className="text-teal-600" />
                                     <span>Date of Birth</span>
                                 </Label>
-                                <Input
-                                    type="date"
+                                <DatePicker
                                     value={dateOfBirth}
-                                    onChange={(e) => setDateOfBirth(e.target.value)}
+                                    onChange={setDateOfBirth}
+                                    max={new Date().toISOString().split("T")[0]}
+                                    placeholder="Select date of birth"
                                     disabled={isSubmitting}
-                                    className="h-9 text-xs font-medium rounded-xl border-slate-200 focus-visible:ring-2 focus-visible:ring-teal-500/20"
+                                    compact
                                 />
                             </div>
                         </div>

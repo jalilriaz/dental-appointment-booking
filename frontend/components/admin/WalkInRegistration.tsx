@@ -37,6 +37,14 @@ import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
 
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimeSlotSelector } from "@/components/ui/time-slot-selector";
+import type { DoctorOption } from "@/lib/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatDate, formatTime, isSunday, formatPKR } from "@/lib/utils";
 import StatusBadge from "@/components/shared/StatusBadge";
 import SundayWarning from "@/components/shared/SundayWarning";
@@ -92,6 +100,7 @@ interface BookingForm {
     treatmentId: string;
     notes: string;
     patientTreatmentId?: string;
+    doctorId?: string;
 }
 
 interface NewPatientForm extends BookingForm {
@@ -115,7 +124,13 @@ interface SuccessData {
 
 // ─── Main Orchestrator ──────────────────────────────────
 
-export default function WalkInRegistration({ treatments }: { treatments: TreatmentOption[] }) {
+export default function WalkInRegistration({
+    treatments,
+    doctors = [],
+}: {
+    treatments: TreatmentOption[];
+    doctors?: DoctorOption[];
+}) {
     const [activeTab, setActiveTab] = useState<"registered" | "new">("registered");
     const [success, setSuccess] = useState<SuccessData | null>(null);
     const [copied, setCopied] = useState(false);
@@ -141,40 +156,40 @@ export default function WalkInRegistration({ treatments }: { treatments: Treatme
             )}
 
             {/* Segmented Mode Switcher (Tactile Clinical Pill Bar) */}
-            <div className="bg-white p-1.5 rounded-2xl border border-slate-200/90 shadow-2xs max-w-xl">
-                <div className="grid grid-cols-2 gap-1.5">
+            <div className="bg-white p-1.5 rounded-2xl border border-slate-200/90 shadow-2xs inline-flex w-full sm:w-auto">
+                <div className="grid grid-cols-2 gap-1.5 w-full sm:w-auto">
                     <button
                         type="button"
                         onClick={() => setActiveTab("registered")}
-                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+                        className={`flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
                             activeTab === "registered"
-                                ? "bg-teal-600 text-white shadow-sm shadow-teal-600/25"
+                                ? "bg-teal-600 text-white shadow-xs"
                                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                         }`}
                     >
                         <SearchOutlinedIcon sx={{ fontSize: 18 }} />
-                        <span>Registered Patient</span>
+                        <span>Registered Patient Lookup</span>
                     </button>
                     <button
                         type="button"
                         onClick={() => setActiveTab("new")}
-                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+                        className={`flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
                             activeTab === "new"
-                                ? "bg-teal-600 text-white shadow-sm shadow-teal-600/25"
+                                ? "bg-teal-600 text-white shadow-xs"
                                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                         }`}
                     >
                         <PersonAddOutlinedIcon sx={{ fontSize: 18 }} />
-                        <span>+ New Walk-In Patient</span>
+                        <span>+ Register New Walk-In</span>
                     </button>
                 </div>
             </div>
 
             {/* Tab Workspace */}
             {activeTab === "registered" ? (
-                <RegisteredPatientWorkspace treatments={treatments} onSuccess={setSuccess} />
+                <RegisteredPatientWorkspace treatments={treatments} doctors={doctors} onSuccess={setSuccess} />
             ) : (
-                <NewPatientIntake treatments={treatments} onSuccess={setSuccess} />
+                <NewPatientIntake treatments={treatments} doctors={doctors} onSuccess={setSuccess} />
             )}
         </div>
     );
@@ -186,9 +201,11 @@ export default function WalkInRegistration({ treatments }: { treatments: Treatme
 
 function RegisteredPatientWorkspace({
     treatments,
+    doctors = [],
     onSuccess,
 }: {
     treatments: TreatmentOption[];
+    doctors?: DoctorOption[];
     onSuccess: (data: SuccessData) => void;
 }) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -209,6 +226,7 @@ function RegisteredPatientWorkspace({
         time: "",
         treatmentId: "",
         notes: "",
+        doctorId: doctors[0]?.id || "",
     });
     const [booking, setBooking] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -274,7 +292,14 @@ function RegisteredPatientWorkspace({
     const handleClearSelection = () => {
         setSelectedPatientId(null);
         setHistory(null);
-        setBookingForm({ date: "", time: "", treatmentId: "", notes: "", patientTreatmentId: undefined });
+        setBookingForm({
+            date: "",
+            time: "",
+            treatmentId: "",
+            notes: "",
+            patientTreatmentId: undefined,
+            doctorId: doctors[0]?.id || "",
+        });
     };
 
     // Handle Appointment Booking
@@ -294,6 +319,7 @@ function RegisteredPatientWorkspace({
                     time: bookingForm.time,
                     treatmentId: bookingForm.treatmentId,
                     patientTreatmentId: bookingForm.patientTreatmentId,
+                    doctorId: bookingForm.doctorId || (doctors.length > 0 ? doctors[0].id : undefined),
                     notes: bookingForm.notes || undefined,
                 }),
             });
@@ -305,7 +331,14 @@ function RegisteredPatientWorkspace({
 
             // Refresh patient's dossier so the newly booked appointment is reflected
             await loadHistory(selectedPatientId);
-            setBookingForm({ date: "", time: "", treatmentId: "", notes: "", patientTreatmentId: undefined });
+            setBookingForm({
+                date: "",
+                time: "",
+                treatmentId: "",
+                notes: "",
+                patientTreatmentId: undefined,
+                doctorId: doctors[0]?.id || "",
+            });
         } catch (err) {
             setError(err instanceof Error ? err.message : "Something went wrong while booking");
         } finally {
@@ -315,6 +348,12 @@ function RegisteredPatientWorkspace({
 
     const today = new Date().toISOString().split("T")[0];
     const selectedTreatment = treatments.find((t) => t.id === bookingForm.treatmentId);
+
+    const leadDoctor = doctors.find((d) => d.isLead) || doctors[0];
+    const chair1Doctor = doctors.find((d) => d.operatory?.toLowerCase().includes("chair 1"))?.name || leadDoctor?.name || "Dr. Sheriyaar";
+    const chair2Doctor = doctors.find((d) => d.operatory?.toLowerCase().includes("chair 2") || d.role?.toLowerCase().includes("ortho"))?.name || (doctors.length === 1 ? leadDoctor?.name : "Specialist");
+    const chair3Doctor = doctors.find((d) => d.operatory?.toLowerCase().includes("chair 3") || d.role?.toLowerCase().includes("endo"))?.name || (doctors.length === 1 ? leadDoctor?.name : "Specialist");
+    const chair4Doctor = doctors.find((d) => d.operatory?.toLowerCase().includes("chair 4") || d.role?.toLowerCase().includes("hygiene"))?.name || (doctors.length === 1 ? leadDoctor?.name : "Duty Doctor");
 
     // Selected Patient Object
     const currentPatient = useMemo(() => {
@@ -346,9 +385,9 @@ function RegisteredPatientWorkspace({
             {/* ── MASTER-DETAIL DUAL PANE WORKSPACE ── */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 {/* ──────────────────────────────────────────────────────────
-                    LEFT PANEL (5 COLS): Searchable Patient Stream
+                    LEFT PANEL (5 COLS on lg, 4 COLS on xl): Searchable Patient Stream
                     ────────────────────────────────────────────────────────── */}
-                <div className={`lg:col-span-5 space-y-4 ${selectedPatientId ? "hidden lg:block" : "block"}`}>
+                <div className={`lg:col-span-5 xl:col-span-4 space-y-4 ${selectedPatientId ? "hidden lg:block" : "block"}`}>
                     {/* Search & Filter Header Card */}
                     <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-3.5">
                         <div className="flex items-center justify-between">
@@ -534,9 +573,9 @@ function RegisteredPatientWorkspace({
                 </div>
 
                 {/* ──────────────────────────────────────────────────────────
-                    RIGHT PANEL (7 COLS): Patient Dossier & Fast Booking Studio
+                    RIGHT PANEL (7 COLS on lg, 8 COLS on xl): Patient Dossier & Fast Booking Studio
                     ────────────────────────────────────────────────────────── */}
-                <div className={`lg:col-span-7 space-y-5 ${selectedPatientId ? "block" : "hidden lg:block"}`}>
+                <div className={`lg:col-span-7 xl:col-span-8 space-y-5 ${selectedPatientId ? "block" : "hidden lg:block"}`}>
                     {loadingHistory ? (
                         <div className="bg-white rounded-3xl border border-slate-200/80 p-16 text-center shadow-2xs space-y-3">
                             <AutorenewOutlinedIcon sx={{ fontSize: 32 }} className="text-teal-600 animate-spin mx-auto" />
@@ -712,7 +751,7 @@ function RegisteredPatientWorkspace({
                                     </div>
 
                                     <form onSubmit={handleBook} className="space-y-4">
-                                        <div className="grid sm:grid-cols-2 gap-4">
+                                        <div className={`grid ${doctors.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2"} gap-4`}>
                                             {/* Date Picker */}
                                             <div className="space-y-1.5">
                                                 <label className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
@@ -737,20 +776,49 @@ function RegisteredPatientWorkspace({
                                                     <span>Clinical Procedure</span>
                                                     <span className="text-red-500">*</span>
                                                 </label>
-                                                <select
-                                                    value={bookingForm.treatmentId}
-                                                    onChange={(e) => setBookingForm((p) => ({ ...p, treatmentId: e.target.value, time: "" }))}
-                                                    required
-                                                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer font-semibold"
+                                                <Select
+                                                    value={bookingForm.treatmentId || "NONE"}
+                                                    onValueChange={(val) => setBookingForm((p) => ({ ...p, treatmentId: val === "NONE" ? "" : val, time: "" }))}
                                                 >
-                                                    <option value="">Select procedure...</option>
-                                                    {treatments.map((t) => (
-                                                        <option key={t.id} value={t.id}>
-                                                            {t.name} — Rs. {t.price.toLocaleString()} ({t.durationMin}m)
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="Select clinical procedure..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent position="popper" align="start" className="max-h-72">
+                                                        <SelectItem value="NONE">Select procedure...</SelectItem>
+                                                        {treatments.map((t) => (
+                                                            <SelectItem key={t.id} value={t.id}>
+                                                                {t.name} — Rs. {t.price.toLocaleString()} ({t.durationMin}m)
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
+
+                                            {/* Attending Specialist / Doctor (Only shown when clinic has multiple doctors) */}
+                                            {doctors.length > 1 && (
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
+                                                        <PersonOutlineOutlinedIcon sx={{ fontSize: 14, color: "#0D9488" }} />
+                                                        <span>Attending Specialist</span>
+                                                        <span className="text-red-500">*</span>
+                                                    </label>
+                                                    <Select
+                                                        value={bookingForm.doctorId || doctors[0]?.id || ""}
+                                                        onValueChange={(val) => setBookingForm((p) => ({ ...p, doctorId: val }))}
+                                                    >
+                                                        <SelectTrigger className="w-full">
+                                                            <SelectValue placeholder="Select attending doctor..." />
+                                                        </SelectTrigger>
+                                                        <SelectContent position="popper" align="start" className="max-h-72">
+                                                            {doctors.map((doc) => (
+                                                                <SelectItem key={doc.id} value={doc.id}>
+                                                                    {doc.name} {doc.isLead ? "★ Lead Surgeon" : `(${doc.role})`}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Available Operatory Time Slots */}
@@ -902,45 +970,108 @@ function RegisteredPatientWorkspace({
                         /* ──────────────────────────────────────────────────────────
                            EMPTY WORKSPACE CANVAS (Quick Selection Guide)
                            ────────────────────────────────────────────────────────── */
-                        <div className="bg-white rounded-3xl border border-slate-200/80 p-8 sm:p-12 shadow-2xs space-y-6 text-center">
-                            <div className="size-16 rounded-3xl bg-teal-50 border border-teal-200 flex items-center justify-center mx-auto text-teal-700 shadow-2xs">
-                                <SearchOutlinedIcon sx={{ fontSize: 32 }} />
+                        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 sm:p-12 shadow-2xs space-y-8 text-center">
+                            <div className="space-y-4">
+                                <div className="size-16 rounded-3xl bg-teal-50 border border-teal-200/80 flex items-center justify-center mx-auto text-teal-700 shadow-2xs">
+                                    <SearchOutlinedIcon sx={{ fontSize: 32 }} />
+                                </div>
+
+                                <div className="max-w-md mx-auto space-y-1.5">
+                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                                        Select a Patient to Schedule
+                                    </h3>
+                                    <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
+                                        Click any patient in the directory on the left or search by MRN, phone, or name to view their clinical history, active treatment plans, and book their next visit.
+                                    </p>
+                                </div>
                             </div>
 
-                            <div className="max-w-md mx-auto space-y-1.5">
-                                <h3 className="text-lg font-black text-slate-900 tracking-tight">
-                                    Select a Patient to Schedule
-                                </h3>
-                                <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
-                                    Click any patient in the directory on the left or search by MRN, phone, or name to view their clinical history, active treatment plans, and book their next visit.
-                                </p>
-                            </div>
+                            {/* 4 Operatory Chair Telemetry Cards */}
+                            <div className="pt-6 border-t border-slate-100 max-w-3xl mx-auto text-left">
+                                <div className="flex items-center justify-between mb-4">
+                                    <p className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                        <ChairOutlinedIcon sx={{ fontSize: 16, color: "#0d9488" }} />
+                                        <span>Current Operatory Desk Overview</span>
+                                    </p>
+                                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                        4 Operatories Active
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-teal-300 transition-all shadow-2xs group">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] font-black text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/70">
+                                                Chair 1
+                                            </span>
+                                            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                                        </div>
+                                        <p className="text-xs font-black text-slate-900 group-hover:text-teal-700 transition-colors">
+                                            Surgical Suite A
+                                        </p>
+                                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                                            Implants &amp; Maxillofacial
+                                        </p>
+                                        <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                                            <span className="text-emerald-700 font-extrabold">Live Ready</span>
+                                            <span className="text-slate-400 font-semibold">{chair1Doctor}</span>
+                                        </div>
+                                    </div>
 
-                            {/* 4 Operatory Chair Status Pills */}
-                            <div className="pt-4 border-t border-slate-100 max-w-lg mx-auto">
-                                <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-3">
-                                    Current Operatory Desk Overview
-                                </p>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-left">
-                                    <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70">
-                                        <p className="text-[10px] font-bold text-slate-400">Chair 1</p>
-                                        <p className="text-xs font-black text-slate-900 truncate">Surgical Suite</p>
-                                        <span className="text-[10px] text-emerald-700 font-bold">Live Ready</span>
+                                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-teal-300 transition-all shadow-2xs group">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] font-black text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/70">
+                                                Chair 2
+                                            </span>
+                                            <span className="size-2 rounded-full bg-emerald-500" />
+                                        </div>
+                                        <p className="text-xs font-black text-slate-900 group-hover:text-teal-700 transition-colors">
+                                            Orthodontics
+                                        </p>
+                                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                                            Braces &amp; Aligners
+                                        </p>
+                                        <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                                            <span className="text-emerald-700 font-extrabold">Live Ready</span>
+                                            <span className="text-slate-400 font-semibold">{chair2Doctor}</span>
+                                        </div>
                                     </div>
-                                    <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70">
-                                        <p className="text-[10px] font-bold text-slate-400">Chair 2</p>
-                                        <p className="text-xs font-black text-slate-900 truncate">Orthodontics</p>
-                                        <span className="text-[10px] text-emerald-700 font-bold">Live Ready</span>
+
+                                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-teal-300 transition-all shadow-2xs group">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] font-black text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/70">
+                                                Chair 3
+                                            </span>
+                                            <span className="size-2 rounded-full bg-emerald-500" />
+                                        </div>
+                                        <p className="text-xs font-black text-slate-900 group-hover:text-teal-700 transition-colors">
+                                            Endodontics
+                                        </p>
+                                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                                            Root Canal &amp; Crowns
+                                        </p>
+                                        <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                                            <span className="text-emerald-700 font-extrabold">Live Ready</span>
+                                            <span className="text-slate-400 font-semibold">{chair3Doctor}</span>
+                                        </div>
                                     </div>
-                                    <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70">
-                                        <p className="text-[10px] font-bold text-slate-400">Chair 3</p>
-                                        <p className="text-xs font-black text-slate-900 truncate">Endodontics</p>
-                                        <span className="text-[10px] text-emerald-700 font-bold">Live Ready</span>
-                                    </div>
-                                    <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70">
-                                        <p className="text-[10px] font-bold text-slate-400">Chair 4</p>
-                                        <p className="text-xs font-black text-slate-900 truncate">Hygiene Bay</p>
-                                        <span className="text-[10px] text-emerald-700 font-bold">Live Ready</span>
+
+                                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-teal-300 transition-all shadow-2xs group">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] font-black text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/70">
+                                                Chair 4
+                                            </span>
+                                            <span className="size-2 rounded-full bg-emerald-500" />
+                                        </div>
+                                        <p className="text-xs font-black text-slate-900 group-hover:text-teal-700 transition-colors">
+                                            Hygiene Bay
+                                        </p>
+                                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                                            Scaling &amp; Whitening
+                                        </p>
+                                        <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                                            <span className="text-emerald-700 font-extrabold">Live Ready</span>
+                                            <span className="text-slate-400 font-semibold">{chair4Doctor}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -967,16 +1098,22 @@ const initialNew: NewPatientForm = {
     time: "",
     treatmentId: "",
     notes: "",
+    doctorId: "",
 };
 
 function NewPatientIntake({
     treatments,
+    doctors = [],
     onSuccess,
 }: {
     treatments: TreatmentOption[];
+    doctors?: DoctorOption[];
     onSuccess: (data: SuccessData) => void;
 }) {
-    const [formData, setFormData] = useState<NewPatientForm>(initialNew);
+    const [formData, setFormData] = useState<NewPatientForm>({
+        ...initialNew,
+        doctorId: doctors[0]?.id || "",
+    });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
@@ -1018,6 +1155,7 @@ function NewPatientIntake({
                     date: formData.date,
                     time: formData.time,
                     treatmentId: formData.treatmentId,
+                    doctorId: formData.doctorId || (doctors.length > 0 ? doctors[0].id : undefined),
                     notes: formData.notes || undefined,
                 }),
             });
@@ -1026,7 +1164,7 @@ function NewPatientIntake({
 
             onSuccess(data);
             router.refresh();
-            setFormData(initialNew);
+            setFormData({ ...initialNew, doctorId: doctors[0]?.id || "" });
         } catch (err) {
             setError(err instanceof Error ? err.message : "Registration failed. Check patient phone number.");
         } finally {
@@ -1037,7 +1175,7 @@ function NewPatientIntake({
     const today = new Date().toISOString().split("T")[0];
 
     return (
-        <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-2xs max-w-4xl mx-auto">
+        <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-2xs">
             {/* Intake Header */}
             <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -1166,7 +1304,7 @@ function NewPatientIntake({
                         </h3>
                     </div>
 
-                    <div className="grid sm:grid-cols-2 gap-4">
+                    <div className={`grid ${doctors.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2"} gap-4`}>
                         {/* Date Picker */}
                         <div className="space-y-1.5">
                             <label className="text-xs font-extrabold text-slate-700 flex items-center gap-1">
@@ -1189,22 +1327,48 @@ function NewPatientIntake({
                                 <span>Clinical Procedure</span>
                                 <span className="text-red-500">*</span>
                             </label>
-                            <select
-                                id="new-treatment"
-                                name="treatmentId"
-                                value={formData.treatmentId}
-                                onChange={(e) => setFormData((p) => ({ ...p, treatmentId: e.target.value, time: "" }))}
-                                required
-                                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer font-semibold"
+                            <Select
+                                value={formData.treatmentId || "NONE"}
+                                onValueChange={(val) => setFormData((p) => ({ ...p, treatmentId: val === "NONE" ? "" : val, time: "" }))}
                             >
-                                <option value="">Select procedure...</option>
-                                {treatments.map((t) => (
-                                    <option key={t.id} value={t.id}>
-                                        {t.name} — Rs. {t.price.toLocaleString()} ({t.durationMin}m)
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select clinical procedure..." />
+                                </SelectTrigger>
+                                <SelectContent position="popper" align="start" className="max-h-72">
+                                    <SelectItem value="NONE">Select procedure...</SelectItem>
+                                    {treatments.map((t) => (
+                                        <SelectItem key={t.id} value={t.id}>
+                                            {t.name} — Rs. {t.price.toLocaleString()} ({t.durationMin}m)
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
+
+                        {/* Attending Specialist / Doctor (Only shown when clinic has multiple doctors) */}
+                        {doctors.length > 1 && (
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-extrabold text-slate-700 flex items-center gap-1">
+                                    <span>Attending Specialist</span>
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    value={formData.doctorId || doctors[0]?.id || ""}
+                                    onValueChange={(val) => setFormData((p) => ({ ...p, doctorId: val }))}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select doctor..." />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper" align="start" className="max-h-72">
+                                        {doctors.map((doc) => (
+                                            <SelectItem key={doc.id} value={doc.id}>
+                                                {doc.name} {doc.isLead ? "★ Lead Surgeon" : `(${doc.role})`}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                     </div>
 
                     {/* Time Slot Selector */}

@@ -17,6 +17,94 @@ const router = Router();
 // Apply timing-safe bot authorization to all bot endpoints
 router.use(botAuthMiddleware);
 
+/**
+ * Resolves patient-supplied service string or treatmentId to canonical Treatment record.
+ */
+export async function resolveCanonicalTreatment(serviceType?: string, treatmentId?: string) {
+    if (treatmentId) {
+        const tr = await prisma.treatment.findUnique({ where: { id: treatmentId } });
+        if (tr) return tr;
+    }
+
+    if (!serviceType) {
+        const consult = await prisma.treatment.findFirst({
+            where: { name: { contains: 'Consultation', mode: 'insensitive' }, isActive: true },
+        });
+        if (consult) return consult;
+        return await prisma.treatment.findFirst({ where: { isActive: true } });
+    }
+
+    const clean = serviceType.trim().toLowerCase();
+
+    // 1. Direct contains match
+    const directMatch = await prisma.treatment.findFirst({
+        where: { name: { contains: clean, mode: 'insensitive' }, isActive: true },
+    });
+    if (directMatch) return directMatch;
+
+    // 2. Canonical mapping for common patient phrasing & categories
+    let targetName: string | null = null;
+    if (clean.includes('check') || clean.includes('consult') || clean.includes('exam') || clean.includes('visit') || clean.includes('doctor')) {
+        targetName = 'General Consultation & Dental Checkup';
+    } else if (clean.includes('deep scale') || clean.includes('deep clean') || clean.includes('gum clean')) {
+        targetName = 'Deep Scaling';
+    } else if (clean.includes('full mouth') || clean.includes('polish')) {
+        targetName = 'Full Mouth Scaling & Polishing';
+    } else if (clean.includes('scale') || clean.includes('clean') || clean.includes('scaling')) {
+        targetName = 'Basic Scaling';
+    } else if (clean.includes('wisdom')) {
+        targetName = 'Wisdom Tooth Extraction';
+    } else if (clean.includes('surgical extract')) {
+        targetName = 'Surgical Extraction';
+    } else if (clean.includes('extract') || clean.includes('remove') || clean.includes('pull')) {
+        targetName = 'Simple Extraction';
+    } else if (clean.includes('laser white')) {
+        targetName = 'Laser Whitening';
+    } else if (clean.includes('german white')) {
+        targetName = 'German Whitening Kit';
+    } else if (clean.includes('white') || clean.includes('bleach')) {
+        targetName = 'American Whitening Kit';
+    } else if ((clean.includes('multi') && clean.includes('rct')) || clean.includes('molar rct')) {
+        targetName = 'Multi Canal RCT';
+    } else if (clean.includes('rct') || clean.includes('root canal')) {
+        targetName = 'Single Canal RCT';
+    } else if (clean.includes('german implant')) {
+        targetName = 'German Implant Kit';
+    } else if (clean.includes('american implant')) {
+        targetName = 'American Implant Kit';
+    } else if (clean.includes('korean implant')) {
+        targetName = 'Korean Implant Kit';
+    } else if (clean.includes('implant')) {
+        targetName = 'German Implant Kit';
+    } else if (clean.includes('ceramic brace')) {
+        targetName = 'Ceramic Braces';
+    } else if (clean.includes('brace')) {
+        targetName = 'Metal Braces';
+    } else if (clean.includes('align') || clean.includes('invisalign')) {
+        targetName = 'Invisible Aligners';
+    } else if (clean.includes('lumineer')) {
+        targetName = 'Lumineers (per tooth)';
+    } else if (clean.includes('porcelain veneer')) {
+        targetName = 'Porcelain Veneer (per tooth)';
+    } else if (clean.includes('veneer')) {
+        targetName = 'Composite Veneer (per tooth)';
+    }
+
+    if (targetName) {
+        const aliasMatch = await prisma.treatment.findFirst({
+            where: { name: { equals: targetName, mode: 'insensitive' }, isActive: true },
+        });
+        if (aliasMatch) return aliasMatch;
+    }
+
+    const defaultConsult = await prisma.treatment.findFirst({
+        where: { name: { contains: 'Consultation', mode: 'insensitive' }, isActive: true },
+    });
+    if (defaultConsult) return defaultConsult;
+
+    return await prisma.treatment.findFirst({ where: { isActive: true } });
+}
+
 // POST /api/bot/check-availability
 router.post('/check-availability', async (req: Request, res: Response) => {
     try {
@@ -32,23 +120,9 @@ router.post('/check-availability', async (req: Request, res: Response) => {
             });
         }
 
-        let treatmentDuration = 30;
-        let treatmentName = 'Standard';
-        if (treatmentId) {
-            const tr = await prisma.treatment.findUnique({ where: { id: treatmentId } });
-            if (tr) {
-                treatmentDuration = tr.durationMin || 30;
-                treatmentName = tr.name;
-            }
-        } else if (serviceType) {
-            const tr = await prisma.treatment.findFirst({
-                where: { name: { contains: serviceType, mode: 'insensitive' } },
-            });
-            if (tr) {
-                treatmentDuration = tr.durationMin || 30;
-                treatmentName = tr.name;
-            }
-        }
+        const treatment = await resolveCanonicalTreatment(serviceType, treatmentId);
+        const treatmentDuration = treatment?.durationMin || 30;
+        const treatmentName = treatment?.name || 'General Consultation & Dental Checkup';
 
         const startTimeStamp = parseKarachiDateTime(date, time);
         const endTimeStamp = new Date(startTimeStamp.getTime() + treatmentDuration * 60000);
@@ -108,17 +182,8 @@ router.post('/book-appointment', async (req: Request, res: Response) => {
             });
         }
 
-        let treatmentId: string | undefined = undefined;
-        if (serviceType) {
-            const treatment = await prisma.treatment.findFirst({
-                where: {
-                    name: { contains: serviceType, mode: 'insensitive' },
-                },
-            });
-            if (treatment) {
-                treatmentId = treatment.id;
-            }
-        }
+        const treatment = await resolveCanonicalTreatment(serviceType);
+        const treatmentId = treatment?.id;
 
         const result = await createAppointment({
             patientName,
@@ -129,7 +194,7 @@ router.post('/book-appointment', async (req: Request, res: Response) => {
             treatmentId: treatmentId as string,
             bookedBy: 'WHATSAPP_BOT',
             patientTreatmentId: patientTreatmentId || undefined,
-            notes: `Booked via WhatsApp for ${patientName}. Age: ${age || 'N/A'}. Service: ${serviceType || 'Standard'}`,
+            notes: `Booked via WhatsApp for ${patientName}. Age: ${age || 'N/A'}. Service: ${treatment?.name || serviceType || 'General Consultation & Dental Checkup'}`,
         });
 
         if (!result.success) {

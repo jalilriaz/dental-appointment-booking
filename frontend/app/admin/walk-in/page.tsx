@@ -17,34 +17,49 @@ export default async function WalkInPage() {
         redirect("/login");
     }
 
-    // Fetch active treatments from DB
-    const treatments = await prisma.treatment.findMany({
-        where: { isActive: true },
-        orderBy: { name: "asc" },
-    });
-
-    const formattedTreatments = treatments.map((t) => ({
-        id: t.id,
-        name: t.name,
-        price: t.price,
-        durationMin: t.durationMin,
-    }));
+    // Fetch active treatments and doctors from DB
+    const [treatments, doctors] = await Promise.all([
+        prisma.treatment.findMany({
+            where: { isActive: true },
+            orderBy: { name: "asc" },
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                durationMin: true,
+            },
+        }),
+        prisma.doctor.findMany({
+            where: { isActive: true },
+            orderBy: [{ isLead: "desc" }, { name: "asc" }],
+            select: {
+                id: true,
+                name: true,
+                role: true,
+                operatory: true,
+                isLead: true,
+            },
+        }),
+    ]);
 
     return (
-        <div className="max-w-4xl mx-auto py-6 px-2 sm:px-4 space-y-6">
-            <div className="border-b border-slate-200/80 pb-5">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200 inline-block mb-2">
-                    Patient Intake
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-black text-[#0B1528] tracking-tight font-sans">
-                    Walk-In Patient Registration
-                </h1>
-                <p className="text-slate-600 text-sm mt-1.5 font-medium">
-                    Register walk-in patients and schedule their procedural appointments with real-time slot conflict checking.
-                </p>
+        <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200/80 text-teal-800 text-xs font-bold mb-2">
+                        <span className="size-2 rounded-full bg-teal-600" />
+                        <span>Front Desk Clinical Intake &amp; Triage</span>
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                        Walk-In Patient Registration &amp; Triage
+                    </h1>
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                        Direct reception check-in, real-time procedural scheduling across all 4 operatories, and instant patient dossier lookup.
+                    </p>
+                </div>
             </div>
 
-            <WalkInRegistration treatments={formattedTreatments} />
+            <WalkInRegistration treatments={treatments} doctors={doctors} />
         </div>
     );
 }

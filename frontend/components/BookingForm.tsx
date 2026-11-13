@@ -37,6 +37,7 @@ import {
 } from "@mui/icons-material";
 
 import { TimeSlotSelector, TimeSlot } from "@/components/ui/time-slot-selector"
+import { DatePicker } from "@/components/ui/date-picker"
 import { formatPKR, formatPriceRange } from "@/lib/utils"
 import type { Treatment } from "@/lib/types"
 import { fetchApi } from "@/lib/api-client"
@@ -551,15 +552,15 @@ export default function BookingForm({
                 <Label className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 block">
                   Select Preferred Date *
                 </Label>
-                <input
-                  type="date"
+                <DatePicker
                   value={field.value}
                   min={new Date().toISOString().split("T")[0]}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
+                  onChange={(val) => {
+                    field.onChange(val);
                     setValue("time", "");
                   }}
-                  className={inputClasses}
+                  placeholder="Select appointment date..."
+                  disabledDays={(date) => date.getDay() === 0}
                 />
                 {errors.date && <p className={errorClasses}>{errors.date.message}</p>}
               </div>

@@ -36,26 +36,36 @@ export default async function AdminAppointmentsPage({
     }
   }
 
-  const appointments = await prisma.appointment.findMany({
-    where,
-    include: {
-      patient: { select: { id: true, name: true, email: true, phone: true } },
-      treatment: {
-        select: { id: true, name: true, price: true, durationMin: true },
-      },
-      patientTreatment: {
-        select: {
-          id: true,
-          totalCost: true,
-          totalSessions: true,
-          clinicalStatus: true,
-          financialStatus: true,
+  const [appointments, doctors] = await Promise.all([
+    prisma.appointment.findMany({
+      where,
+      include: {
+        patient: { select: { id: true, name: true, email: true, phone: true } },
+        treatment: {
+          select: { id: true, name: true, price: true, durationMin: true },
         },
+        doctor: {
+          select: { id: true, name: true, role: true, operatory: true, isLead: true },
+        },
+        patientTreatment: {
+          select: {
+            id: true,
+            totalCost: true,
+            totalSessions: true,
+            clinicalStatus: true,
+            financialStatus: true,
+          },
+        },
+        clinicalNotes: { orderBy: { createdAt: "desc" } },
       },
-      clinicalNotes: { orderBy: { createdAt: "desc" } },
-    },
-    orderBy: { startTime: "asc" },
-  })
+      orderBy: { startTime: "asc" },
+    }),
+    prisma.doctor.findMany({
+      where: { isActive: true },
+      orderBy: [{ isLead: "desc" }, { name: "asc" }],
+      select: { id: true, name: true, role: true, operatory: true, isLead: true },
+    }),
+  ])
 
   // Serialize dates for client component
   const serialized = appointments.map((a) => ({
@@ -91,7 +101,7 @@ export default async function AdminAppointmentsPage({
         </Link>
       </div>
       <Suspense fallback={<AppointmentsSkeleton />}>
-        <AppointmentsTable appointments={serialized} />
+        <AppointmentsTable appointments={serialized} doctors={doctors} />
       </Suspense>
     </div>
   )

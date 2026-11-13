@@ -29,6 +29,11 @@ router.get('/', async (_req: Request, res: Response) => {
         const doctors = await prisma.doctor.findMany({
             where: { isActive: true },
             orderBy: [{ isLead: 'desc' }, { name: 'asc' }],
+            include: {
+                _count: {
+                    select: { appointments: true },
+                },
+            },
         });
         return res.json({ success: true, doctors });
     } catch (error) {
@@ -42,6 +47,11 @@ router.get('/admin/all', requireAuth, requireRole('ADMIN', 'STAFF'), async (_req
     try {
         const doctors = await prisma.doctor.findMany({
             orderBy: [{ isLead: 'desc' }, { createdAt: 'asc' }],
+            include: {
+                _count: {
+                    select: { appointments: true },
+                },
+            },
         });
 
         const activeCount = doctors.filter(d => d.isActive).length;

@@ -80,6 +80,9 @@ model Appointment {
   treatmentId String
   treatment   Treatment @relation(fields: [treatmentId], references: [id])
 
+  doctorId    String?
+  doctor      Doctor?   @relation(fields: [doctorId], references: [id])
+
   googleEventId String?       @unique
   bookedBy      BookingSource @default(WEBSITE)
 
@@ -107,6 +110,7 @@ model Appointment {
   payments           Payment[]
 
   @@index([patientTreatmentId])
+  @@index([doctorId])
   @@index([startTime])
 }
 
@@ -261,6 +265,8 @@ model Doctor {
   image             String?  @default("/images/dr_sheriyaar.jpg")
   isLead            Boolean  @default(false)
   isActive          Boolean  @default(true)
+  appointments      Appointment[]
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
