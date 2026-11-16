@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { decrypt } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import StaffBookingClient from "@/app/staff/book/StaffBookingClient";
+import DeskBookingClient from "@/components/shared/DeskBookingClient";
 
 export default async function AdminBookPage() {
     const cookie = (await cookies()).get("session")?.value;
@@ -53,7 +53,7 @@ export default async function AdminBookPage() {
                 </p>
             </div>
 
-            <StaffBookingClient
+            <DeskBookingClient
                 patients={patients}
                 treatments={formattedTreatments}
                 backUrl="/admin"

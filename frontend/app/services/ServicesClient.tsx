@@ -333,14 +333,14 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
                   </div>
                 </div>
 
-                {/* Main Hero Portrait: Happy Smiling Dental Patients with Clean White Smiles */}
+                {/* Main Hero Portrait: Elite Dental Operatory Suite 02 */}
                 <div className="relative w-[300px] sm:w-[350px] h-[420px] sm:h-[480px] rounded-[52px] overflow-hidden z-10 shadow-2xl border-4 border-white bg-white group">
                   <Image
-                    src="https://images.unsplash.com/photo-1629909615184-74f495363b67?q=80&w=1000&auto=format&fit=crop"
-                    alt="Happy smiling dental patients with healthy bright teeth"
+                    src="/my_clinic_02.webp"
+                    alt="Elite Dental Centre - Modern Dental Operatory Suite in G-8 Markaz Islamabad"
                     fill
-                    unoptimized
-                    className="object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                    priority
+                    className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                   />
                   {/* Subtle lower gradient for depth */}
                   <div className="absolute inset-0 bg-gradient-to-t from-teal-950/35 via-transparent to-transparent pointer-events-none" />

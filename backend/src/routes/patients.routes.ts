@@ -121,6 +121,7 @@ router.get('/:id/history', requireAuth, requireRole('ADMIN', 'STAFF'), async (re
             where: { patientId: id },
             include: {
                 treatment: { select: { name: true, price: true, durationMin: true } },
+                doctor: { select: { id: true, name: true, role: true, operatory: true } },
                 clinicalNotes: { orderBy: { createdAt: 'desc' } },
                 patientTreatment: {
                     select: {

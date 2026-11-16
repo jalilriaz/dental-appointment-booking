@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma"
 import { Suspense } from "react"
-import AppointmentsTable from "./AppointmentsTable"
+import AppointmentsTable from "@/components/appointments/AppointmentsTable"
 import { AppointmentsSkeleton } from "@/components/LoadingSpinner"
 import Link from "next/link"
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined"
@@ -40,7 +40,7 @@ export default async function AdminAppointmentsPage({
     prisma.appointment.findMany({
       where,
       include: {
-        patient: { select: { id: true, name: true, email: true, phone: true } },
+        patient: { select: { id: true, name: true, email: true, phone: true, patientCode: true, gender: true, dateOfBirth: true } },
         treatment: {
           select: { id: true, name: true, price: true, durationMin: true },
         },
@@ -54,6 +54,16 @@ export default async function AdminAppointmentsPage({
             totalSessions: true,
             clinicalStatus: true,
             financialStatus: true,
+            payments: {
+              orderBy: { date: "asc" },
+              select: {
+                id: true,
+                amount: true,
+                method: true,
+                date: true,
+                notes: true,
+              },
+            },
           },
         },
         clinicalNotes: { orderBy: { createdAt: "desc" } },
@@ -74,6 +84,13 @@ export default async function AdminAppointmentsPage({
     endTime: a.endTime.toISOString(),
     createdAt: a.createdAt.toISOString(),
     amountPaid: a.amountPaid ?? 0, // Convert null to 0
+    patientTreatment: a.patientTreatment ? {
+      ...a.patientTreatment,
+      payments: (a.patientTreatment.payments || []).map((p) => ({
+        ...p,
+        date: p.date.toISOString(),
+      })),
+    } : null,
     clinicalNotes: a.clinicalNotes.map((n) => ({
       ...n,
       createdAt: n.createdAt.toISOString(),

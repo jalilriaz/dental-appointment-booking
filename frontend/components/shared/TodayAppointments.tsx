@@ -17,7 +17,6 @@ import {
   HistoryOutlined,
   WhatsApp,
 } from "@mui/icons-material";
-import { CircularProgress } from "@mui/material";
 import PatientHistoryDialog from "@/components/shared/PatientHistoryDialog";
 import CheckoutDialog from "@/components/shared/CheckoutDialog";
 import SendPrecautionsModal from "@/components/shared/SendPrecautionsModal";
@@ -284,7 +283,7 @@ export default function TodayAppointments({
                       <HistoryOutlined sx={{ fontSize: 16 }} />
                     </Button>
                     {isLoading ? (
-                      <CircularProgress size={16} sx={{ color: "#0d9488" }} />
+                      <div className="size-4 rounded-full border-2 border-teal-500/20 border-t-teal-600 animate-spin shrink-0" />
                     ) : apt.status === "SCHEDULED" ? (
                       <>
                         <Button

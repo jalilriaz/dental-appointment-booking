@@ -9,6 +9,7 @@
     "dev:backend": "pnpm --filter backend dev",
     "build": "turbo run build",
     "start": "pnpm --filter frontend start",
+    "db:generate": "pnpm --filter backend run prisma:generate",
     "db:clean": "pnpm --filter backend run db:clean",
     "db:seed": "pnpm --filter backend run prisma:seed",
     "db:feed": "pnpm --filter backend run db:feed",
@@ -18,9 +19,6 @@
     "turbo": "^2.4.4"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^9.5.0",
-    "@mui/material": "^9.5.0"
+    "@mui/icons-material": "^9.5.0"
   }
 }

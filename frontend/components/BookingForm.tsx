@@ -11,8 +11,7 @@ import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 
-// MUI Material & Icons (Clean Root Package Imports)
-import { CircularProgress } from "@mui/material";
+// MUI Icons (Clean Root Package Imports)
 import {
   CheckCircleOutlined as CheckCircleOutlineIcon,
   CalendarMonth as CalendarMonthIcon,
@@ -697,7 +696,7 @@ export default function BookingForm({
             className="px-9 py-3.5 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-black text-xs uppercase tracking-wider shadow-xl shadow-teal-600/35 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-70"
           >
             {isSubmitting ? (
-              <CircularProgress size={16} color="inherit" />
+              <div className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin shrink-0" />
             ) : (
               <CalendarMonthIcon sx={{ fontSize: 18, color: "#ffffff" }} />
             )}

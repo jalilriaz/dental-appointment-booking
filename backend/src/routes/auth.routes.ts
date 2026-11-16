@@ -13,6 +13,7 @@ import {
 } from '../lib/auth';
 import { sendPasswordResetEmail, sendAccountSetupEmail } from '../lib/email';
 import { extractToken, requireAuth } from '../middleware/auth.middleware';
+import { syncUpcomingAppointmentsToGoogleCalendar } from '../lib/googleCalendar';
 
 const router = Router();
 
@@ -381,13 +382,33 @@ router.get('/google/callback', async (req: Request, res: Response) => {
         oauth2Client.setCredentials(tokens);
 
         const token = extractToken(req);
-        if (!token) {
-            return res.status(401).json({ error: 'Unauthorized' });
+        let userId: string | null = null;
+        let role = 'ADMIN';
+
+        if (token) {
+            try {
+                const session = await decrypt(token);
+                userId = session.id as string;
+                role = session.role as string;
+            } catch (err) {
+                console.warn('Session decrypt in google callback failed, using admin fallback:', err);
+            }
         }
 
-        const session = await decrypt(token);
-        const userId = session.id as string;
-        const role = session.role as string;
+        if (!userId) {
+            const adminUser = await prisma.user.findFirst({
+                where: { role: 'ADMIN' },
+                orderBy: { createdAt: 'asc' },
+            });
+            if (adminUser) {
+                userId = adminUser.id;
+                role = adminUser.role;
+            }
+        }
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized: No admin account found to bind Google Calendar' });
+        }
 
         await prisma.user.update({
             where: { id: userId },
@@ -396,6 +417,11 @@ router.get('/google/callback', async (req: Request, res: Response) => {
                 googleCalendarRefreshToken: tokens.refresh_token || undefined,
                 googleCalendarConnected: true,
             },
+        });
+
+        // Automatically sync any appointments (e.g. booked earlier before connecting) to Google Calendar
+        syncUpcomingAppointmentsToGoogleCalendar().catch((syncErr) => {
+            console.error('[Google Calendar] Automatic post-connect sync error:', syncErr);
         });
 
         const appUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';

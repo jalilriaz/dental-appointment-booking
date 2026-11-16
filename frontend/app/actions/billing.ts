@@ -136,19 +136,27 @@ export async function checkoutAppointment(
 
             if (existingPT) {
                 patientTreatmentId = existingPT.id;
+                // Dynamically resolve session number: count existing appointments in this plan
+                const existingApptsCount = await prisma.appointment.count({
+                    where: {
+                        patientTreatmentId: existingPT.id,
+                        status: { notIn: ["CANCELLED"] }
+                    }
+                });
+                const sessionNum = appointment.sessionNumber || Math.max(1, existingApptsCount);
                 await prisma.appointment.update({
                     where: { id: validData.appointmentId },
                     data: {
                         patientTreatmentId: existingPT.id,
-                        sessionNumber: appointment.sessionNumber || 1,
-                        sessionLabel: appointment.sessionLabel || `Session 1 of ${existingPT.totalSessions}`,
+                        sessionNumber: sessionNum,
+                        sessionLabel: appointment.sessionLabel || `Session #${sessionNum}`,
                     },
                 });
             } else {
                 const totalCost = validData.packageCost ??
                     ((appointment.price || appointment.treatment.price) - (validData.discount || 0));
                 const totalSessions = isMultiSession
-                    ? (validData.totalSessions || appointment.treatment.defaultSessions || 1)
+                    ? (validData.totalSessions || appointment.treatment.defaultSessions || 10)
                     : 1;
 
                 const newPT = await prisma.patientTreatment.create({
@@ -170,7 +178,7 @@ export async function checkoutAppointment(
                     data: {
                         patientTreatmentId: newPT.id,
                         sessionNumber: 1,
-                        sessionLabel: isMultiSession ? `Session 1 of ${totalSessions}` : "Single Visit",
+                        sessionLabel: isMultiSession ? "Session #1 (Initial Setup & Downpayment)" : "Single Visit",
                     },
                 });
             }
@@ -223,10 +231,11 @@ export async function checkoutAppointment(
                         ? "PARTIALLY_PAID"
                         : "UNPAID";
 
-                // Clinical status: Only COMPLETED if single session OR all sessions done
-                const isAllSessionsDone = pt.totalSessions <= 1 || completedCount >= pt.totalSessions;
-                const clinicalStatus = isAllSessionsDone ? "COMPLETED" : "IN_PROGRESS";
-                const legacyStatus = totalPaid >= pt.totalCost ? "FULLY_PAID" : isAllSessionsDone ? "COMPLETED" : "ONGOING";
+                // Clinical status: For multi-session treatments (e.g. Braces, Implants, RCT), 
+                // clinical status stays IN_PROGRESS until explicitly completed by doctor/staff
+                const isSingleVisit = !appointment.treatment.isMultiSession && (!validData.totalSessions || validData.totalSessions <= 1);
+                const clinicalStatus = isSingleVisit ? "COMPLETED" : "IN_PROGRESS";
+                const legacyStatus = totalPaid >= pt.totalCost ? "FULLY_PAID" : isSingleVisit ? "COMPLETED" : "ONGOING";
 
                 await prisma.patientTreatment.update({
                     where: { id: pt.id },
@@ -243,9 +252,7 @@ export async function checkoutAppointment(
         let nextAppointment = null;
         if (validData.nextSessionDate && validData.nextSessionTime) {
             const nextSessionNumber = (appointment.sessionNumber || 1) + 1;
-            const pt = patientTreatmentId ? await prisma.patientTreatment.findUnique({ where: { id: patientTreatmentId } }) : null;
-            const totalSess = pt ? pt.totalSessions : (validData.totalSessions || 2);
-            const nextSessionLabel = validData.nextSessionLabel || `Session ${nextSessionNumber} of ${totalSess}`;
+            const nextSessionLabel = validData.nextSessionLabel || `Session #${nextSessionNumber} (Follow-Up / Adjustment)`;
 
             const nextBookingResult = await createAppointment({
                 patientId: appointment.patientId,
@@ -303,9 +310,32 @@ export async function checkoutAppointment(
         revalidatePath("/admin/appointments");
         revalidatePath("/staff/appointments");
 
+        // Fetch latest treatment plan with complete payments ledger
+        let updatedPlan = null;
+        if (patientTreatmentId) {
+            updatedPlan = await prisma.patientTreatment.findUnique({
+                where: { id: patientTreatmentId },
+                include: {
+                    treatment: true,
+                    patient: {
+                        select: {
+                            id: true,
+                            name: true,
+                            phone: true,
+                            patientCode: true,
+                            gender: true,
+                            dateOfBirth: true,
+                        },
+                    },
+                    payments: { orderBy: { date: "asc" } },
+                },
+            });
+        }
+
         return {
             success: true,
             nextAppointment,
+            patientTreatment: updatedPlan,
             message: nextAppointment ? "Visit checked out and next session booked!" : "Visit checked out successfully."
         };
     } catch (error) {

@@ -21,7 +21,6 @@ import {
   MedicalServicesOutlined,
   Star,
 } from "@mui/icons-material";
-import { CircularProgress } from "@mui/material";
 import { clinicInfo } from "@/app/constants/mockData";
 
 function LoginForm() {
@@ -338,7 +337,7 @@ function LoginForm() {
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
-                    <CircularProgress size={16} sx={{ color: "#ffffff" }} />
+                    <div className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin shrink-0" />
                     <span>Signing In...</span>
                   </div>
                 ) : (
@@ -391,7 +390,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <CircularProgress size={32} sx={{ color: "#0d9488" }} />
+          <div className="size-8 rounded-full border-3 border-teal-500/20 border-t-teal-600 animate-spin shrink-0" />
         </div>
       }
     >

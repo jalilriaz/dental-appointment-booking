@@ -193,8 +193,8 @@ export default function CheckoutDialog({
                                 <span className="text-xs font-bold uppercase tracking-wider text-teal-700 flex items-center gap-1.5">
                                     <AutoAwesomeOutlinedIcon className="size-3.5" /> Ongoing Treatment Plan
                                 </span>
-                                <span className="text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full font-semibold border border-teal-200">
-                                    Session {currentSessionNumber} of {planTotalSessions}
+                                <span className="text-xs bg-teal-100 text-teal-800 px-2.5 py-0.5 rounded-full font-bold border border-teal-200">
+                                    Session #{currentSessionNumber} (Ongoing)
                                 </span>
                             </div>
                             <div className="grid grid-cols-3 gap-2 pt-1 text-center">
@@ -227,25 +227,25 @@ export default function CheckoutDialog({
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1">
-                                    <Label className="text-[11px] font-semibold text-slate-700">Total Package Price (PKR)</Label>
+                                    <Label className="text-[11px] font-bold text-slate-700">Agreed Package Fee (PKR) *</Label>
                                     <Input
                                         type="number"
                                         value={packageCost}
                                         onChange={(e) => setPackageCost(e.target.value)}
                                         min={0}
-                                        placeholder="100,000"
-                                        className="bg-white border-slate-300 h-8 text-xs text-slate-900 focus:border-teal-600"
+                                        placeholder="e.g. 130,000"
+                                        className="bg-white border-slate-300 h-8 text-xs text-slate-900 font-bold focus:border-teal-600"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label className="text-[11px] font-semibold text-slate-700">Total Est. Sessions</Label>
+                                    <Label className="text-[11px] font-semibold text-slate-700">Est. Visits (Optional)</Label>
                                     <Input
                                         type="number"
                                         value={totalSessions}
                                         onChange={(e) => setTotalSessions(e.target.value)}
                                         min={1}
-                                        max={24}
-                                        placeholder="4"
+                                        max={36}
+                                        placeholder="Dynamic (12-24)"
                                         className="bg-white border-slate-300 h-8 text-xs text-slate-900 focus:border-teal-600"
                                     />
                                 </div>
@@ -332,11 +332,10 @@ export default function CheckoutDialog({
                         </div>
 
                         {/* Live Balance Summary */}
-                        <div className={`p-2.5 rounded-xl border flex items-center justify-between text-xs transition-all ${
-                            remainingBalanceDue > 0
-                                ? "bg-amber-50/90 border-amber-200 text-amber-950"
-                                : "bg-emerald-50/80 border-emerald-200 text-emerald-900"
-                        }`}>
+                        <div className={`p-2.5 rounded-xl border flex items-center justify-between text-xs transition-all ${remainingBalanceDue > 0
+                            ? "bg-amber-50/90 border-amber-200 text-amber-950"
+                            : "bg-emerald-50/80 border-emerald-200 text-emerald-900"
+                            }`}>
                             <div className="flex items-center gap-1.5 font-bold">
                                 {remainingBalanceDue > 0 ? (
                                     <>
@@ -363,33 +362,30 @@ export default function CheckoutDialog({
                             <button
                                 type="button"
                                 onClick={() => setPaymentMethod("CASH")}
-                                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                                    paymentMethod === "CASH"
-                                        ? "bg-teal-600 border-teal-600 text-white shadow-sm"
-                                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                                }`}
+                                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${paymentMethod === "CASH"
+                                    ? "bg-teal-600 border-teal-600 text-white shadow-sm"
+                                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                                    }`}
                             >
                                 <PaymentsOutlinedIcon className="size-3.5" /> Cash
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setPaymentMethod("CARD")}
-                                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                                    paymentMethod === "CARD"
-                                        ? "bg-teal-600 border-teal-600 text-white shadow-sm"
-                                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                                }`}
+                                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${paymentMethod === "CARD"
+                                    ? "bg-teal-600 border-teal-600 text-white shadow-sm"
+                                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                                    }`}
                             >
                                 <CreditCardOutlinedIcon className="size-3.5" /> Card / POS
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setPaymentMethod("ONLINE")}
-                                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                                    paymentMethod === "ONLINE"
-                                        ? "bg-teal-600 border-teal-600 text-white shadow-sm"
-                                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                                }`}
+                                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${paymentMethod === "ONLINE"
+                                    ? "bg-teal-600 border-teal-600 text-white shadow-sm"
+                                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                                    }`}
                             >
                                 <LanguageOutlinedIcon className="size-3.5" /> Online / Bank
                             </button>
@@ -405,15 +401,21 @@ export default function CheckoutDialog({
                                     checked={scheduleNextSession}
                                     onChange={(e) => {
                                         setScheduleNextSession(e.target.checked);
-                                        if (e.target.checked && !nextSessionFee && remainingBalanceDue > 0) {
-                                            setNextSessionFee(String(remainingBalanceDue));
+                                        if (e.target.checked) {
+                                            if (!nextSessionFee) {
+                                                const defaultInstallment = remainingBalanceDue > 0 ? Math.min(5000, remainingBalanceDue) : 5000;
+                                                setNextSessionFee(String(defaultInstallment));
+                                            }
+                                            if (!nextSessionLabel) {
+                                                setNextSessionLabel(`Session #${currentSessionNumber + 1} - Follow-Up / Adjustment`);
+                                            }
                                         }
                                     }}
                                     className="rounded border-slate-300 text-teal-600 focus:ring-teal-500/20 size-4 cursor-pointer"
                                 />
                                 <span>
                                     {isMultiSession
-                                        ? `Schedule Session ${currentSessionNumber + 1} Now`
+                                        ? `Schedule Session #${currentSessionNumber + 1} Adjustment Visit`
                                         : "Schedule Next Session / Follow-up Visit"}
                                 </span>
                             </label>

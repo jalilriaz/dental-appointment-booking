@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { requireAuth, requireRole } from '../middleware/auth.middleware';
-import { createCalendarEvent } from '../lib/googleCalendar';
+import { createCalendarEvent, syncUpcomingAppointmentsToGoogleCalendar } from '../lib/googleCalendar';
 import { z } from 'zod';
 import { logger } from '../lib/logger';
 import { generatePatientCode } from '../lib/patientCode';
@@ -182,19 +182,41 @@ router.get('/search', requireAuth, requireRole('ADMIN'), async (req: Request, re
 router.get('/walk-in/search', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: Request, res: Response) => {
     try {
         const query = (req.query.q as string)?.trim() || '';
+        const channel = (req.query.channel as string)?.trim() || '';
         const page = Math.max(1, parseInt((req.query.page as string) || '1', 10));
         const limit = 8;
         const skip = (page - 1) * limit;
 
         const where: any = { role: 'PATIENT' };
+
+        if (channel && channel !== 'ALL') {
+            where.appointments = {
+                some: { bookedBy: channel },
+            };
+        }
+
         if (query.length >= 2) {
             const conditions: any[] = [
                 { name: { contains: query, mode: 'insensitive' } },
                 { phone: { contains: query, mode: 'insensitive' } },
                 { email: { contains: query, mode: 'insensitive' } },
             ];
+
+            // Normalize phone query: if user entered digits e.g. 03xx or +92xx, also search by bare local digits
+            const digitsOnly = query.replace(/\D/g, '');
+            if (digitsOnly.length >= 4) {
+                let localNumber = digitsOnly;
+                if (localNumber.startsWith('92') && localNumber.length > 2) {
+                    localNumber = localNumber.slice(2);
+                } else if (localNumber.startsWith('0') && localNumber.length > 1) {
+                    localNumber = localNumber.slice(1);
+                }
+                conditions.push({ phone: { contains: localNumber } });
+                conditions.push({ phone: { contains: digitsOnly } });
+            }
+
             const numericQuery = parseInt(query, 10);
-            if (!isNaN(numericQuery)) {
+            if (!isNaN(numericQuery) && numericQuery > 0 && numericQuery <= 2147483647 && query.length <= 8) {
                 conditions.push({ patientCode: numericQuery });
             }
             where.OR = conditions;
@@ -219,10 +241,11 @@ router.get('/walk-in/search', requireAuth, requireRole('ADMIN', 'STAFF'), async 
                             id: true,
                             startTime: true,
                             status: true,
+                            bookedBy: true,
                             treatment: { select: { name: true } },
                         },
                         orderBy: { startTime: 'desc' },
-                        take: 1,
+                        take: 3,
                     },
                     patientTreatments: {
                         where: { clinicalStatus: 'IN_PROGRESS' },
@@ -300,6 +323,21 @@ router.post('/walk-in', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: 
     } catch (error) {
         logger.error({ err: error, body }, 'Failed to book walk-in appointment');
         return res.status(500).json({ error: 'Failed to book walk-in appointment' });
+    }
+});
+
+// POST /api/admin/sync-calendar - Force sync upcoming appointments to Google Calendar
+router.post('/sync-calendar', requireAuth, requireRole('ADMIN', 'STAFF'), async (_req: Request, res: Response) => {
+    try {
+        const result = await syncUpcomingAppointmentsToGoogleCalendar();
+        return res.json({
+            success: true,
+            message: `Synced ${result.synced} appointment(s) to Google Calendar.`,
+            ...result,
+        });
+    } catch (error) {
+        logger.error({ err: error }, 'Failed to manual sync to Google Calendar');
+        return res.status(500).json({ error: 'Failed to sync Google Calendar' });
     }
 });
 

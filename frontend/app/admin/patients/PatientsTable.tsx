@@ -1,8 +1,10 @@
 "use client";
 
-import PatientsTable from "@/app/staff/patients/PatientsTable";
-import type { PatientRow } from "@/app/staff/patients/PatientsTable";
+import PatientsTable from "@/components/patients/PatientsTable";
+import type { PatientRow } from "@/components/patients/PatientsTable";
 
 export default function AdminPatientsTable({ patients }: { patients: PatientRow[] }) {
     return <PatientsTable patients={patients} baseRoute="/admin" />;
 }
+
+export type { PatientRow };

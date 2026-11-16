@@ -1,18 +1,31 @@
 import nodemailer from "nodemailer";
 
 // ─── Transporter (created once, reused) ──────────────────
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: false, // true for 465, false for 587 (STARTTLS)
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const hasSmtpCredentials = Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+
+const transporter = hasSmtpCredentials
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: false, // true for 465, false for 587 (STARTTLS)
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
+  : null;
+
+function canSendEmail(): boolean {
+  if (!transporter || !hasSmtpCredentials) {
+    console.log("[EMAIL] SMTP credentials not configured in backend/.env - skipping email dispatch");
+    return false;
+  }
+  return true;
+}
 
 // ─── Professional Password-Reset Email ───────────────────
 export async function sendPasswordResetEmail(to: string, resetLink: string) {
+  if (!canSendEmail()) return { messageId: "skipped-no-smtp" };
   const clinicName = "Elite Dental Centre";
   const year = new Date().getFullYear();
 
@@ -135,7 +148,7 @@ export async function sendPasswordResetEmail(to: string, resetLink: string) {
 </body>
 </html>`;
 
-  const info = await transporter.sendMail({
+  const info = await transporter!.sendMail({
     from: process.env.SMTP_FROM || `"${clinicName}" <${process.env.SMTP_USER}>`,
     to,
     subject: `Reset Your Password – ${clinicName}`,
@@ -225,7 +238,7 @@ export async function sendAccountSetupEmail(to: string, name: string, setupLink:
 </body>
 </html>`;
 
-  const info = await transporter.sendMail({
+  const info = await transporter!.sendMail({
     from: process.env.SMTP_FROM || `"${clinicName}" <${process.env.SMTP_USER}>`,
     to,
     subject: `Complete Your Registration – ${clinicName}`,
@@ -245,6 +258,7 @@ export async function sendAppointmentConfirmationEmail(
   date: string,
   time: string
 ) {
+  if (!canSendEmail()) return { messageId: "skipped-no-smtp" };
   const clinicName = "Elite Dental Centre";
   const year = new Date().getFullYear();
 
@@ -324,7 +338,7 @@ export async function sendAppointmentConfirmationEmail(
 </body>
 </html>`;
 
-  const info = await transporter.sendMail({
+  const info = await transporter!.sendMail({
     from: process.env.SMTP_FROM || `"${clinicName}" <${process.env.SMTP_USER}>`,
     to,
     subject: `Appointment Confirmed - ${clinicName}`,
@@ -344,6 +358,7 @@ export async function sendAppointmentRescheduleEmail(
   newDate: string,
   newTime: string
 ) {
+  if (!canSendEmail()) return { messageId: "skipped-no-smtp" };
   const clinicName = "Elite Dental Centre";
   const year = new Date().getFullYear();
 
@@ -423,7 +438,7 @@ export async function sendAppointmentRescheduleEmail(
 </body>
 </html>`;
 
-  const info = await transporter.sendMail({
+  const info = await transporter!.sendMail({
     from: process.env.SMTP_FROM || `"${clinicName}" <${process.env.SMTP_USER}>`,
     to,
     subject: `Appointment Rescheduled - ${clinicName}`,

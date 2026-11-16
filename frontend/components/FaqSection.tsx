@@ -38,7 +38,7 @@ export default function FaqSection({
   subtitle = "Here's everything you need to know about our treatments, appointments, and billing. Can't spot the answer you need? Our friendly clinical team is just a call away.",
   items,
   className = "",
-  imageSrc = "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=1000&auto=format&fit=crop",
+  imageSrc = "/images/smiling_patient_faq.jpg",
   defaultExpandedIndex = 0,
 }: FaqSectionProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(defaultExpandedIndex);

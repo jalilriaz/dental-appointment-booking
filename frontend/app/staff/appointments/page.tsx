@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { decrypt } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AppointmentsSkeleton } from "@/components/LoadingSpinner";
-import AppointmentsTable from "@/app/admin/appointments/AppointmentsTable";
+import AppointmentsTable from "@/components/appointments/AppointmentsTable";
 import { Suspense } from "react";
 import Link from "next/link";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";

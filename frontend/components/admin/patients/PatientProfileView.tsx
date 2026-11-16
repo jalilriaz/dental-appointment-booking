@@ -65,6 +65,10 @@ export interface PatientProfileViewProps {
             notes?: string | null;
             sessionNumber?: number | null;
             sessionLabel?: string | null;
+            doctor?: {
+                id?: string;
+                name: string;
+            } | null;
             treatment: {
                 id?: string;
                 name: string;
@@ -227,6 +231,7 @@ export default function PatientProfileView({
             notes?: string | null;
             sourceType: "PLAN" | "APPOINTMENT";
             treatmentName: string;
+            patientTreatmentId?: string;
             appointmentId?: string;
         }> = [];
 
@@ -240,6 +245,7 @@ export default function PatientProfileView({
                     notes: p.notes,
                     sourceType: "PLAN",
                     treatmentName: pt.treatment.name,
+                    patientTreatmentId: pt.id,
                 });
             });
         });
@@ -276,40 +282,150 @@ export default function PatientProfileView({
     }, [patient]);
 
     const handleOpenReceiptForPayment = (payment: (typeof allLedgerPayments)[0]) => {
-        setReceiptData({
-            patientName: patient.name || "Valued Patient",
-            patientPhone: patient.phone || undefined,
-            patientId: patient.id,
-            treatmentName: payment.treatmentName,
-            appointmentDate: formatDate(payment.date),
-            appointmentTime: formatTime(payment.date),
-            treatmentPrice: payment.amount,
-            discount: 0,
-            amountPaid: payment.amount,
-            remainingBalance: 0,
-            paymentMethod: payment.method,
-        });
+        const plan = payment.sourceType === "PLAN" && payment.patientTreatmentId
+            ? patient.patientTreatments.find((pt) => pt.id === payment.patientTreatmentId)
+            : patient.patientTreatments.find((pt) => pt.payments.some((p) => p.id === payment.id));
+
+        if (plan) {
+            const totalPlanPaid = plan.payments.reduce((sum, p) => sum + p.amount, 0);
+            const remainingDue = Math.max(0, plan.totalCost - totalPlanPaid);
+            const planPayments = plan.payments.map((p) => ({
+                id: p.id,
+                date: String(p.date),
+                method: p.method,
+                amount: p.amount,
+                notes: p.notes,
+            }));
+
+            setReceiptData({
+                patientName: patient.name || "Valued Patient",
+                patientPhone: patient.phone || undefined,
+                patientId: patient.id,
+                patientCode: patient.patientCode,
+                patientAge: patientAge ? `${patientAge} Y` : null,
+                patientGender: patient.gender,
+                treatmentName: plan.treatment.name,
+                appointmentDate: formatDate(payment.date),
+                appointmentTime: formatTime(payment.date),
+                treatmentPrice: plan.totalCost,
+                discount: 0,
+                amountPaid: payment.amount,
+                remainingBalance: remainingDue,
+                payments: planPayments,
+                totalPaid: totalPlanPaid,
+                dueAmount: remainingDue,
+                paymentMethod: payment.method,
+            });
+        } else {
+            setReceiptData({
+                patientName: patient.name || "Valued Patient",
+                patientPhone: patient.phone || undefined,
+                patientId: patient.id,
+                patientCode: patient.patientCode,
+                patientAge: patientAge ? `${patientAge} Y` : null,
+                patientGender: patient.gender,
+                treatmentName: payment.treatmentName,
+                appointmentDate: formatDate(payment.date),
+                appointmentTime: formatTime(payment.date),
+                treatmentPrice: payment.amount,
+                discount: 0,
+                amountPaid: payment.amount,
+                remainingBalance: 0,
+                payments: [
+                    {
+                        date: String(payment.date),
+                        method: payment.method,
+                        amount: payment.amount,
+                        notes: payment.notes,
+                    },
+                ],
+                totalPaid: payment.amount,
+                dueAmount: 0,
+                paymentMethod: payment.method,
+            });
+        }
         setReceiptOpen(true);
     };
 
     const handleOpenReceiptForAppointment = (apt: (typeof patient.appointments)[0]) => {
+        const linkedPlan = patient.patientTreatments.find((pt) =>
+            pt.appointments?.some((a) => a.id === apt.id)
+        );
+
         const net = Math.max(0, apt.price);
         const paid = apt.amountPaid || 0;
         const due = Math.max(0, net - paid);
 
-        setReceiptData({
-            patientName: patient.name || "Valued Patient",
-            patientPhone: patient.phone || undefined,
-            patientId: patient.id,
-            treatmentName: apt.treatment.name,
-            appointmentDate: formatDate(apt.startTime),
-            appointmentTime: formatTime(apt.startTime),
-            treatmentPrice: apt.price + (apt.discount || 0),
-            discount: apt.discount || 0,
-            amountPaid: paid,
-            remainingBalance: due,
-            sessionNumber: apt.sessionNumber,
-        });
+        if (linkedPlan) {
+            const totalPlanPaid = linkedPlan.payments.reduce((sum, p) => sum + p.amount, 0);
+            const remainingDue = Math.max(0, linkedPlan.totalCost - totalPlanPaid);
+            const planPayments = linkedPlan.payments.map((p) => ({
+                id: p.id,
+                date: String(p.date),
+                method: p.method,
+                amount: p.amount,
+                notes: p.notes,
+            }));
+
+            setReceiptData({
+                patientName: patient.name || "Valued Patient",
+                patientPhone: patient.phone || undefined,
+                patientId: patient.id,
+                patientCode: patient.patientCode,
+                patientAge: patientAge ? `${patientAge} Y` : null,
+                patientGender: patient.gender,
+                doctorName: apt.doctor?.name || "Dr. Shehryar Akhtar",
+                treatmentName: linkedPlan.treatment.name,
+                appointmentDate: formatDate(apt.startTime),
+                appointmentTime: formatTime(apt.startTime),
+                treatmentPrice: linkedPlan.totalCost,
+                discount: apt.discount || 0,
+                amountPaid: paid,
+                remainingBalance: remainingDue,
+                sessionNumber: apt.sessionNumber,
+                payments: planPayments,
+                totalPaid: totalPlanPaid,
+                dueAmount: remainingDue,
+            });
+        } else {
+            const aptPayments = (apt.payments && apt.payments.length > 0)
+                ? apt.payments.map((p) => ({
+                    id: p.id,
+                    date: String(p.date),
+                    method: p.method,
+                    amount: p.amount,
+                    notes: p.notes,
+                }))
+                : [
+                    {
+                        date: String(apt.checkoutTime || apt.startTime),
+                        method: "CASH",
+                        amount: paid,
+                        notes: "Checkout settlement",
+                    },
+                ];
+
+            setReceiptData({
+                patientName: patient.name || "Valued Patient",
+                patientPhone: patient.phone || undefined,
+                patientId: patient.id,
+                patientCode: patient.patientCode,
+                patientAge: patientAge ? `${patientAge} Y` : null,
+                patientGender: patient.gender,
+                doctorName: apt.doctor?.name || "Dr. Shehryar Akhtar",
+                treatmentName: apt.treatment.name,
+                appointmentDate: formatDate(apt.startTime),
+                appointmentTime: formatTime(apt.startTime),
+                treatmentPrice: apt.price + (apt.discount || 0),
+                discount: apt.discount || 0,
+                amountPaid: paid,
+                remainingBalance: due,
+                sessionNumber: apt.sessionNumber,
+                payments: aptPayments,
+                totalPaid: paid,
+                dueAmount: due,
+            });
+        }
         setReceiptOpen(true);
     };
 
@@ -908,6 +1024,7 @@ export default function PatientProfileView({
                                                                                         notes: p.notes,
                                                                                         sourceType: "PLAN",
                                                                                         treatmentName: pt.treatment.name,
+                                                                                        patientTreatmentId: pt.id,
                                                                                     })
                                                                                 }
                                                                                 className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-800 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2.5 py-1 rounded-lg border border-teal-200 transition-colors cursor-pointer"

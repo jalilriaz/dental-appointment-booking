@@ -4,6 +4,12 @@ generator client {
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
+generator frontendClient {
+  provider      = "prisma-client-js"
+  output        = "../../frontend/node_modules/.prisma/client"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

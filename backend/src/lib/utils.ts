@@ -1,11 +1,54 @@
-import type { StatusConfig } from "@/lib/types";
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+import type { StatusConfig } from "@/lib/types"
 
-export function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 
 export function formatPKR(amount: number) {
   return `Rs. ${amount.toLocaleString("en-PK")}`;
+}
+
+/** Converts a number into words for clinical receipts & invoices (e.g. 95000 -> "Ninety-Five Thousand Rupees Only") */
+export function numberToWordsPKR(num: number): string {
+  if (!num || num <= 0 || isNaN(num)) return "Zero Rupees Only";
+
+  const ones = [
+    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+    "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"
+  ];
+  const tens = [
+    "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
+  ];
+
+  function convertBelowThousand(n: number): string {
+    if (n === 0) return "";
+    if (n < 20) return ones[n];
+    if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? `-${ones[n % 10]}` : "");
+    return ones[Math.floor(n / 100)] + " Hundred" + (n % 100 !== 0 ? ` ${convertBelowThousand(n % 100)}` : "");
+  }
+
+  const intPart = Math.floor(num);
+  let str = "";
+
+  if (intPart >= 10000000) {
+    str += convertBelowThousand(Math.floor(intPart / 10000000)) + " Crore ";
+  }
+  const lac = Math.floor((intPart % 10000000) / 100000);
+  if (lac > 0) {
+    str += convertBelowThousand(lac) + " Lac ";
+  }
+  const thousand = Math.floor((intPart % 100000) / 1000);
+  if (thousand > 0) {
+    str += convertBelowThousand(thousand) + " Thousand ";
+  }
+  const rest = intPart % 1000;
+  if (rest > 0) {
+    str += convertBelowThousand(rest);
+  }
+
+  return (str.trim() || "Zero") + " Rupees Only";
 }
 
 /** Formats a pricing range in PKR (e.g. "Rs. 90,000 – 110,000") accounting for case complexity variations */

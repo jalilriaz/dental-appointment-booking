@@ -82,10 +82,9 @@ export default function AppointmentCtaBanner({ treatments }: AppointmentCtaBanne
             <div className="lg:col-span-5 relative flex justify-center lg:justify-end">
               <div className="relative w-full max-w-sm sm:max-w-md h-64 sm:h-72 lg:h-84 rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-white/20 shadow-2xl bg-teal-950/40 select-none group">
                 <Image
-                  src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1000&auto=format&fit=crop"
-                  alt="Specialized dental consultation with precision dental instruments"
+                  src="/my_clinic_11.webp"
+                  alt="Elite Dental Centre - Doctor consultation and treatment operatory in G-8 Markaz Islamabad"
                   fill
-                  unoptimized
                   className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 />
                 {/* Soft Gradient Overlay for Seamless Integration */}

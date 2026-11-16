@@ -197,3 +197,69 @@ export async function deleteCalendarEvent(eventId: string): Promise<boolean> {
         return false;
     }
 }
+
+/**
+ * Sync all unsynced upcoming appointments to Google Calendar.
+ * Useful after freshly connecting or reconnecting Google Calendar.
+ */
+export async function syncUpcomingAppointmentsToGoogleCalendar(): Promise<{ synced: number; failed: number }> {
+    const calendar = await getCalendarClient();
+    if (!calendar) return { synced: 0, failed: 0 };
+
+    const unsynced = await prisma.appointment.findMany({
+        where: {
+            googleEventId: null,
+            status: "SCHEDULED",
+            startTime: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // from yesterday onwards
+        },
+        include: {
+            treatment: true,
+            patient: true,
+            doctor: true,
+        },
+        orderBy: { startTime: "asc" },
+    });
+
+    let synced = 0;
+    let failed = 0;
+
+    for (const appt of unsynced) {
+        try {
+            const patientName = appt.guestName || appt.patient?.name || "Patient";
+            const patientPhone = appt.guestPhone || appt.patient?.phone || undefined;
+            const summary = `${appt.treatment.name} — ${patientName}${appt.sessionLabel ? ` (${appt.sessionLabel})` : ""}`;
+            const description = [
+                `Patient: ${patientName}`,
+                `Treatment: ${appt.treatment.name}`,
+                `Duration: ${appt.treatment.durationMin} min`,
+                appt.doctor ? `Doctor: ${appt.doctor.name}` : "",
+                appt.notes ? `Notes: ${appt.notes}` : "",
+            ].filter(Boolean).join("\n");
+
+            const googleEventId = await createCalendarEvent({
+                summary,
+                description,
+                startTime: appt.startTime,
+                endTime: appt.endTime,
+                patientName,
+                patientPhone,
+            });
+
+            if (googleEventId) {
+                await prisma.appointment.update({
+                    where: { id: appt.id },
+                    data: { googleEventId },
+                });
+                synced++;
+            } else {
+                failed++;
+            }
+        } catch (err) {
+            console.error(`[GoogleCalendar] Failed to sync appointment ${appt.id}:`, err);
+            failed++;
+        }
+    }
+
+    console.log(`[GoogleCalendar] Batch sync complete: ${synced} synced, ${failed} failed.`);
+    return { synced, failed };
+}

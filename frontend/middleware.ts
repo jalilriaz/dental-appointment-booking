@@ -68,6 +68,14 @@ function applySecurityHeaders(response: NextResponse) {
 export default async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
+    // Static asset bypass (images, icons, fonts, etc.)
+    if (
+        pathname.match(/\.(webp|png|jpg|jpeg|svg|ico|gif|woff|woff2|ttf|eot)$/) ||
+        pathname.startsWith("/images/")
+    ) {
+        return NextResponse.next();
+    }
+
     // Canonical Route Redirect: /reception/* -> /staff/*
     if (pathname === "/reception" || pathname.startsWith("/reception/")) {
         const staffPath = pathname.replace(/^\/reception/, "/staff");

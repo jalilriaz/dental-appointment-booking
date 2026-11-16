@@ -65,6 +65,9 @@ export interface Appointment {
         name: string | null;
         email?: string | null;
         phone?: string | null;
+        patientCode?: number | null;
+        gender?: string | null;
+        dateOfBirth?: string | Date | null;
         noShowCount?: number;
         medicalAlerts?: string | null;
     } | null;
@@ -94,6 +97,13 @@ export interface Appointment {
         totalSessions: number;
         clinicalStatus: string;
         financialStatus: string;
+        payments?: {
+            id?: string;
+            amount: number;
+            method?: string;
+            date: string;
+            notes?: string | null;
+        }[];
     } | null;
 }
 
@@ -147,6 +157,7 @@ export interface PatientResult {
         id: string;
         startTime: string;
         status: string;
+        bookedBy?: string;
         treatment: { name: string };
     }[];
     patientTreatments?: {

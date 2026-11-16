@@ -15,6 +15,7 @@ export default async function StaffPatientProfilePage({
             appointments: {
                 include: {
                     treatment: { select: { id: true, name: true, price: true, durationMin: true } },
+                    doctor: { select: { id: true, name: true } },
                     clinicalNotes: { orderBy: { createdAt: "desc" } },
                     payments: { orderBy: { date: "desc" } },
                 },

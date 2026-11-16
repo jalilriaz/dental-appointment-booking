@@ -444,11 +444,11 @@ export default async function AdminDashboard() {
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               <tr>
-                <th className="px-6 py-3.5 sm:px-8">Patient Name</th>
-                <th className="px-6 py-3.5">Procedure / Treatment</th>
-                <th className="px-6 py-3.5">Scheduled Timing</th>
-                <th className="px-6 py-3.5">Fee (PKR)</th>
-                <th className="px-6 py-3.5 text-right sm:pr-8">Clinical Status</th>
+                <th className="px-6 py-3.5 sm:px-8 whitespace-nowrap">Patient Name</th>
+                <th className="px-6 py-3.5 whitespace-nowrap">Procedure / Treatment</th>
+                <th className="px-6 py-3.5 whitespace-nowrap">Scheduled Timing</th>
+                <th className="px-6 py-3.5 whitespace-nowrap">Fee (PKR)</th>
+                <th className="px-6 py-3.5 text-right sm:pr-8 whitespace-nowrap">Clinical Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">

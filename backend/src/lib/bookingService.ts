@@ -106,6 +106,11 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
 
         // 3. Execute atomic serialized transaction
         const txResult = await prisma.$transaction(async (tx) => {
+            // Serialize concurrent slot booking requests with a PostgreSQL Transaction Advisory Lock
+            // Guarantees zero double-booking even if Website, Chatbot, and Walk-in hit the exact same millisecond.
+            const lockKey = `slot_${date}_${time}`;
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}));`;
+
             // A. Resolve treatment
             let treatment = null;
             if (treatmentId) {

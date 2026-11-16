@@ -3,6 +3,24 @@
 // defining local copies. Keep in sync with Prisma schema.
 
 
+// ─── Feedback ────────────────────────────────────────────
+
+export interface FeedbackItem {
+    id: string;
+    name: string;
+    email?: string;
+    rating: number;
+    comment: string;
+    treatmentName?: string;
+    date: string;
+    source: "Google" | "Website" | "Verified Patient";
+    clinicResponse?: {
+        responder: string;
+        date: string;
+        message: string;
+    };
+}
+
 // ─── Treatment ───────────────────────────────────────────
 
 /** Full Treatment record — matches Prisma `Treatment` model. */
@@ -17,6 +35,9 @@ export interface Treatment {
     instructions?: string | null;
     isActive?: boolean;
     imageUrl?: string | null;
+    category?: string | null;
+    isMultiSession?: boolean | null;
+    defaultSessions?: number | null;
     _count?: { appointments: number };
 }
 
@@ -37,11 +58,16 @@ export interface Appointment {
     bookedBy?: string;
     notes?: string | null;
     createdAt?: string;
+    guestName?: string | null;
+    guestPhone?: string | null;
     patient: {
         id: string;
         name: string | null;
         email?: string | null;
         phone?: string | null;
+        patientCode?: number | null;
+        gender?: string | null;
+        dateOfBirth?: string | Date | null;
         noShowCount?: number;
         medicalAlerts?: string | null;
     } | null;
@@ -51,6 +77,15 @@ export interface Appointment {
         price: number;
         durationMin: number;
     };
+    doctorId?: string | null;
+    doctor?: {
+        id: string;
+        name: string;
+        role: string;
+        operatory?: string | null;
+        image?: string | null;
+        isLead?: boolean;
+    } | null;
     clinicalNotes?: ClinicalNote[];
     patientTreatmentId?: string | null;
     sessionNumber?: number | null;
@@ -62,7 +97,25 @@ export interface Appointment {
         totalSessions: number;
         clinicalStatus: string;
         financialStatus: string;
+        payments?: {
+            id?: string;
+            amount: number;
+            method?: string;
+            date: string;
+            notes?: string | null;
+        }[];
     } | null;
+}
+
+export interface DoctorOption {
+    id: string;
+    name: string;
+    role: string;
+    operatory: string;
+    schedule?: string;
+    consultationFee?: number;
+    isLead?: boolean;
+    isActive?: boolean;
 }
 
 export interface ClinicalNote {
@@ -104,7 +157,13 @@ export interface PatientResult {
         id: string;
         startTime: string;
         status: string;
+        bookedBy?: string;
         treatment: { name: string };
+    }[];
+    patientTreatments?: {
+        id: string;
+        treatment: { name: string };
+        totalSessions: number;
     }[];
     _count: { appointments: number };
 }
