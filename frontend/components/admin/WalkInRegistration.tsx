@@ -53,11 +53,10 @@ export default function WalkInRegistration({
                     <button
                         type="button"
                         onClick={() => setActiveTab("registered")}
-                        className={`flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
-                            activeTab === "registered"
-                                ? "bg-teal-600 text-white shadow-xs"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                        }`}
+                        className={`flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${activeTab === "registered"
+                            ? "bg-teal-600 text-white shadow-xs"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                            }`}
                     >
                         <SearchOutlinedIcon sx={{ fontSize: 18 }} />
                         <span>Registered Patient Lookup</span>
@@ -65,11 +64,10 @@ export default function WalkInRegistration({
                     <button
                         type="button"
                         onClick={() => setActiveTab("new")}
-                        className={`flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
-                            activeTab === "new"
-                                ? "bg-teal-600 text-white shadow-xs"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                        }`}
+                        className={`flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${activeTab === "new"
+                            ? "bg-teal-600 text-white shadow-xs"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                            }`}
                     >
                         <PersonAddOutlinedIcon sx={{ fontSize: 18 }} />
                         <span>+ Register New Walk-In</span>

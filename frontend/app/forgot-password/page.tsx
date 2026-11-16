@@ -24,11 +24,13 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [resetLink, setResetLink] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("loading");
     setMessage("");
+    setResetLink(null);
 
     try {
       const res = await fetchApi("/api/auth/forgot-password", {
@@ -42,6 +44,9 @@ export default function ForgotPasswordPage() {
       if (res.ok) {
         setStatus("success");
         setMessage(data.message || "A secure reset link has been sent to your email address.");
+        if (data.resetLink) {
+          setResetLink(data.resetLink);
+        }
       } else {
         setStatus("error");
         setMessage(data.error || "Something went wrong. Please verify your email.");
@@ -236,6 +241,26 @@ export default function ForgotPasswordPage() {
                   <CheckCircleOutlineOutlined sx={{ fontSize: 24, color: "#0D9488" }} className="mx-auto mb-1.5 block" />
                   {message}
                 </div>
+
+                {resetLink && (
+                  <div className="p-4 bg-amber-50/90 border border-amber-200/90 rounded-2xl text-left space-y-2.5">
+                    <div className="flex items-center gap-1.5 text-amber-800 text-xs font-black uppercase tracking-wider">
+                      <LockResetOutlined sx={{ fontSize: 16 }} />
+                      <span>Demo Environment Reset Helper</span>
+                    </div>
+                    <p className="text-xs text-amber-900 leading-relaxed">
+                      SMTP credentials are not configured in backend/.env for these demo accounts. You can proceed directly with your generated reset token:
+                    </p>
+                    <a
+                      href={resetLink}
+                      className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
+                    >
+                      <LockResetOutlined sx={{ fontSize: 16 }} />
+                      <span>Open Reset Password Form →</span>
+                    </a>
+                  </div>
+                )}
+
                 <Button
                   asChild
                   className="w-full h-11 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md shadow-teal-600/20 active:scale-[0.98] transition-all cursor-pointer"
@@ -259,6 +284,31 @@ export default function ForgotPasswordPage() {
                     disabled={status === "loading"}
                     className="h-11 bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-teal-600 focus:ring-teal-500/20 shadow-2xs rounded-xl text-sm"
                   />
+                </div>
+
+                {/* Quick-Fill Demo Selectors */}
+                <div className="pt-1">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold mb-1.5">
+                    <span>Quick Fill Demo Account:</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEmail("admin@elitedental.com")}
+                      className="p-2 text-left rounded-xl bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 transition-all text-xs cursor-pointer shadow-2xs"
+                    >
+                      <div className="font-extrabold text-slate-800 text-[11px]">Admin</div>
+                      <div className="text-[10px] text-teal-700 font-mono truncate">admin@elitedental.com</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEmail("staff1@elitedental.com")}
+                      className="p-2 text-left rounded-xl bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 transition-all text-xs cursor-pointer shadow-2xs"
+                    >
+                      <div className="font-extrabold text-slate-800 text-[11px]">Receptionist</div>
+                      <div className="text-[10px] text-teal-700 font-mono truncate">staff1@elitedental.com</div>
+                    </button>
+                  </div>
                 </div>
 
                 {status === "error" && (

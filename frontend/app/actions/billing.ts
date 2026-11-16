@@ -18,6 +18,7 @@ export interface CheckoutOptions {
     billedPrice?: number;
     discount?: number;
     paymentMethod?: "CASH" | "CARD" | "ONLINE";
+    discountPercent?: number;
     packageCost?: number;
     totalSessions?: number;
     nextSessionDate?: string;
@@ -32,6 +33,7 @@ const checkoutSchema = z.object({
     notes: z.string().optional(),
     billedPrice: z.number().min(0, "Billed price cannot be negative").optional(),
     discount: z.number().min(0, "Discount cannot be negative").optional(),
+    discountPercent: z.number().min(0).max(100).optional(),
     paymentMethod: z.enum(["CASH", "CARD", "ONLINE"]).optional().default("CASH"),
     packageCost: z.number().min(0).optional(),
     totalSessions: z.number().int().min(1).optional(),
@@ -61,6 +63,7 @@ export async function checkoutAppointment(
                 notes: notesArg,
                 billedPrice: billedPriceArg,
                 discount: discountArg,
+                discountPercent: extraOptions?.discountPercent,
                 paymentMethod: extraOptions?.paymentMethod || "CASH",
                 packageCost: extraOptions?.packageCost,
                 totalSessions: extraOptions?.totalSessions,

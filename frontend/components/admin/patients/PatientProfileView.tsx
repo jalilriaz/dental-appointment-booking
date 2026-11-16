@@ -380,6 +380,7 @@ export default function PatientProfileView({
                 appointmentTime: formatTime(apt.startTime),
                 treatmentPrice: linkedPlan.totalCost,
                 discount: apt.discount || 0,
+                discountPercent: (apt.discount && linkedPlan.totalCost) ? Math.round((apt.discount / linkedPlan.totalCost) * 100) : undefined,
                 amountPaid: paid,
                 remainingBalance: remainingDue,
                 sessionNumber: apt.sessionNumber,
@@ -418,6 +419,7 @@ export default function PatientProfileView({
                 appointmentTime: formatTime(apt.startTime),
                 treatmentPrice: apt.price + (apt.discount || 0),
                 discount: apt.discount || 0,
+                discountPercent: (apt.discount && (apt.price + (apt.discount || 0))) ? Math.round((apt.discount / (apt.price + (apt.discount || 0))) * 100) : undefined,
                 amountPaid: paid,
                 remainingBalance: due,
                 sessionNumber: apt.sessionNumber,
@@ -1178,54 +1180,6 @@ export default function PatientProfileView({
                                             </span>
                                         </div>
                                     </div>
-
-                                    {/* Doctor's Clinical Charting */}
-                                    {apt.clinicalNotes && apt.clinicalNotes.length > 0 && (
-                                        <div className="pt-3 border-t border-slate-100 space-y-2">
-                                            <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-teal-800">
-                                                <LocalHospitalOutlined sx={{ fontSize: 14 }} className="text-teal-600" />
-                                                <span>Doctor&apos;s Clinical Charting</span>
-                                            </div>
-                                            <div className="grid md:grid-cols-2 gap-3 pl-3 border-l-2 border-teal-500">
-                                                {apt.clinicalNotes.map((note) => (
-                                                    <div
-                                                        key={note.id}
-                                                        className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/70 text-xs space-y-1.5"
-                                                    >
-                                                        <div>
-                                                            <span className="font-bold text-slate-800">
-                                                                Treatment Done:
-                                                            </span>{" "}
-                                                            <span className="font-semibold text-slate-700">
-                                                                {note.treatmentDone}
-                                                            </span>
-                                                        </div>
-                                                        {note.diagnosis && (
-                                                            <div>
-                                                                <span className="font-bold text-teal-800">
-                                                                    Diagnosis:
-                                                                </span>{" "}
-                                                                <span className="text-slate-700">{note.diagnosis}</span>
-                                                            </div>
-                                                        )}
-                                                        {note.prescription && (
-                                                            <div>
-                                                                <span className="font-bold text-amber-900">
-                                                                    Prescription:
-                                                                </span>{" "}
-                                                                <span className="text-slate-700">{note.prescription}</span>
-                                                            </div>
-                                                        )}
-                                                        {note.remarks && (
-                                                            <div className="italic text-slate-500 pt-1 border-t border-slate-200/50">
-                                                                Note: {note.remarks}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             ))}
                         </div>

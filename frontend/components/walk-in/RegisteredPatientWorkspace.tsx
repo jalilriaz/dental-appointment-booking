@@ -22,7 +22,6 @@ import MedicalServicesOutlinedIcon from "@mui/icons-material/MedicalServicesOutl
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import ChairOutlinedIcon from "@mui/icons-material/ChairOutlined";
 import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
@@ -33,11 +32,11 @@ import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimeSlotSelector } from "@/components/ui/time-slot-selector";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { formatDate, formatTime, isSunday, formatPKR } from "@/lib/utils";
 import StatusBadge from "@/components/shared/StatusBadge";
@@ -45,12 +44,12 @@ import SundayWarning from "@/components/shared/SundayWarning";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 
 import type {
-  TreatmentOption,
-  DoctorOption,
-  PatientResult,
-  PatientHistory,
-  BookingForm,
-  SuccessData,
+    TreatmentOption,
+    DoctorOption,
+    PatientResult,
+    PatientHistory,
+    BookingForm,
+    SuccessData,
 } from "./types";
 
 interface RegisteredPatientWorkspaceProps {
@@ -269,10 +268,6 @@ export default function RegisteredPatientWorkspace({
     const selectedTreatment = treatments.find((t) => t.id === bookingForm.treatmentId);
 
     const leadDoctor = doctors.find((d) => d.isLead) || doctors[0];
-    const chair1Doctor = doctors.find((d) => d.operatory?.toLowerCase().includes("chair 1"))?.name || leadDoctor?.name || "Dr. Sheriyaar";
-    const chair2Doctor = doctors.find((d) => d.operatory?.toLowerCase().includes("chair 2") || d.role?.toLowerCase().includes("ortho"))?.name || (doctors.length === 1 ? leadDoctor?.name : "Specialist");
-    const chair3Doctor = doctors.find((d) => d.operatory?.toLowerCase().includes("chair 3") || d.role?.toLowerCase().includes("endo"))?.name || (doctors.length === 1 ? leadDoctor?.name : "Specialist");
-    const chair4Doctor = doctors.find((d) => d.operatory?.toLowerCase().includes("chair 4") || d.role?.toLowerCase().includes("hygiene"))?.name || (doctors.length === 1 ? leadDoctor?.name : "Duty Doctor");
 
     // Selected Patient Object
     const currentPatient = useMemo(() => {
@@ -314,18 +309,24 @@ export default function RegisteredPatientWorkspace({
                 </div>
             )}
 
-            {/* ── MASTER-DETAIL DUAL PANE WORKSPACE ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* LEFT PANEL: Searchable Patient Stream */}
-                <div className={`lg:col-span-5 xl:col-span-4 space-y-4 ${selectedPatientId ? "hidden lg:block" : "block"}`}>
-                    <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-3.5">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-1.5">
-                                <SearchOutlinedIcon sx={{ fontSize: 15 }} />
-                                <span>Patient Directory</span>
-                            </span>
-                            <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                                {totalPatients} Total
+            {/* ── CONDITIONAL FULL-WIDTH WORKSPACE ── */}
+            {!selectedPatientId ? (
+                /* PATIENT DIRECTORY & REGISTERED PATIENTS BOXES (FULL WIDTH) */
+                <div className="space-y-6">
+                    {/* Box 1: Patient Directory Search & Origin Channel Filters */}
+                    <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-2xs space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                                <span className="text-xs font-black text-teal-800 uppercase tracking-wider flex items-center gap-2">
+                                    <SearchOutlinedIcon sx={{ fontSize: 16 }} />
+                                    <span>Patient Directory</span>
+                                </span>
+                                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                                    Search registered patients across Website, WhatsApp Bot, and Walk-In to review clinical history and schedule appointments.
+                                </p>
+                            </div>
+                            <span className="text-xs font-black text-teal-900 bg-teal-50 px-3.5 py-1 rounded-full border border-teal-200/80 w-fit shrink-0">
+                                {totalPatients} Registered Patients
                             </span>
                         </div>
 
@@ -355,61 +356,62 @@ export default function RegisteredPatientWorkspace({
                         </div>
 
                         {/* Booking Origin Channel Quick Filter Chips */}
-                        <div className="flex items-center gap-1.5 pt-1 overflow-x-auto no-scrollbar">
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">Origin Channel:</span>
                             <button
                                 type="button"
                                 onClick={() => { setChannelFilter("ALL"); setCurrentPage(1); }}
-                                className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold transition-all cursor-pointer border ${channelFilter === "ALL"
+                                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer border ${channelFilter === "ALL"
                                     ? "bg-teal-600 text-white border-teal-600 shadow-2xs"
                                     : "bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200/80"
-                                }`}
+                                    }`}
                             >
                                 All Channels
                             </button>
                             <button
                                 type="button"
                                 onClick={() => { setChannelFilter("WHATSAPP_BOT"); setCurrentPage(1); }}
-                                className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1 border ${channelFilter === "WHATSAPP_BOT"
+                                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 border ${channelFilter === "WHATSAPP_BOT"
                                     ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
                                     : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border-emerald-200/80"
-                                }`}
+                                    }`}
                             >
-                                <WhatsAppIcon sx={{ fontSize: 12 }} />
+                                <WhatsAppIcon sx={{ fontSize: 13 }} />
                                 <span>WhatsApp Bot</span>
                             </button>
                             <button
                                 type="button"
                                 onClick={() => { setChannelFilter("WEBSITE"); setCurrentPage(1); }}
-                                className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1 border ${channelFilter === "WEBSITE"
+                                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 border ${channelFilter === "WEBSITE"
                                     ? "bg-teal-700 text-white border-teal-700 shadow-2xs"
                                     : "bg-teal-50 text-teal-800 hover:bg-teal-100 border-teal-200/80"
-                                }`}
+                                    }`}
                             >
-                                <LanguageOutlinedIcon sx={{ fontSize: 12 }} />
+                                <LanguageOutlinedIcon sx={{ fontSize: 13 }} />
                                 <span>Website</span>
                             </button>
                             <button
                                 type="button"
                                 onClick={() => { setChannelFilter("WALK_IN"); setCurrentPage(1); }}
-                                className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1 border ${channelFilter === "WALK_IN"
+                                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 border ${channelFilter === "WALK_IN"
                                     ? "bg-slate-800 text-white border-slate-800 shadow-2xs"
                                     : "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200/80"
-                                }`}
+                                    }`}
                             >
-                                <DirectionsWalkOutlinedIcon sx={{ fontSize: 12 }} />
+                                <DirectionsWalkOutlinedIcon sx={{ fontSize: 13 }} />
                                 <span>Walk-In</span>
                             </button>
                         </div>
                     </div>
 
-                    {/* Patient Stream List */}
+                    {/* Box 2: Registered Patients Responsive Cards */}
                     <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xs overflow-hidden">
-                        <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between text-xs text-slate-500 font-semibold">
-                            <span>
+                        <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between text-xs text-slate-500 font-semibold">
+                            <span className="font-extrabold text-slate-700">
                                 {searchQuery.trim().length >= 2 ? (
                                     <>Results for <span className="text-teal-700 font-bold">&quot;{searchQuery}&quot;</span></>
                                 ) : (
-                                    <>Registered Patients</>
+                                    <>Registered Patients Directory</>
                                 )}
                             </span>
                             {totalPages > 1 && (
@@ -418,102 +420,103 @@ export default function RegisteredPatientWorkspace({
                         </div>
 
                         {results.length === 0 ? (
-                            <div className="p-8 text-center space-y-2">
-                                <PersonOutlineOutlinedIcon sx={{ fontSize: 36 }} className="text-slate-300 mx-auto" />
-                                <p className="text-sm font-bold text-slate-800">
+                            <div className="p-12 text-center space-y-3">
+                                <PersonOutlineOutlinedIcon sx={{ fontSize: 44 }} className="text-slate-300 mx-auto" />
+                                <p className="text-base font-black text-slate-800">
                                     {searchQuery.length >= 2 ? "No matching patients" : "No registered patients"}
                                 </p>
-                                <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                                <p className="text-xs text-slate-400 max-w-sm mx-auto">
                                     {searchQuery.length >= 2
                                         ? "Try searching by phone number (e.g. 03xx or +92) or click '+ Register New Walk-In'."
-                                        : "Use the '+ Register New Walk-In' tab to register a new walk-in arrival."}
+                                        : "Use the '+ Register New Walk-In' tab above to register a new arrival."}
                                 </p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-slate-100 max-h-[620px] overflow-y-auto">
-                                {results.map((patient) => {
-                                    const isSelected = selectedPatientId === patient.id;
-                                    const visitCount = patient._count?.appointments ?? patient.appointments?.length ?? 0;
-                                    const hasActivePlan = Boolean(patient.patientTreatments && patient.patientTreatments.length > 0);
+                            <div className="p-4 sm:p-5 lg:p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    {results.map((patient) => {
+                                        const visitCount = patient._count?.appointments ?? patient.appointments?.length ?? 0;
+                                        const hasActivePlan = Boolean(patient.patientTreatments && patient.patientTreatments.length > 0);
 
-                                    return (
-                                        <button
-                                            key={patient.id}
-                                            type="button"
-                                            onClick={() => loadHistory(patient.id)}
-                                            className={`w-full text-left p-4 sm:p-4.5 transition-all flex items-center gap-3.5 cursor-pointer relative group ${
-                                                isSelected
-                                                    ? "bg-teal-50/70 border-l-4 border-l-teal-600"
-                                                    : "hover:bg-slate-50/80"
-                                            }`}
-                                        >
+                                        return (
                                             <div
-                                                className={`size-11 rounded-2xl flex items-center justify-center font-black text-xs shrink-0 transition-all ${
-                                                    isSelected
-                                                        ? "bg-teal-600 text-white shadow-xs"
-                                                        : "bg-teal-50 text-teal-800 border border-teal-200/80 group-hover:border-teal-400"
-                                                }`}
+                                                key={patient.id}
+                                                onClick={() => loadHistory(patient.id)}
+                                                className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 hover:border-teal-400 hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer relative"
                                             >
-                                                {(patient.name || "P").charAt(0).toUpperCase()}
-                                            </div>
+                                                {/* Card Top: Avatar, Name & MRN */}
+                                                <div className="space-y-3">
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div className="flex items-center gap-3 min-w-0">
+                                                            <div className="size-11 rounded-2xl bg-teal-50 text-teal-800 border border-teal-200/80 flex items-center justify-center font-black text-sm shrink-0 group-hover:bg-teal-600 group-hover:text-white transition-all shadow-2xs">
+                                                                {(patient.name || "P").charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <h4 className="text-sm font-black text-slate-900 group-hover:text-teal-700 transition-colors truncate">
+                                                                    {patient.name}
+                                                                </h4>
+                                                                {patient.patientCode ? (
+                                                                    <span className="inline-block mt-0.5 text-[10px] font-mono font-extrabold px-1.5 py-0.2 rounded bg-teal-100/80 text-teal-800 border border-teal-200">
+                                                                        MRN #{patient.patientCode}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-[10px] text-slate-400 font-medium">No MRN</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
 
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-1.5 flex-wrap">
-                                                    <p className={`text-xs sm:text-sm font-black truncate tracking-tight ${
-                                                        isSelected ? "text-teal-950 font-black" : "text-slate-900 group-hover:text-teal-700"
-                                                    }`}>
-                                                        {patient.name}
-                                                    </p>
-                                                    {patient.patientCode && (
-                                                        <span className="text-[10px] font-mono font-extrabold px-1.5 py-0.2 rounded bg-teal-100/80 text-teal-800 border border-teal-200 shrink-0">
-                                                            MRN #{patient.patientCode}
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                <div className="flex items-center gap-2 mt-1 flex-wrap text-[11px] text-slate-500">
-                                                    {patient.phone && (
-                                                        <span className="flex items-center gap-1 font-semibold text-slate-700">
-                                                            <PhoneOutlinedIcon sx={{ fontSize: 12, color: "#0D9488" }} />
-                                                            <span>{patient.phone}</span>
-                                                        </span>
-                                                    )}
-                                                    <span className="text-slate-300">·</span>
-                                                    <span className="font-bold text-slate-700">
-                                                        {visitCount} {visitCount === 1 ? "Visit" : "Visits"}
-                                                    </span>
-                                                </div>
-
-                                                {/* Channels this patient booked through */}
-                                                {getPatientChannelPills(patient.appointments)}
-
-                                                {/* Plan or Medical Tag */}
-                                                {hasActivePlan && (
-                                                    <div className="mt-1 flex items-center gap-1 text-[10px] font-extrabold text-teal-700 bg-teal-50/90 px-2 py-0.5 rounded-md border border-teal-200/60 w-fit">
-                                                        <AutoAwesomeOutlinedIcon sx={{ fontSize: 11 }} />
-                                                        <span>Active Plan: {patient.patientTreatments![0].treatment.name}</span>
+                                                        {patient.medicalAlerts && (
+                                                            <div
+                                                                className="size-7 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center shrink-0"
+                                                                title={patient.medicalAlerts}
+                                                            >
+                                                                <SecurityOutlinedIcon sx={{ fontSize: 14, color: "#DC2626" }} />
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
 
-                                            {patient.medicalAlerts && (
-                                                <div
-                                                    className="size-7 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center shrink-0"
-                                                    title={patient.medicalAlerts}
-                                                >
-                                                    <SecurityOutlinedIcon sx={{ fontSize: 15, color: "#DC2626" }} />
+                                                    {/* Card Body: Phone, Visits, Channels */}
+                                                    <div className="space-y-2 text-xs">
+                                                        <div className="flex items-center justify-between text-slate-600 pt-2 border-t border-slate-100">
+                                                            <span className="flex items-center gap-1 font-semibold text-[11px] truncate">
+                                                                <PhoneOutlinedIcon sx={{ fontSize: 13, color: "#0D9488" }} />
+                                                                <span>{patient.phone || "No phone"}</span>
+                                                            </span>
+                                                            <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md text-[10px] shrink-0">
+                                                                {visitCount} {visitCount === 1 ? "Visit" : "Visits"}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Origin Channels */}
+                                                        <div className="pt-0.5 flex flex-wrap gap-1">
+                                                            {getPatientChannelPills(patient.appointments)}
+                                                        </div>
+
+                                                        {/* Active Plan Tag */}
+                                                        {hasActivePlan && (
+                                                            <div className="flex items-center gap-1 text-[10px] font-black text-teal-800 bg-teal-50 px-2 py-1 rounded-lg border border-teal-200/70">
+                                                                <AutoAwesomeOutlinedIcon sx={{ fontSize: 11 }} />
+                                                                <span className="truncate">Active Plan: {patient.patientTreatments![0].treatment.name}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            )}
 
-                                            <ChevronRightOutlinedIcon
-                                                sx={{ fontSize: 16 }}
-                                                className={`transition-transform shrink-0 ${
-                                                    isSelected ? "text-teal-700 translate-x-1" : "text-slate-300 group-hover:text-slate-500"
-                                                }`}
-                                            />
-                                        </button>
-                                    );
-                                })}
+                                                {/* Card Footer: Action Button */}
+                                                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                                                    <span className="text-[11px] font-extrabold text-teal-700 group-hover:text-teal-900 flex items-center gap-1">
+                                                        <EventAvailableOutlinedIcon sx={{ fontSize: 14 }} />
+                                                        <span>Schedule Appointment</span>
+                                                    </span>
+                                                    <ChevronRightOutlinedIcon
+                                                        sx={{ fontSize: 16 }}
+                                                        className="text-slate-300 group-hover:text-teal-600 group-hover:translate-x-0.5 transition-all"
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         )}
 
@@ -531,7 +534,7 @@ export default function RegisteredPatientWorkspace({
                                 </button>
 
                                 <span className="text-[11px] font-bold text-slate-500">
-                                    {currentPage} / {totalPages}
+                                    Page {currentPage} of {totalPages}
                                 </span>
 
                                 <button
@@ -547,25 +550,46 @@ export default function RegisteredPatientWorkspace({
                         )}
                     </div>
                 </div>
+            ) : (
+                /* ── SELECTED PATIENT DOSSIER & FAST BOOKING STUDIO (FULL WIDTH) ── */
+                <div className="space-y-5 animate-fade-in">
+                    {/* Top Navigation Bar: Back to Directory & Switch Patient */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs">
+                        <button
+                            type="button"
+                            onClick={handleClearSelection}
+                            className="inline-flex items-center gap-2 text-xs sm:text-sm font-black text-teal-800 bg-teal-50 hover:bg-teal-100/80 border border-teal-200/80 px-4 py-2.5 rounded-xl shadow-2xs transition-all cursor-pointer w-fit"
+                        >
+                            <ArrowBackOutlinedIcon sx={{ fontSize: 16 }} />
+                            <span>Back to Patient Directory</span>
+                        </button>
 
-                {/* RIGHT PANEL: Patient Dossier & Fast Booking Studio */}
-                <div className={`lg:col-span-7 xl:col-span-8 space-y-5 ${selectedPatientId ? "block" : "hidden lg:block"}`}>
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <span className="text-xs text-slate-500 font-medium">
+                                Active Patient: <strong className="text-slate-900">{currentPatient?.name}</strong>{" "}
+                                {currentPatient?.patientCode && (
+                                    <span className="font-mono text-teal-700 font-black ml-1">MRN #{currentPatient.patientCode}</span>
+                                )}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={handleClearSelection}
+                                className="inline-flex items-center gap-1 text-xs font-black text-slate-600 hover:text-red-700 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+                            >
+                                <CloseOutlinedIcon sx={{ fontSize: 14 }} />
+                                <span>Switch Patient</span>
+                            </button>
+                        </div>
+                    </div>
+
                     {loadingHistory ? (
                         <div className="bg-white rounded-3xl border border-slate-200/80 p-16 text-center shadow-2xs space-y-3">
                             <AutorenewOutlinedIcon sx={{ fontSize: 32 }} className="text-teal-600 animate-spin mx-auto" />
                             <p className="text-sm font-extrabold text-slate-900">Loading Clinical Records...</p>
-                            <p className="text-xs text-slate-400">Retrieving patient treatment history and operatory telemetry.</p>
+                            <p className="text-xs text-slate-400">Retrieving patient treatment history and clinical profile.</p>
                         </div>
                     ) : history && currentPatient ? (
-                        <div className="space-y-5 animate-fade-in">
-                            <button
-                                type="button"
-                                onClick={handleClearSelection}
-                                className="lg:hidden inline-flex items-center gap-1.5 text-xs font-extrabold text-teal-800 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-2xs mb-2 cursor-pointer"
-                            >
-                                <ArrowBackOutlinedIcon sx={{ fontSize: 14 }} />
-                                <span>Back to Patient Directory</span>
-                            </button>
+                        <div className="space-y-5">
 
                             {/* 1. Selected Patient Dossier Header */}
                             <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs relative overflow-hidden">
@@ -698,11 +722,10 @@ export default function RegisteredPatientWorkspace({
                                 <button
                                     type="button"
                                     onClick={() => setActiveDetailTab("book")}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                                        activeDetailTab === "book"
-                                            ? "bg-teal-600 text-white shadow-xs"
-                                            : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
-                                    }`}
+                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${activeDetailTab === "book"
+                                        ? "bg-teal-600 text-white shadow-xs"
+                                        : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
+                                        }`}
                                 >
                                     <EventAvailableOutlinedIcon sx={{ fontSize: 15 }} />
                                     <span>Schedule Appointment</span>
@@ -711,11 +734,10 @@ export default function RegisteredPatientWorkspace({
                                 <button
                                     type="button"
                                     onClick={() => setActiveDetailTab("history")}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                                        activeDetailTab === "history"
-                                            ? "bg-teal-600 text-white shadow-xs"
-                                            : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
-                                    }`}
+                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${activeDetailTab === "history"
+                                        ? "bg-teal-600 text-white shadow-xs"
+                                        : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
+                                        }`}
                                 >
                                     <HistoryOutlinedIcon sx={{ fontSize: 15 }} />
                                     <span>Visit History ({(history.appointments || []).length})</span>
@@ -974,30 +996,6 @@ export default function RegisteredPatientWorkspace({
                                                             <span className="font-extrabold text-slate-800">Booking Note:</span> {apt.notes}
                                                         </div>
                                                     )}
-
-                                                    {/* Clinical Doctor Notes */}
-                                                    {apt.clinicalNotes && apt.clinicalNotes.length > 0 && (
-                                                        <div className="mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 text-[11px]">
-                                                            {apt.clinicalNotes[0].diagnosis && (
-                                                                <p className="text-slate-700">
-                                                                    <span className="font-extrabold text-slate-900">Diagnosis:</span>{" "}
-                                                                    {apt.clinicalNotes[0].diagnosis}
-                                                                </p>
-                                                            )}
-                                                            {apt.clinicalNotes[0].treatmentDone && (
-                                                                <p className="text-slate-700">
-                                                                    <span className="font-extrabold text-teal-800">Procedure:</span>{" "}
-                                                                    {apt.clinicalNotes[0].treatmentDone}
-                                                                </p>
-                                                            )}
-                                                            {apt.clinicalNotes[0].prescription && (
-                                                                <p className="text-slate-700">
-                                                                    <span className="font-extrabold text-slate-900">Rx:</span>{" "}
-                                                                    {apt.clinicalNotes[0].prescription}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -1005,117 +1003,9 @@ export default function RegisteredPatientWorkspace({
                                 </div>
                             )}
                         </div>
-                    ) : (
-                        /* EMPTY WORKSPACE CANVAS */
-                        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 sm:p-12 shadow-2xs space-y-8 text-center">
-                            <div className="space-y-4">
-                                <div className="size-16 rounded-3xl bg-teal-50 border border-teal-200/80 flex items-center justify-center mx-auto text-teal-700 shadow-2xs">
-                                    <SearchOutlinedIcon sx={{ fontSize: 32 }} />
-                                </div>
-
-                                <div className="max-w-md mx-auto space-y-1.5">
-                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                                        Select a Patient to Schedule
-                                    </h3>
-                                    <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
-                                        Click any patient in the directory on the left or search by MRN, phone, or name. You can view all their past visits from Website, WhatsApp Chatbot, or Walk-In, and instantly schedule their next visit.
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* 4 Operatory Chair Telemetry Cards */}
-                            <div className="pt-6 border-t border-slate-100 max-w-3xl mx-auto text-left">
-                                <div className="flex items-center justify-between mb-4">
-                                    <p className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                                        <ChairOutlinedIcon sx={{ fontSize: 16, color: "#0d9488" }} />
-                                        <span>Current Operatory Desk Overview</span>
-                                    </p>
-                                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                                        4 Operatories Active
-                                    </span>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-                                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-teal-300 transition-all shadow-2xs group">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-[10px] font-black text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/70">
-                                                Chair 1
-                                            </span>
-                                            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                                        </div>
-                                        <p className="text-xs font-black text-slate-900 group-hover:text-teal-700 transition-colors">
-                                            Surgical Suite A
-                                        </p>
-                                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-                                            Implants &amp; Maxillofacial
-                                        </p>
-                                        <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
-                                            <span className="text-emerald-700 font-extrabold">Live Ready</span>
-                                            <span className="text-slate-400 font-semibold">{chair1Doctor}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-teal-300 transition-all shadow-2xs group">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-[10px] font-black text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/70">
-                                                Chair 2
-                                            </span>
-                                            <span className="size-2 rounded-full bg-emerald-500" />
-                                        </div>
-                                        <p className="text-xs font-black text-slate-900 group-hover:text-teal-700 transition-colors">
-                                            Orthodontics
-                                        </p>
-                                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-                                            Braces &amp; Aligners
-                                        </p>
-                                        <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
-                                            <span className="text-emerald-700 font-extrabold">Live Ready</span>
-                                            <span className="text-slate-400 font-semibold">{chair2Doctor}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-teal-300 transition-all shadow-2xs group">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-[10px] font-black text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/70">
-                                                Chair 3
-                                            </span>
-                                            <span className="size-2 rounded-full bg-emerald-500" />
-                                        </div>
-                                        <p className="text-xs font-black text-slate-900 group-hover:text-teal-700 transition-colors">
-                                            Endodontics
-                                        </p>
-                                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-                                            Root Canal &amp; Crowns
-                                        </p>
-                                        <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
-                                            <span className="text-emerald-700 font-extrabold">Live Ready</span>
-                                            <span className="text-slate-400 font-semibold">{chair3Doctor}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-teal-300 transition-all shadow-2xs group">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-[10px] font-black text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/70">
-                                                Chair 4
-                                            </span>
-                                            <span className="size-2 rounded-full bg-emerald-500" />
-                                        </div>
-                                        <p className="text-xs font-black text-slate-900 group-hover:text-teal-700 transition-colors">
-                                            Hygiene Bay
-                                        </p>
-                                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-                                            Scaling &amp; Whitening
-                                        </p>
-                                        <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
-                                            <span className="text-emerald-700 font-extrabold">Live Ready</span>
-                                            <span className="text-slate-400 font-semibold">{chair4Doctor}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    ) : null}
                 </div>
-            </div>
+            )}
 
             {booking && <PremiumLoader text="Securing operatory appointment slot..." variant="inline" />}
         </div>

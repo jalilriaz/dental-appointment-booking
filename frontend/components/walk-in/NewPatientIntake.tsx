@@ -356,7 +356,7 @@ export default function NewPatientIntake({
                     {/* Notes */}
                     <div className="space-y-1.5">
                         <label htmlFor="new-notes" className="text-xs font-extrabold text-slate-700">
-                            Presenting Complaint / Clinical Notes (Optional)
+                            Presenting Complaint / Patient Notes (Optional)
                         </label>
                         <textarea
                             id="new-notes"

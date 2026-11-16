@@ -15,6 +15,7 @@ import {
   AttachMoneyOutlined,
   AddOutlined,
   DeleteOutlineOutlined,
+  EditOutlined,
   LockOutlined,
   RefreshOutlined,
   WarningAmberOutlined,
@@ -86,11 +87,14 @@ export default function AdminDoctorsPage() {
 
   // Dialog States
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [doctorToDelete, setDoctorToDelete] = useState<Doctor | null>(null);
 
   // Form State
   const [formData, setFormData] = useState<DoctorFormData>(DEFAULT_FORM_DATA);
+  const [editFormData, setEditFormData] = useState<DoctorFormData>(DEFAULT_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
@@ -172,7 +176,7 @@ export default function AdminDoctorsPage() {
   };
 
   // ──────────────────────────────────────────────────────────────────
-  // 3. ADD DOCTOR
+  // 3. ADD DOCTOR (CREATE)
   // ──────────────────────────────────────────────────────────────────
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,12 +187,22 @@ export default function AdminDoctorsPage() {
 
     try {
       setIsSubmitting(true);
+      const payload = {
+        ...formData,
+        name: formData.name.trim(),
+        role: formData.role.trim(),
+        pmdcReg: formData.pmdcReg.trim(),
+        specialty: formData.specialty.trim() || "General Dental Surgery & Care",
+        qualifications: formData.qualifications.trim() || "BDS",
+        experience: formData.experience.trim() || "Qualified Practitioner",
+        operatory: formData.operatory.trim() || "Chair 1 · Surgical Suite A",
+        schedule: formData.schedule.trim() || "Mon – Fri: 12:00 PM – 8:00 PM",
+        consultationFee: Number(formData.consultationFee) || 2000,
+      };
+
       const res = await fetchApi("/api/doctors", {
         method: "POST",
-        body: JSON.stringify({
-          ...formData,
-          consultationFee: Number(formData.consultationFee) || 2000,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -202,6 +216,71 @@ export default function AdminDoctorsPage() {
       await fetchDoctors();
     } catch (err: any) {
       toast.error(err.message || "Error creating doctor profile");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ──────────────────────────────────────────────────────────────────
+  // 4. EDIT DOCTOR (UPDATE)
+  // ──────────────────────────────────────────────────────────────────
+  const openEditDialog = (doc: Doctor) => {
+    setEditingDoctor(doc);
+    setEditFormData({
+      name: doc.name || "",
+      role: doc.role || "",
+      pmdcReg: doc.pmdcReg || "",
+      qualifications: doc.qualifications || "",
+      experience: doc.experience || "",
+      specialty: doc.specialty || "",
+      operatory: doc.operatory || "Chair 1 · Surgical Suite A",
+      schedule: doc.schedule || "Mon – Fri: 12:00 PM – 8:00 PM",
+      consultationFee: doc.consultationFee || 2000,
+      isActive: doc.isActive !== false,
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDoctor) return;
+
+    if (!editFormData.name.trim() || !editFormData.role.trim() || !editFormData.pmdcReg.trim()) {
+      toast.error("Please fill in Doctor Name, Role, and PMDC Registration");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const payload = {
+        name: editFormData.name.trim(),
+        role: editFormData.role.trim(),
+        pmdcReg: editFormData.pmdcReg.trim(),
+        specialty: editFormData.specialty.trim() || "General Dental Surgery & Care",
+        qualifications: editFormData.qualifications.trim() || "BDS",
+        experience: editFormData.experience.trim() || "Qualified Practitioner",
+        operatory: editFormData.operatory.trim() || "Chair 1 · Surgical Suite A",
+        schedule: editFormData.schedule.trim() || "Mon – Fri: 12:00 PM – 8:00 PM",
+        consultationFee: Number(editFormData.consultationFee) || 2000,
+        isActive: editFormData.isActive,
+      };
+
+      const res = await fetchApi(`/api/doctors/${editingDoctor.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update doctor profile");
+      }
+
+      toast.success(`Doctor ${editFormData.name} successfully updated!`);
+      setIsEditOpen(false);
+      setEditingDoctor(null);
+      await fetchDoctors();
+    } catch (err: any) {
+      toast.error(err.message || "Error updating doctor profile");
     } finally {
       setIsSubmitting(false);
     }
@@ -535,6 +614,18 @@ export default function AdminDoctorsPage() {
                         />
                       </div>
 
+                      {/* Edit Doctor Button */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => openEditDialog(doc)}
+                        className="border-slate-200 hover:border-teal-300 text-slate-700 hover:text-teal-800 hover:bg-teal-50/70 h-9 px-3 rounded-2xl text-xs font-bold cursor-pointer transition-all shadow-2xs"
+                        title={`Edit ${doc.name}`}
+                      >
+                        <EditOutlined sx={{ fontSize: 15, mr: 1 }} />
+                        <span>Edit</span>
+                      </Button>
+
                       {/* Delete Doctor Button or Lead Protection Pill */}
                       {doc.isLead ? (
                         <div
@@ -786,6 +877,174 @@ export default function AdminDoctorsPage() {
                 className="bg-teal-600 hover:bg-teal-700 text-white rounded-2xl h-10 px-5 text-xs font-bold cursor-pointer"
               >
                 {isSubmitting ? "Registering..." : "Add Doctor to Clinic"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ──────────────────────────────────────────────────────────────────
+          4B. EDIT DOCTOR DIALOG
+          ────────────────────────────────────────────────────────────────── */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-xl rounded-3xl bg-white p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <EditOutlined className="text-teal-600 size-5" />
+              <span>Edit Doctor / Clinical Specialist</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500 font-medium">
+              Update credentials, consultation fee, hours, and operatory chair assignment.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleEditSubmit} className="space-y-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Doctor Name */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label className="text-xs font-bold text-slate-700">
+                  Doctor Full Name <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  required
+                  placeholder="e.g. Dr. Ayesha Malik"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+
+              {/* Role */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label className="text-xs font-bold text-slate-700">
+                  Role / Clinical Designation <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  required
+                  placeholder="e.g. Consultant Orthodontist"
+                  value={editFormData.role}
+                  onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+
+              {/* PMDC Registration */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">
+                  PMDC Reg Number <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  required
+                  placeholder="e.g. 19302-D"
+                  value={editFormData.pmdcReg}
+                  onChange={(e) => setEditFormData({ ...editFormData, pmdcReg: e.target.value })}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+
+              {/* Experience */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">Experience</Label>
+                <Input
+                  placeholder="e.g. 8+ Years"
+                  value={editFormData.experience}
+                  onChange={(e) => setEditFormData({ ...editFormData, experience: e.target.value })}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+
+              {/* Qualifications */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label className="text-xs font-bold text-slate-700">Qualifications</Label>
+                <Input
+                  placeholder="e.g. BDS, FCPS (Orthodontics)"
+                  value={editFormData.qualifications}
+                  onChange={(e) => setEditFormData({ ...editFormData, qualifications: e.target.value })}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+
+              {/* Specialty */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label className="text-xs font-bold text-slate-700">Key Specialty Focus</Label>
+                <Input
+                  placeholder="e.g. Clear Aligners, Aesthetic Braces, Jaw Alignment"
+                  value={editFormData.specialty}
+                  onChange={(e) => setEditFormData({ ...editFormData, specialty: e.target.value })}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+
+              {/* Operatory Chair */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">Operatory Chair</Label>
+                <Input
+                  placeholder="e.g. Chair 2 · Orthodontics Bay"
+                  value={editFormData.operatory}
+                  onChange={(e) => setEditFormData({ ...editFormData, operatory: e.target.value })}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+
+              {/* Consultation Fee */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">Consultation Fee (PKR)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="100"
+                  value={editFormData.consultationFee}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, consultationFee: parseInt(e.target.value, 10) || 0 })
+                  }
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+
+              {/* Consultation Schedule */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label className="text-xs font-bold text-slate-700">Consultation Hours & Days</Label>
+                <Input
+                  placeholder="e.g. Mon – Fri: 2:00 PM – 6:00 PM"
+                  value={editFormData.schedule}
+                  onChange={(e) => setEditFormData({ ...editFormData, schedule: e.target.value })}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+
+              {/* Active Switch */}
+              <div className="sm:col-span-2 flex items-center justify-between p-3.5 rounded-2xl bg-teal-50/50 border border-teal-200/60">
+                <div>
+                  <Label className="text-xs font-bold text-slate-800 block">
+                    Active Doctor on Duty
+                  </Label>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    Doctor appears on public website and is open for appointments
+                  </span>
+                </div>
+                <Switch
+                  checked={editFormData.isActive}
+                  onCheckedChange={(checked) => setEditFormData({ ...editFormData, isActive: checked })}
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={() => setIsEditOpen(false)}
+                className="rounded-2xl h-10 text-xs font-bold"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-teal-600 hover:bg-teal-700 text-white rounded-2xl h-10 px-5 text-xs font-bold cursor-pointer"
+              >
+                {isSubmitting ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </form>

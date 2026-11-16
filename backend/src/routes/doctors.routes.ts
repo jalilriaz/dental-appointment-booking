@@ -6,22 +6,38 @@ import { logger } from '../lib/logger';
 
 const router = Router();
 
+const cleanString = (fallback: string) =>
+    z.string().optional().nullable().transform((val) => (val && val.trim() ? val.trim() : fallback));
+
 const doctorCreateSchema = z.object({
-    name: z.string().min(2, 'Doctor name is required'),
+    name: z.string().min(2, 'Doctor name is required (min 2 characters)'),
     role: z.string().min(2, 'Role / clinical designation is required'),
     pmdcReg: z.string().min(2, 'PMDC Registration number is required'),
-    qualifications: z.string().min(2, 'Qualifications are required'),
-    experience: z.string().min(1, 'Experience is required'),
-    specialty: z.string().min(2, 'Specialty is required'),
-    operatory: z.string().min(2, 'Operatory / Chair assignment is required'),
-    schedule: z.string().min(2, 'Schedule / consultation hours are required'),
-    consultationFee: z.number().int().min(0).default(2000),
-    image: z.string().optional().default('/images/dr_sheriyaar.jpg'),
+    qualifications: cleanString('BDS'),
+    experience: cleanString('Qualified Practitioner'),
+    specialty: cleanString('General Dental Surgery & Care'),
+    operatory: cleanString('Chair 1 · Surgical Suite A'),
+    schedule: cleanString('Mon – Fri: 12:00 PM – 8:00 PM'),
+    consultationFee: z.coerce.number().int().min(0).default(2000),
+    image: cleanString('/images/dr_sheriyaar.jpg'),
     isLead: z.boolean().optional().default(false),
     isActive: z.boolean().optional().default(true),
 });
 
-const doctorUpdateSchema = doctorCreateSchema.partial();
+const doctorUpdateSchema = z.object({
+    name: z.string().min(2, 'Doctor name is required').optional(),
+    role: z.string().min(2, 'Role / clinical designation is required').optional(),
+    pmdcReg: z.string().min(2, 'PMDC Registration number is required').optional(),
+    qualifications: z.string().optional(),
+    experience: z.string().optional(),
+    specialty: z.string().optional(),
+    operatory: z.string().optional(),
+    schedule: z.string().optional(),
+    consultationFee: z.coerce.number().int().min(0).optional(),
+    image: z.string().optional(),
+    isLead: z.boolean().optional(),
+    isActive: z.boolean().optional(),
+});
 
 // GET /api/doctors - Public list of active doctors
 router.get('/', async (_req: Request, res: Response) => {
@@ -77,8 +93,9 @@ router.post('/', requireAuth, requireRole('ADMIN'), async (req: Request, res: Re
     try {
         const parsed = doctorCreateSchema.safeParse(req.body);
         if (!parsed.success) {
+            const firstError = Object.values(parsed.error.flatten().fieldErrors).flat()[0] || 'Validation failed';
             return res.status(400).json({
-                error: 'Validation failed',
+                error: firstError,
                 details: parsed.error.flatten().fieldErrors,
             });
         }
@@ -101,8 +118,9 @@ router.patch('/:id', requireAuth, requireRole('ADMIN'), async (req: Request, res
         const { id } = req.params;
         const parsed = doctorUpdateSchema.safeParse(req.body);
         if (!parsed.success) {
+            const firstError = Object.values(parsed.error.flatten().fieldErrors).flat()[0] || 'Validation failed';
             return res.status(400).json({
-                error: 'Validation failed',
+                error: firstError,
                 details: parsed.error.flatten().fieldErrors,
             });
         }

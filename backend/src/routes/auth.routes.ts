@@ -40,7 +40,16 @@ router.post('/login', async (req: Request, res: Response) => {
         }
 
         const { email, password } = parseResult.data;
-        const user = await prisma.user.findUnique({ where: { email } });
+        const normalizedEmail = email.toLowerCase().trim();
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: normalizedEmail },
+                    ...(normalizedEmail === 'admin@elitedental.com' ? [{ email: 'elitedental@centre.com' }] : []),
+                    ...(normalizedEmail === 'elitedental@centre.com' ? [{ email: 'admin@elitedental.com' }] : []),
+                ],
+            },
+        });
 
         if (!user || !user.password) {
             return res.status(401).json({ error: 'Invalid email or password' });
@@ -146,7 +155,17 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Email is required' });
         }
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        const normalizedEmail = email.toLowerCase().trim();
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: normalizedEmail },
+                    ...(normalizedEmail === 'admin@elitedental.com' ? [{ email: 'elitedental@centre.com' }] : []),
+                    ...(normalizedEmail === 'elitedental@centre.com' ? [{ email: 'admin@elitedental.com' }] : []),
+                ],
+            },
+        });
+
         if (!user) {
             return res.json({ success: true, message: 'If an account exists, a reset link has been sent.' });
         }
@@ -162,13 +181,28 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
         const appUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const resetLink = `${appUrl}/reset-password?token=${resetToken}`;
 
-        try {
-            await sendPasswordResetEmail(email, resetLink);
-        } catch (emailErr) {
-            console.error('[FORGOT PASSWORD] Failed to send email:', emailErr);
+        const hasSmtp = Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+        if (hasSmtp) {
+            try {
+                await sendPasswordResetEmail(user.email || email, resetLink);
+            } catch (emailErr) {
+                console.error('[FORGOT PASSWORD] Failed to send email via SMTP:', emailErr);
+            }
+        } else {
+            console.log('\n======================================================');
+            console.log(`[AUTH DEMO] Password reset link for ${user.email || email}:`);
+            console.log(`${resetLink}`);
+            console.log('======================================================\n');
         }
 
-        return res.json({ success: true, message: 'If an account exists, a reset link has been sent.' });
+        return res.json({
+            success: true,
+            message: hasSmtp
+                ? 'A secure reset link has been sent to your registered email address.'
+                : 'Reset token generated. In demo mode (SMTP not configured), click the button below to proceed.',
+            resetLink: hasSmtp ? undefined : resetLink,
+            demoMode: !hasSmtp,
+        });
     } catch (error) {
         return res.status(500).json({ error: 'Something went wrong' });
     }

@@ -67,6 +67,10 @@ export default async function StaffAppointmentsPage({ searchParams }: { searchPa
                         totalSessions: true,
                         clinicalStatus: true,
                         financialStatus: true,
+                        payments: {
+                            select: { id: true, amount: true, method: true, date: true },
+                            orderBy: { date: "asc" },
+                        },
                     },
                 },
                 clinicalNotes: { orderBy: { createdAt: "desc" } },
@@ -89,6 +93,13 @@ export default async function StaffAppointmentsPage({ searchParams }: { searchPa
         amountPaid: a.amountPaid ?? undefined,
         discount: a.discount ?? undefined,
         bookedBy: a.bookedBy ?? undefined,
+        patientTreatment: a.patientTreatment ? {
+            ...a.patientTreatment,
+            payments: (a.patientTreatment.payments || []).map((p) => ({
+                ...p,
+                date: p.date.toISOString(),
+            })),
+        } : undefined,
         clinicalNotes: a.clinicalNotes.map((n) => ({
             ...n,
             odontogramData: n.odontogramData ?? undefined,

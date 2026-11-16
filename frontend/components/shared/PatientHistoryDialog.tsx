@@ -390,14 +390,6 @@ export default function PatientHistoryDialog({
                                                                 <AccessTimeOutlinedIcon className="size-3 text-slate-400" />
                                                                 {format(new Date(apt.startTime), "EEEE, MMM d, yyyy · h:mm a")}
                                                             </p>
-                                                            {apt.clinicalNotes && apt.clinicalNotes.length > 0 && (
-                                                                <div className="mt-2 text-xs text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1">
-                                                                    <p><span className="text-slate-900 font-bold">Diagnosis/Work:</span> {apt.clinicalNotes[0].treatmentDone}</p>
-                                                                    {apt.clinicalNotes[0].prescription && (
-                                                                        <p><span className="text-slate-900 font-bold">Prescription:</span> {apt.clinicalNotes[0].prescription}</p>
-                                                                    )}
-                                                                </div>
-                                                            )}
                                                         </div>
                                                     </div>
                                                 );

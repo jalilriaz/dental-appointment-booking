@@ -31,6 +31,7 @@ export interface CheckoutAppointment {
         defaultSessions?: number;
     };
     price?: number | null;
+    discount?: number | null;
     patientTreatment?: {
         id: string;
         totalCost: number;
@@ -48,6 +49,7 @@ export interface CheckoutConfirmData {
     billedPrice: number;
     discount: number;
     paymentMethod: "CASH" | "CARD" | "ONLINE";
+    discountPercent?: number;
     packageCost?: number;
     totalSessions?: number;
     nextSessionDate?: string;
@@ -64,6 +66,8 @@ export default function CheckoutDialog({
     setAmountValue,
     discountValue: controlledDiscount,
     setDiscountValue: controlledSetDiscount,
+    discountPercent: controlledDiscountPercent,
+    setDiscountPercent: controlledSetDiscountPercent,
     editablePrice = true,
 }: {
     apt: CheckoutAppointment | null;
@@ -74,6 +78,7 @@ export default function CheckoutDialog({
         discount: number,
         options?: {
             paymentMethod?: "CASH" | "CARD" | "ONLINE";
+            discountPercent?: number;
             packageCost?: number;
             totalSessions?: number;
             nextSessionDate?: string;
@@ -86,11 +91,13 @@ export default function CheckoutDialog({
     setAmountValue: (val: string) => void;
     discountValue?: string;
     setDiscountValue?: (val: string) => void;
+    discountPercent?: string;
+    setDiscountPercent?: (val: string) => void;
     editablePrice?: boolean;
 }) {
-    const [internalDiscount, setInternalDiscount] = useState("0");
-    const discountValue = controlledDiscount ?? internalDiscount;
-    const setDiscountValue = controlledSetDiscount ?? setInternalDiscount;
+    const [internalDiscountPercent, setInternalDiscountPercent] = useState("0");
+    const discountPercent = controlledDiscountPercent ?? (controlledDiscount !== undefined ? controlledDiscount : internalDiscountPercent);
+    const setDiscountPercent = controlledSetDiscountPercent ?? controlledSetDiscount ?? setInternalDiscountPercent;
 
     const [priceValue, setPriceValue] = useState<string>("");
     const [paymentMethod, setPaymentMethod] = useState<"CASH" | "CARD" | "ONLINE">("CASH");
@@ -122,6 +129,15 @@ export default function CheckoutDialog({
             const initialPrice = (apt.price && apt.price > 0) ? apt.price : (apt.treatment?.price || 0);
             setPriceValue(String(initialPrice));
 
+            let initialPct = 0;
+            if (apt.discount && apt.discount > 0 && initialPrice > 0) {
+                initialPct = Math.min(100, Math.round((apt.discount / initialPrice) * 100));
+            }
+            setDiscountPercent(String(initialPct));
+
+            const initialDiscountAmount = Math.round((initialPrice * initialPct) / 100);
+            const initialNet = Math.max(0, initialPrice - initialDiscountAmount);
+
             if (isLinkedPlan) {
                 // For an ongoing plan, default "Paid Today" to 0 or remaining balance
                 setAmountValue(String(remainingBalance > 0 ? "" : "0"));
@@ -130,7 +146,7 @@ export default function CheckoutDialog({
                 setTotalSessions(String(apt.treatment?.defaultSessions || 4));
                 setAmountValue(""); // Doctor/receptionist enters initial installment (e.g. 24,000)
             } else {
-                setAmountValue(String(initialPrice));
+                setAmountValue(String(initialNet));
             }
 
             setScheduleNextSession(false);
@@ -140,7 +156,7 @@ export default function CheckoutDialog({
             setNextSessionLabel("");
         } else {
             setPriceValue("");
-            setInternalDiscount("0");
+            setInternalDiscountPercent("0");
             setScheduleNextSession(false);
             setNextSessionFee("");
             setNextSessionLabel("");
@@ -148,19 +164,42 @@ export default function CheckoutDialog({
     }, [apt]);
 
     const billedPrice = editablePrice ? (Number(priceValue) || 0) : (apt?.treatment?.price || 0);
-    const discount = Math.max(0, Number(discountValue) || 0);
-    const netTotal = Math.max(0, billedPrice - discount);
+    const numDiscountPercent = Math.min(100, Math.max(0, Number(discountPercent) || 0));
+    const discountAmount = Math.round((billedPrice * numDiscountPercent) / 100);
+    const netTotal = Math.max(0, billedPrice - discountAmount);
 
     const enteredPaid = amountValue !== "" ? Number(amountValue) : (isLinkedPlan ? 0 : netTotal);
     const remainingBalanceDue = isLinkedPlan
         ? Math.max(0, remainingBalance - enteredPaid)
         : Math.max(0, netTotal - enteredPaid);
 
+    const handlePriceChange = (newPrice: string) => {
+        setPriceValue(newPrice);
+        if (!isLinkedPlan && !isNewMultiSession) {
+            const p = Number(newPrice) || 0;
+            const pct = Math.min(100, Math.max(0, Number(discountPercent) || 0));
+            const disc = Math.round((p * pct) / 100);
+            const net = Math.max(0, p - disc);
+            setAmountValue(String(net));
+        }
+    };
+
+    const handleDiscountPercentChange = (newPctStr: string) => {
+        setDiscountPercent(newPctStr);
+        if (!isLinkedPlan && !isNewMultiSession) {
+            const pct = newPctStr === "" ? 0 : Math.min(100, Math.max(0, Number(newPctStr) || 0));
+            const disc = Math.round((billedPrice * pct) / 100);
+            const net = Math.max(0, billedPrice - disc);
+            setAmountValue(String(net));
+        }
+    };
+
     const handleConfirm = () => {
         const paid = Number(amountValue !== "" ? amountValue : (isLinkedPlan ? 0 : netTotal));
 
-        onConfirm(paid, billedPrice, discount, {
+        onConfirm(paid, billedPrice, discountAmount, {
             paymentMethod,
+            discountPercent: numDiscountPercent,
             packageCost: isNewMultiSession ? Number(packageCost || billedPrice) : undefined,
             totalSessions: isNewMultiSession ? Number(totalSessions || 4) : undefined,
             nextSessionDate: scheduleNextSession && nextSessionDate ? nextSessionDate : undefined,
@@ -276,7 +315,7 @@ export default function CheckoutDialog({
                                             id="checkout-price"
                                             type="number"
                                             value={priceValue}
-                                            onChange={(e) => setPriceValue(e.target.value)}
+                                            onChange={(e) => handlePriceChange(e.target.value)}
                                             min={0}
                                             className="bg-white border-slate-300 pl-8 h-9 text-sm text-slate-900 focus:border-teal-600"
                                         />
@@ -284,18 +323,48 @@ export default function CheckoutDialog({
                                 </div>
                             )}
                             <div className="space-y-1.5">
-                                <Label htmlFor="checkout-discount" className="text-slate-700 text-xs font-semibold">Discount (PKR)</Label>
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="checkout-discount" className="text-slate-700 text-xs font-semibold">
+                                        Discount (%)
+                                    </Label>
+                                    {numDiscountPercent > 0 && (
+                                        <span className="text-[11px] font-bold text-teal-700">
+                                            - {formatPKR(discountAmount)}
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="relative">
-                                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">Rs.</span>
                                     <Input
                                         id="checkout-discount"
                                         type="number"
-                                        value={discountValue}
-                                        onChange={(e) => setDiscountValue(e.target.value)}
-                                        className="bg-white border-slate-300 pl-8 h-9 text-sm text-slate-900 focus:border-teal-600"
+                                        value={discountPercent}
+                                        onChange={(e) => handleDiscountPercentChange(e.target.value)}
+                                        className="bg-white border-slate-300 pr-8 h-9 text-sm text-slate-900 font-semibold focus:border-teal-600"
                                         min={0}
-                                        max={billedPrice}
+                                        max={100}
+                                        step="any"
+                                        placeholder="0"
                                     />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-700 font-bold text-xs select-none pointer-events-none">
+                                        %
+                                    </span>
+                                </div>
+                                {/* Preset percentage buttons */}
+                                <div className="flex items-center gap-1 pt-0.5 flex-wrap">
+                                    {[0, 5, 10, 15, 20, 25].map((pct) => (
+                                        <button
+                                            key={pct}
+                                            type="button"
+                                            onClick={() => handleDiscountPercentChange(String(pct))}
+                                            className={`text-[10px] font-bold px-2 py-0.5 rounded transition-all cursor-pointer ${
+                                                Number(discountPercent) === pct
+                                                    ? "bg-teal-600 text-white shadow-2xs"
+                                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                            }`}
+                                        >
+                                            {pct === 0 ? "None" : `${pct}%`}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -307,7 +376,7 @@ export default function CheckoutDialog({
                             <Label htmlFor="checkout-amount" className="text-slate-800 text-xs font-bold">
                                 {isMultiSession ? "Installment Paid Today (PKR)" : "Amount Collected (PKR)"}
                             </Label>
-                            {isLinkedPlan && remainingBalance > 0 && (
+                            {isLinkedPlan && remainingBalance > 0 ? (
                                 <button
                                     type="button"
                                     onClick={() => setAmountValue(String(remainingBalance))}
@@ -315,7 +384,15 @@ export default function CheckoutDialog({
                                 >
                                     Pay Full Balance ({formatPKR(remainingBalance)})
                                 </button>
-                            )}
+                            ) : !isLinkedPlan && !isNewMultiSession && netTotal > 0 && amountValue !== String(netTotal) ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setAmountValue(String(netTotal))}
+                                    className="text-[11px] text-teal-700 hover:text-teal-800 underline font-semibold cursor-pointer"
+                                >
+                                    Match Net Total ({formatPKR(netTotal)})
+                                </button>
+                            ) : null}
                         </div>
                         <div className="relative">
                             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">Rs.</span>
@@ -495,7 +572,7 @@ export default function CheckoutDialog({
 
                                 {/* Optional Stage / Session Label */}
                                 <div className="space-y-1">
-                                    <Label className="text-[11px] font-semibold text-slate-700">Next Stage / Clinical Note (Optional)</Label>
+                                    <Label className="text-[11px] font-semibold text-slate-700">Next Stage / Follow-Up Note (Optional)</Label>
                                     <Input
                                         type="text"
                                         value={nextSessionLabel}

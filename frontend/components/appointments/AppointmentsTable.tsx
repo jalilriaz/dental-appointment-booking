@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
@@ -47,7 +47,6 @@ import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import { fetchApi } from "@/lib/api-client";
-import ClinicalNoteDialog from "@/components/admin/ClinicalNoteDialog";
 import ReceiptDialog from "@/components/admin/ReceiptDialog";
 import PatientHistoryDialog from "@/components/shared/PatientHistoryDialog";
 import CheckoutDialog from "@/components/shared/CheckoutDialog";
@@ -116,7 +115,7 @@ export default function AppointmentsTable({
     const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
     const [checkoutApt, setCheckoutApt] = useState<Appointment | null>(null);
     const [amountValue, setAmountValue] = useState<string>("");
-    const [discountValue, setDiscountValue] = useState<string>("0");
+    const [discountPercent, setDiscountPercent] = useState<string>("0");
     const [receiptApt, setReceiptApt] = useState<Appointment | null>(null);
     const [historyPatientId, setHistoryPatientId] = useState<string | null>(null);
     const [precautionsApt, setPrecautionsApt] = useState<Appointment | null>(null);
@@ -383,8 +382,8 @@ export default function AppointmentsTable({
                         setPage(1);
                     }}
                     className={`p-5 rounded-3xl border transition-all cursor-pointer ${timelineFilter === "today" && statusFilter.length === 0
-                            ? "bg-teal-50/60 border-teal-500 ring-2 ring-teal-500/20 shadow-xs"
-                            : "bg-white border-slate-200/80 hover:border-teal-300 shadow-2xs hover:shadow-xs"
+                        ? "bg-teal-50/60 border-teal-500 ring-2 ring-teal-500/20 shadow-xs"
+                        : "bg-white border-slate-200/80 hover:border-teal-300 shadow-2xs hover:shadow-xs"
                         }`}
                 >
                     <div className="flex items-center justify-between">
@@ -410,8 +409,8 @@ export default function AppointmentsTable({
                         setPage(1);
                     }}
                     className={`p-5 rounded-3xl border transition-all cursor-pointer ${timelineFilter === "upcoming" && statusFilter.length === 0
-                            ? "bg-teal-50/60 border-teal-500 ring-2 ring-teal-500/20 shadow-xs"
-                            : "bg-white border-slate-200/80 hover:border-teal-300 shadow-2xs hover:shadow-xs"
+                        ? "bg-teal-50/60 border-teal-500 ring-2 ring-teal-500/20 shadow-xs"
+                        : "bg-white border-slate-200/80 hover:border-teal-300 shadow-2xs hover:shadow-xs"
                         }`}
                 >
                     <div className="flex items-center justify-between">
@@ -436,8 +435,8 @@ export default function AppointmentsTable({
                         setPage(1);
                     }}
                     className={`p-5 rounded-3xl border transition-all cursor-pointer ${statusFilter.includes("COMPLETED")
-                            ? "bg-emerald-50/60 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs"
-                            : "bg-white border-slate-200/80 hover:border-emerald-300 shadow-2xs hover:shadow-xs"
+                        ? "bg-emerald-50/60 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs"
+                        : "bg-white border-slate-200/80 hover:border-emerald-300 shadow-2xs hover:shadow-xs"
                         }`}
                 >
                     <div className="flex items-center justify-between">
@@ -462,8 +461,8 @@ export default function AppointmentsTable({
                         setPage(1);
                     }}
                     className={`p-5 rounded-3xl border transition-all cursor-pointer ${statusFilter.includes("CANCELLED") || statusFilter.includes("NO_SHOW")
-                            ? "bg-rose-50/60 border-rose-500 ring-2 ring-rose-500/20 shadow-xs"
-                            : "bg-white border-slate-200/80 hover:border-rose-300 shadow-2xs hover:shadow-xs"
+                        ? "bg-rose-50/60 border-rose-500 ring-2 ring-rose-500/20 shadow-xs"
+                        : "bg-white border-slate-200/80 hover:border-rose-300 shadow-2xs hover:shadow-xs"
                         }`}
                 >
                     <div className="flex items-center justify-between">
@@ -488,8 +487,8 @@ export default function AppointmentsTable({
                     <button
                         onClick={() => { setTimelineFilter("all_active"); setPage(1); }}
                         className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${timelineFilter === "all_active"
-                                ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
+                            ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                             }`}
                     >
                         <AutoAwesomeOutlinedIcon sx={{ fontSize: 14 }} className="text-teal-600" />
@@ -503,8 +502,8 @@ export default function AppointmentsTable({
                     <button
                         onClick={() => { setTimelineFilter("today"); setPage(1); }}
                         className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${timelineFilter === "today"
-                                ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
+                            ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                             }`}
                     >
                         <span className="relative flex h-2 w-2">
@@ -521,8 +520,8 @@ export default function AppointmentsTable({
                     <button
                         onClick={() => { setTimelineFilter("tomorrow"); setPage(1); }}
                         className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${timelineFilter === "tomorrow"
-                                ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
+                            ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                             }`}
                     >
                         <CalendarMonthOutlinedIcon sx={{ fontSize: 14 }} className="text-slate-500" />
@@ -536,8 +535,8 @@ export default function AppointmentsTable({
                     <button
                         onClick={() => { setTimelineFilter("upcoming"); setPage(1); }}
                         className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${timelineFilter === "upcoming"
-                                ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
+                            ? "bg-white text-teal-900 font-bold shadow-xs border border-slate-200/90"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                             }`}
                     >
                         <AccessTimeOutlinedIcon sx={{ fontSize: 14 }} className="text-slate-500" />
@@ -551,8 +550,8 @@ export default function AppointmentsTable({
                     <button
                         onClick={() => { setTimelineFilter("past"); setPage(1); }}
                         className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${timelineFilter === "past"
-                                ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200/90"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
+                            ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200/90"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                             }`}
                     >
                         <HistoryOutlinedIcon sx={{ fontSize: 14 }} className="text-slate-500" />
@@ -566,8 +565,8 @@ export default function AppointmentsTable({
                     <button
                         onClick={() => { setTimelineFilter("all"); setPage(1); }}
                         className={`px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${timelineFilter === "all"
-                                ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200/90"
-                                : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
+                            ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200/90"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium"
                             }`}
                     >
                         All ({timelineCounts.total})
@@ -622,7 +621,7 @@ export default function AppointmentsTable({
                     </div>
 
                     {/* Doctor Selector */}
-                    <div className="md:col-span-3">
+                    {/* <div className="md:col-span-3">
                         <Select
                             value={doctorFilter || "ALL"}
                             onValueChange={(val) => { setDoctorFilter(val === "ALL" ? "" : val); setPage(1); }}
@@ -639,7 +638,7 @@ export default function AppointmentsTable({
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
+                    </div> */}
 
                     {/* Treatment Selector */}
                     <div className="md:col-span-4">
@@ -680,8 +679,8 @@ export default function AppointmentsTable({
                                     key={s}
                                     onClick={() => toggleStatus(s)}
                                     className={`px-3 py-1 rounded-full text-xs transition-premium cursor-pointer border ${isSelected
-                                            ? `${activeBadge} shadow-2xs`
-                                            : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 border-slate-200/60 font-medium"
+                                        ? `${activeBadge} shadow-2xs`
+                                        : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 border-slate-200/60 font-medium"
                                         }`}
                                 >
                                     {s === "NO_SHOW" ? "Missed" : s.replace("_", " ")}
@@ -863,7 +862,7 @@ export default function AppointmentsTable({
                                                                         } else {
                                                                             setCheckoutApt(apt);
                                                                             setAmountValue("");
-                                                                            setDiscountValue("0");
+                                                                            setDiscountPercent("0");
                                                                         }
                                                                     }}
                                                                     className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
@@ -897,17 +896,6 @@ export default function AppointmentsTable({
                                                 </div>
 
                                                 <div className="flex items-center gap-1">
-                                                    <ClinicalNoteDialog
-                                                        appointmentId={apt.id}
-                                                        patientName={apt.guestName || apt.patient?.name || "Unknown"}
-                                                        treatmentName={apt.treatment.name}
-                                                        appointmentDate={formatDate(apt.startTime)}
-                                                        existingNote={apt.clinicalNotes?.[0] || null}
-                                                        onNoteSaved={() => router.refresh()}
-                                                        readOnly={userRole !== "ADMIN"}
-                                                        compact
-                                                    />
-
                                                     {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
                                                         <>
                                                             <button
@@ -1114,7 +1102,7 @@ export default function AppointmentsTable({
                                                                             } else {
                                                                                 setCheckoutApt(apt);
                                                                                 setAmountValue("");
-                                                                                setDiscountValue("0");
+                                                                                setDiscountPercent("0");
                                                                             }
                                                                         }}
                                                                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
@@ -1146,18 +1134,6 @@ export default function AppointmentsTable({
                                                                 </button>
                                                             </>
                                                         )}
-
-                                                        {/* Compact Clinical Notes Dialog (30px Icon Trigger) */}
-                                                        <ClinicalNoteDialog
-                                                            appointmentId={apt.id}
-                                                            patientName={apt.guestName || apt.patient?.name || "Unknown"}
-                                                            treatmentName={apt.treatment.name}
-                                                            appointmentDate={formatDate(apt.startTime)}
-                                                            existingNote={apt.clinicalNotes?.[0] || null}
-                                                            onNoteSaved={() => router.refresh()}
-                                                            readOnly={userRole !== "ADMIN"}
-                                                            compact
-                                                        />
 
                                                         {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
                                                             <>
@@ -1347,7 +1323,7 @@ export default function AppointmentsTable({
                                 if (adminConfirmPastApt) {
                                     setCheckoutApt(adminConfirmPastApt);
                                     setAmountValue("");
-                                    setDiscountValue("0");
+                                    setDiscountPercent("0");
                                     setAdminConfirmPastApt(null);
                                 }
                             }}
@@ -1364,8 +1340,8 @@ export default function AppointmentsTable({
                 apt={checkoutApt}
                 amountValue={amountValue}
                 setAmountValue={setAmountValue}
-                discountValue={discountValue}
-                setDiscountValue={setDiscountValue}
+                discountPercent={discountPercent}
+                setDiscountPercent={setDiscountPercent}
                 editablePrice={true}
                 onClose={() => setCheckoutApt(null)}
                 onConfirm={async (amount, price, discount, options) => {
@@ -1379,7 +1355,13 @@ export default function AppointmentsTable({
                                 toast.error("Checkout Failed", { description: result.error });
                             } else {
                                 setAppointments((prev) =>
-                                    prev.map((a) => a.id === targetApt.id ? { ...a, status: "COMPLETED", amountPaid: amount } : a)
+                                    prev.map((a) => a.id === targetApt.id ? {
+                                        ...a,
+                                        status: "COMPLETED",
+                                        amountPaid: amount,
+                                        price: price,
+                                        discount: discount,
+                                    } : a)
                                 );
                                 toast.success(result.message || "Checked Out", { description: `Rs. ${amount.toLocaleString()} recorded for visit.` });
                                 router.refresh();
@@ -1412,19 +1394,28 @@ export default function AppointmentsTable({
                     appointmentTime: formatTime(receiptApt.startTime),
                     treatmentPrice: receiptApt.patientTreatment?.totalCost || receiptApt.price || receiptApt.treatment.price,
                     discount: receiptApt.discount || 0,
+                    discountPercent: (receiptApt.discount && (receiptApt.price || receiptApt.treatment.price))
+                        ? Math.round((receiptApt.discount / (receiptApt.price || receiptApt.treatment.price)) * 100)
+                        : undefined,
                     amountPaid: receiptApt.amountPaid || 0,
                     remainingBalance: receiptApt.patientTreatment
-                        ? Math.max(0, receiptApt.patientTreatment.totalCost - (receiptApt.patientTreatment.payments || []).reduce((sum, p) => sum + p.amount, 0))
+                        ? Math.max(0, receiptApt.patientTreatment.totalCost - (
+                            (receiptApt.patientTreatment.payments && receiptApt.patientTreatment.payments.length > 0)
+                                ? receiptApt.patientTreatment.payments.reduce((sum, p) => sum + p.amount, 0)
+                                : (receiptApt.amountPaid || 0)
+                        ))
                         : Math.max(0, (receiptApt.price || receiptApt.treatment.price) - (receiptApt.discount || 0) - (receiptApt.amountPaid || 0)),
                     sessionNumber: receiptApt.sessionNumber,
                     totalSessions: receiptApt.patientTreatment?.totalSessions,
-                    payments: receiptApt.patientTreatment?.payments || (receiptApt.amountPaid ? [
-                        {
-                            date: receiptApt.startTime,
-                            method: "CASH",
-                            amount: receiptApt.amountPaid,
-                        }
-                    ] : []),
+                    payments: (receiptApt.patientTreatment?.payments && receiptApt.patientTreatment.payments.length > 0)
+                        ? receiptApt.patientTreatment.payments
+                        : (receiptApt.amountPaid ? [
+                            {
+                                date: receiptApt.startTime,
+                                method: "CASH",
+                                amount: receiptApt.amountPaid,
+                            }
+                        ] : []),
                     doctorName: receiptApt.doctor?.name,
                     recordedBy: receiptApt.doctor?.name || "Dr. Shehryar Akhtar",
                 } : null}
