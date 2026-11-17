@@ -113,10 +113,37 @@ router.post('/check-availability', async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Missing date or time' });
         }
 
-        if (isSundayInKarachi(date)) {
+        // Check weekly working days and holidays
+        const settings = await prisma.systemSettings.findUnique({ where: { id: 'settings' } });
+        const weeklyWorkingDays = settings?.weeklyWorkingDays
+            ? settings.weeklyWorkingDays.split(',').map((d: string) => d.trim().toLowerCase())
+            : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+        const targetDate = new Date(`${date}T12:00:00+05:00`);
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const targetDayName = dayNames[targetDate.getUTCDay()];
+
+        if (!weeklyWorkingDays.includes(targetDayName)) {
+            const capitalized = targetDayName.charAt(0).toUpperCase() + targetDayName.slice(1);
             return res.json({
                 isAvailable: false,
-                message: 'The clinic is closed on Sundays. Please select a different day (Monday-Saturday).',
+                message: `The clinic is closed on ${capitalized}s. Please select a working day.`,
+            });
+        }
+
+        const { startOfDay, endOfDay } = getKarachiDayBoundaries(date);
+        const holiday = await prisma.clinicHoliday.findFirst({
+            where: {
+                isActive: true,
+                startDate: { lte: endOfDay },
+                endDate: { gte: startOfDay },
+            },
+        });
+
+        if (holiday) {
+            return res.json({
+                isAvailable: false,
+                message: `The clinic will remain closed for ${holiday.title}. Please select a date after the holiday closure.`,
             });
         }
 
@@ -128,10 +155,8 @@ router.post('/check-availability', async (req: Request, res: Response) => {
         const endTimeStamp = new Date(startTimeStamp.getTime() + treatmentDuration * 60000);
 
         // Check clinic working hours
-        const settings = await prisma.systemSettings.findUnique({ where: { id: 'settings' } });
-        const workEnd = settings?.workDayEnd || '21:00';
+        const workEnd = settings?.workDayEnd || '20:00';
         const [endH, endM] = workEnd.split(':').map(Number);
-        const { endOfDay } = getKarachiDayBoundaries(date);
         const closingTime = new Date(endOfDay);
         closingTime.setHours(endH, endM, 0, 0);
 

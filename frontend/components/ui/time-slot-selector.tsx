@@ -46,7 +46,7 @@ export function TimeSlotSelector({ date, treatmentId, value, onChange, onSlotSel
                 const data = await response.json();
                 if (mounted) {
                     if (data.dayOff) {
-                        setError("Clinic is closed on this day.");
+                        setError(data.reason || "Clinic is closed on this day.");
                         setSlots([]);
                     } else {
                         setSlots(data.slots || []);

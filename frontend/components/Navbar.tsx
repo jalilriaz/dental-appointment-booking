@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { clinicInfo } from "@/app/constants/mockData";
+import NoticeBanner from "@/components/NoticeBanner";
 import {
   PhoneOutlined,
   AccessTimeOutlined,
@@ -30,6 +31,38 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
+  const [settings, setSettings] = useState<{
+    phone?: string;
+    address?: string;
+    whatsapp?: string;
+    workingHours?: string;
+  }>({});
+
+  useEffect(() => {
+    fetch("/api/settings/public")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.settings) {
+          const s = data.settings;
+          const openTime = s.workDayStart || "12:00";
+          const closeTime = s.workDayEnd || "20:00";
+          const format12 = (t: string) => {
+            const [h, m] = t.split(":").map(Number);
+            const p = h >= 12 ? "PM" : "AM";
+            const dh = h === 0 ? 12 : h > 12 ? h - 12 : h;
+            return `${dh}:${m.toString().padStart(2, "0")} ${p}`;
+          };
+          setSettings({
+            phone: s.landlinePhone || s.mobilePhone || clinicInfo.phone,
+            address: s.clinicAddress || clinicInfo.address,
+            whatsapp: (s.whatsappNumber || clinicInfo.whatsapp).replace(/[^0-9]/g, ""),
+            workingHours: `${format12(openTime)} - ${format12(closeTime)}`,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 15);
@@ -44,24 +77,27 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full transition-all duration-300">
+      {/* Clinic Holiday / Notice Banner */}
+      <NoticeBanner />
+
       {/* Top Clinical Utility Bar */}
       <div className="bg-slate-950 text-slate-300 text-xs py-2 px-4 border-b border-slate-800 overflow-hidden">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-4 xl:gap-6 min-w-0">
             <span className="flex items-center gap-1.5 text-slate-300 font-medium whitespace-nowrap shrink-0">
               <AccessTimeOutlined sx={{ fontSize: 15, color: "#2dd4bf" }} />
-              <span>{clinicInfo.workingHours}</span>
+              <span>{settings.workingHours || clinicInfo.workingHours}</span>
             </span>
             <a
               href="https://www.google.com/maps/search/?api=1&query=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden md:flex items-center gap-1.5 text-slate-300 hover:text-teal-300 transition-colors min-w-0"
-              title={`Open on Google Maps: ${clinicInfo.address}`}
+              title={`Open on Google Maps: ${settings.address || clinicInfo.address}`}
             >
               <LocationOnOutlined sx={{ fontSize: 15, color: "#2dd4bf" }} className="shrink-0" />
               <span className="truncate max-w-[180px] lg:max-w-[260px] xl:max-w-[420px] 2xl:max-w-none whitespace-nowrap hover:underline">
-                {clinicInfo.address}
+                {settings.address || clinicInfo.address}
               </span>
             </a>
           </div>
@@ -71,11 +107,11 @@ export default function Navbar() {
               <span>ISO 9001 Certified Sterilization</span>
             </div>
             <a
-              href={`tel:${clinicInfo.phone}`}
+              href={`tel:${settings.phone || clinicInfo.phone}`}
               className="flex items-center gap-1.5 text-white hover:text-teal-300 transition-colors whitespace-nowrap shrink-0"
             >
               <PhoneOutlined sx={{ fontSize: 14, color: "#2dd4bf" }} />
-              <span>{clinicInfo.phone}</span>
+              <span>{settings.phone || clinicInfo.phone}</span>
             </a>
           </div>
         </div>
@@ -136,7 +172,7 @@ export default function Navbar() {
             {/* Direct CTAs with MUI Icons */}
             <div className="hidden md:flex items-center gap-1.5 xl:gap-2.5 shrink-0">
               <a
-                href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent(
+                href={`https://wa.me/${settings.whatsapp || clinicInfo.whatsapp}?text=${encodeURIComponent(
                   "Hello Elite Dental, I would like to consult or schedule an appointment."
                 )}`}
                 target="_blank"
@@ -211,7 +247,7 @@ export default function Navbar() {
 
               <div className="pt-3 border-t border-slate-100 mt-2 flex flex-col gap-2">
                 <a
-                  href={`https://wa.me/${clinicInfo.whatsapp}`}
+                  href={`https://wa.me/${settings.whatsapp || clinicInfo.whatsapp}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200"

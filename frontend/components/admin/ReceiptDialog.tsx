@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -64,8 +64,36 @@ export default function ReceiptDialog({
     data: ReceiptData | null;
 }) {
     const receiptRef = useRef<HTMLDivElement>(null);
+    const [clinicSettings, setClinicSettings] = useState<{
+        clinicName?: string;
+        clinicAddress?: string;
+        landlinePhone?: string;
+        mobilePhone?: string;
+        whatsappNumber?: string;
+        pmdcRegNumber?: string;
+        receiptFooter?: string;
+    }>({});
+
+    useEffect(() => {
+        if (!open) return;
+        fetch("/api/settings/public")
+            .then((res) => (res.ok ? res.json() : null))
+            .then((res) => {
+                if (res?.settings) {
+                    setClinicSettings(res.settings);
+                }
+            })
+            .catch(() => {});
+    }, [open]);
 
     if (!data) return null;
+
+    const displayClinicName = data.clinicName || clinicSettings.clinicName || "Elite Dental & Aesthetic Centre";
+    const displayClinicAddress = data.clinicAddress || clinicSettings.clinicAddress || "Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad";
+    const displayClinicPhones = data.clinicPhone || `${clinicSettings.landlinePhone || "051-2340093"}, ${clinicSettings.mobilePhone || "0303-5080011"}`;
+    const displayWhatsapp = clinicSettings.whatsappNumber || "+92 314 5475528";
+    const displayPmdc = clinicSettings.pmdcRegNumber || "14820-D";
+    const displayReceiptFooter = clinicSettings.receiptFooter || "Thank you for trusting Elite Dental & Aesthetic Centre. Valid for clinical record & tax submission.";
 
     const netTotal = Math.max(0, data.treatmentPrice - (data.discount || 0));
     const calculatedDiscountPercent = data.discountPercent !== undefined
@@ -302,11 +330,11 @@ export default function ReceiptDialog({
                 <div class="header-box">
                     <img src="${origin}/logo.svg" alt="Elite Dental Logo" class="logo-img" onerror="this.style.display='none'" />
                     <div>
-                        <div class="clinic-title">${receiptData.clinicName || "Elite Dental & Aesthetic Centre"}</div>
+                        <div class="clinic-title">${displayClinicName}</div>
                         <div class="clinic-sub">Clinical Suite · Implantology &amp; Aesthetics</div>
                         <div class="clinic-meta">
-                            Doctors Plaza, 1st Floor, Office #6, 6 Markaz Rd (Next to IDC), G-8 Markaz, Islamabad<br/>
-                            Tel: 051-2340093, 0303-5080011 · WhatsApp: +92 314 5475528
+                            ${displayClinicAddress}<br/>
+                            Tel: ${displayClinicPhones} · WhatsApp: ${displayWhatsapp}
                         </div>
                     </div>
                 </div>
@@ -396,8 +424,8 @@ export default function ReceiptDialog({
                 </div>
 
                 <div class="footer-box">
-                    <strong>Thank you for choosing Elite Dental Centre.</strong><br/>
-                    For appointment scheduling or emergency consultations, please call <strong>051-2340093, 0303-5080011</strong>.<br/>
+                    <strong>${displayReceiptFooter}</strong><br/>
+                    For appointment scheduling or emergency consultations, please call <strong>${displayClinicPhones}</strong>.<br/>
                     <em>Authorized, computer-generated clinical tax invoice.</em>
                 </div>
 
@@ -454,20 +482,20 @@ export default function ReceiptDialog({
                             />
                             <div className="min-w-0 flex-1">
                                 <h2 className="text-sm sm:text-base font-black text-[#0B1528] tracking-tight uppercase leading-snug">
-                                    {data.clinicName || "Elite Dental & Aesthetic Centre"}
+                                    {displayClinicName}
                                 </h2>
                                 <p className="text-[11px] font-bold text-teal-700 mt-0.5 flex items-center gap-1">
                                     <VerifiedOutlinedIcon sx={{ fontSize: 13 }} />
                                     <span>Premier Dental Surgery &amp; Implantology</span>
                                 </p>
                                 <p className="text-[10px] text-slate-500 font-medium leading-tight mt-1">
-                                    Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad
+                                    {displayClinicAddress}
                                 </p>
                                 <p className="text-[10px] text-slate-600 font-bold mt-0.5">
-                                    Phone: 051-2340093, 0303-5080011 · WhatsApp: +92 314 5475528
+                                    Phone: {displayClinicPhones} · WhatsApp: {displayWhatsapp}
                                 </p>
                                 <p className="text-[9px] text-slate-400 font-semibold mt-0.5">
-                                    PMDC Reg: #38942-D · NTN: 8241902-1
+                                    PMDC Reg: #{displayPmdc}
                                 </p>
                             </div>
                         </div>
@@ -614,8 +642,8 @@ export default function ReceiptDialog({
 
                         {/* Official Receipt Footer */}
                         <div className="pt-3 border-t-2 border-dashed border-slate-200 text-center text-[10px] text-slate-500 space-y-1">
-                            <p className="font-bold text-slate-800">Thank you for trusting Elite Dental &amp; Aesthetic Centre.</p>
-                            <p className="text-slate-600">Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz, Islamabad · Phone: 051-2340093, 0303-5080011</p>
+                            <p className="font-bold text-slate-800">{displayReceiptFooter}</p>
+                            <p className="text-slate-600">{displayClinicAddress} · Phone: {displayClinicPhones}</p>
                             <p className="text-[9px] text-slate-400 italic">This is an authorized, computer-generated clinical tax invoice.</p>
                         </div>
                     </div>

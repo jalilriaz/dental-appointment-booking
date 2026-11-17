@@ -75,8 +75,42 @@ router.get('/availability', async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'date is required' });
         }
 
-        if (isSundayInKarachi(date)) {
-            return res.json({ slots: [], dayOff: true, reason: 'Sunday is a clinic off day' });
+        const settings = await prisma.systemSettings.findUnique({
+            where: { id: 'settings' },
+        });
+
+        // 1. Check weekly working days
+        const weeklyWorkingDays = settings?.weeklyWorkingDays
+            ? settings.weeklyWorkingDays.split(',').map((d: string) => d.trim().toLowerCase())
+            : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+        const targetDate = new Date(`${date}T12:00:00+05:00`);
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const targetDayName = dayNames[targetDate.getUTCDay()];
+
+        if (!weeklyWorkingDays.includes(targetDayName)) {
+            const capitalized = targetDayName.charAt(0).toUpperCase() + targetDayName.slice(1);
+            return res.json({ slots: [], dayOff: true, reason: `${capitalized} is a weekly clinic off-day` });
+        }
+
+        // 2. Check active clinic holidays & special closures
+        const { startOfDay, endOfDay } = getKarachiDayBoundaries(date);
+        const holiday = await prisma.clinicHoliday.findFirst({
+            where: {
+                isActive: true,
+                startDate: { lte: endOfDay },
+                endDate: { gte: startOfDay },
+            },
+        });
+
+        if (holiday) {
+            return res.json({
+                slots: [],
+                dayOff: true,
+                isHoliday: true,
+                holidayTitle: holiday.title,
+                reason: `The clinic is closed for ${holiday.title}`,
+            });
         }
 
         let treatmentDuration = 30;
@@ -85,15 +119,9 @@ router.get('/availability', async (req: Request, res: Response) => {
             if (treatment && treatment.durationMin) treatmentDuration = treatment.durationMin;
         }
 
-        const settings = await prisma.systemSettings.findUnique({
-            where: { id: 'settings' },
-        });
-
-        const workStart = settings?.workDayStart || '11:00';
-        const workEnd = settings?.workDayEnd || '21:00';
+        const workStart = settings?.workDayStart || '12:00';
+        const workEnd = settings?.workDayEnd || '20:00';
         const slotIncrement = settings?.slotDurationMin || 30;
-
-        const { startOfDay, endOfDay } = getKarachiDayBoundaries(date);
 
         const whereClause: any = {
             startTime: { gte: startOfDay, lte: endOfDay },

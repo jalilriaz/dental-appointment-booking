@@ -39,6 +39,11 @@ export type Treatment = $Result.DefaultSelection<Prisma.$TreatmentPayload>
  */
 export type SystemSettings = $Result.DefaultSelection<Prisma.$SystemSettingsPayload>
 /**
+ * Model ClinicHoliday
+ * 
+ */
+export type ClinicHoliday = $Result.DefaultSelection<Prisma.$ClinicHolidayPayload>
+/**
  * Model PatientTreatment
  * 
  */
@@ -329,6 +334,16 @@ export class PrismaClient<
     * ```
     */
   get systemSettings(): Prisma.SystemSettingsDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.clinicHoliday`: Exposes CRUD operations for the **ClinicHoliday** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ClinicHolidays
+    * const clinicHolidays = await prisma.clinicHoliday.findMany()
+    * ```
+    */
+  get clinicHoliday(): Prisma.ClinicHolidayDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.patientTreatment`: Exposes CRUD operations for the **PatientTreatment** model.
@@ -825,6 +840,7 @@ export namespace Prisma {
     ClinicalNote: 'ClinicalNote',
     Treatment: 'Treatment',
     SystemSettings: 'SystemSettings',
+    ClinicHoliday: 'ClinicHoliday',
     PatientTreatment: 'PatientTreatment',
     PlanChangeLog: 'PlanChangeLog',
     Payment: 'Payment',
@@ -848,7 +864,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "appointment" | "clinicalNote" | "treatment" | "systemSettings" | "patientTreatment" | "planChangeLog" | "payment" | "inventory" | "doctor"
+      modelProps: "user" | "appointment" | "clinicalNote" | "treatment" | "systemSettings" | "clinicHoliday" | "patientTreatment" | "planChangeLog" | "payment" | "inventory" | "doctor"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1219,6 +1235,80 @@ export namespace Prisma {
           count: {
             args: Prisma.SystemSettingsCountArgs<ExtArgs>
             result: $Utils.Optional<SystemSettingsCountAggregateOutputType> | number
+          }
+        }
+      }
+      ClinicHoliday: {
+        payload: Prisma.$ClinicHolidayPayload<ExtArgs>
+        fields: Prisma.ClinicHolidayFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ClinicHolidayFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ClinicHolidayFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload>
+          }
+          findFirst: {
+            args: Prisma.ClinicHolidayFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ClinicHolidayFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload>
+          }
+          findMany: {
+            args: Prisma.ClinicHolidayFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload>[]
+          }
+          create: {
+            args: Prisma.ClinicHolidayCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload>
+          }
+          createMany: {
+            args: Prisma.ClinicHolidayCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ClinicHolidayCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload>[]
+          }
+          delete: {
+            args: Prisma.ClinicHolidayDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload>
+          }
+          update: {
+            args: Prisma.ClinicHolidayUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload>
+          }
+          deleteMany: {
+            args: Prisma.ClinicHolidayDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ClinicHolidayUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ClinicHolidayUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload>[]
+          }
+          upsert: {
+            args: Prisma.ClinicHolidayUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClinicHolidayPayload>
+          }
+          aggregate: {
+            args: Prisma.ClinicHolidayAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateClinicHoliday>
+          }
+          groupBy: {
+            args: Prisma.ClinicHolidayGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ClinicHolidayGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ClinicHolidayCountArgs<ExtArgs>
+            result: $Utils.Optional<ClinicHolidayCountAggregateOutputType> | number
           }
         }
       }
@@ -1693,6 +1783,7 @@ export namespace Prisma {
     clinicalNote?: ClinicalNoteOmit
     treatment?: TreatmentOmit
     systemSettings?: SystemSettingsOmit
+    clinicHoliday?: ClinicHolidayOmit
     patientTreatment?: PatientTreatmentOmit
     planChangeLog?: PlanChangeLogOmit
     payment?: PaymentOmit
@@ -7145,25 +7236,52 @@ export namespace Prisma {
   export type SystemSettingsMinAggregateOutputType = {
     id: string | null
     clinicName: string | null
+    clinicAddress: string | null
+    landlinePhone: string | null
+    mobilePhone: string | null
+    whatsappNumber: string | null
+    clinicEmail: string | null
+    pmdcRegNumber: string | null
+    receiptFooter: string | null
     workDayStart: string | null
     workDayEnd: string | null
     slotDurationMin: number | null
+    weeklyWorkingDays: string | null
+    updatedAt: Date | null
   }
 
   export type SystemSettingsMaxAggregateOutputType = {
     id: string | null
     clinicName: string | null
+    clinicAddress: string | null
+    landlinePhone: string | null
+    mobilePhone: string | null
+    whatsappNumber: string | null
+    clinicEmail: string | null
+    pmdcRegNumber: string | null
+    receiptFooter: string | null
     workDayStart: string | null
     workDayEnd: string | null
     slotDurationMin: number | null
+    weeklyWorkingDays: string | null
+    updatedAt: Date | null
   }
 
   export type SystemSettingsCountAggregateOutputType = {
     id: number
     clinicName: number
+    clinicAddress: number
+    landlinePhone: number
+    mobilePhone: number
+    whatsappNumber: number
+    clinicEmail: number
+    pmdcRegNumber: number
+    receiptFooter: number
     workDayStart: number
     workDayEnd: number
     slotDurationMin: number
+    weeklyWorkingDays: number
+    updatedAt: number
     _all: number
   }
 
@@ -7179,25 +7297,52 @@ export namespace Prisma {
   export type SystemSettingsMinAggregateInputType = {
     id?: true
     clinicName?: true
+    clinicAddress?: true
+    landlinePhone?: true
+    mobilePhone?: true
+    whatsappNumber?: true
+    clinicEmail?: true
+    pmdcRegNumber?: true
+    receiptFooter?: true
     workDayStart?: true
     workDayEnd?: true
     slotDurationMin?: true
+    weeklyWorkingDays?: true
+    updatedAt?: true
   }
 
   export type SystemSettingsMaxAggregateInputType = {
     id?: true
     clinicName?: true
+    clinicAddress?: true
+    landlinePhone?: true
+    mobilePhone?: true
+    whatsappNumber?: true
+    clinicEmail?: true
+    pmdcRegNumber?: true
+    receiptFooter?: true
     workDayStart?: true
     workDayEnd?: true
     slotDurationMin?: true
+    weeklyWorkingDays?: true
+    updatedAt?: true
   }
 
   export type SystemSettingsCountAggregateInputType = {
     id?: true
     clinicName?: true
+    clinicAddress?: true
+    landlinePhone?: true
+    mobilePhone?: true
+    whatsappNumber?: true
+    clinicEmail?: true
+    pmdcRegNumber?: true
+    receiptFooter?: true
     workDayStart?: true
     workDayEnd?: true
     slotDurationMin?: true
+    weeklyWorkingDays?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -7290,9 +7435,18 @@ export namespace Prisma {
   export type SystemSettingsGroupByOutputType = {
     id: string
     clinicName: string
+    clinicAddress: string
+    landlinePhone: string
+    mobilePhone: string
+    whatsappNumber: string
+    clinicEmail: string
+    pmdcRegNumber: string
+    receiptFooter: string
     workDayStart: string
     workDayEnd: string
     slotDurationMin: number
+    weeklyWorkingDays: string
+    updatedAt: Date
     _count: SystemSettingsCountAggregateOutputType | null
     _avg: SystemSettingsAvgAggregateOutputType | null
     _sum: SystemSettingsSumAggregateOutputType | null
@@ -7317,36 +7471,72 @@ export namespace Prisma {
   export type SystemSettingsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     clinicName?: boolean
+    clinicAddress?: boolean
+    landlinePhone?: boolean
+    mobilePhone?: boolean
+    whatsappNumber?: boolean
+    clinicEmail?: boolean
+    pmdcRegNumber?: boolean
+    receiptFooter?: boolean
     workDayStart?: boolean
     workDayEnd?: boolean
     slotDurationMin?: boolean
+    weeklyWorkingDays?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
   export type SystemSettingsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     clinicName?: boolean
+    clinicAddress?: boolean
+    landlinePhone?: boolean
+    mobilePhone?: boolean
+    whatsappNumber?: boolean
+    clinicEmail?: boolean
+    pmdcRegNumber?: boolean
+    receiptFooter?: boolean
     workDayStart?: boolean
     workDayEnd?: boolean
     slotDurationMin?: boolean
+    weeklyWorkingDays?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
   export type SystemSettingsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     clinicName?: boolean
+    clinicAddress?: boolean
+    landlinePhone?: boolean
+    mobilePhone?: boolean
+    whatsappNumber?: boolean
+    clinicEmail?: boolean
+    pmdcRegNumber?: boolean
+    receiptFooter?: boolean
     workDayStart?: boolean
     workDayEnd?: boolean
     slotDurationMin?: boolean
+    weeklyWorkingDays?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
   export type SystemSettingsSelectScalar = {
     id?: boolean
     clinicName?: boolean
+    clinicAddress?: boolean
+    landlinePhone?: boolean
+    mobilePhone?: boolean
+    whatsappNumber?: boolean
+    clinicEmail?: boolean
+    pmdcRegNumber?: boolean
+    receiptFooter?: boolean
     workDayStart?: boolean
     workDayEnd?: boolean
     slotDurationMin?: boolean
+    weeklyWorkingDays?: boolean
+    updatedAt?: boolean
   }
 
-  export type SystemSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "clinicName" | "workDayStart" | "workDayEnd" | "slotDurationMin", ExtArgs["result"]["systemSettings"]>
+  export type SystemSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "clinicName" | "clinicAddress" | "landlinePhone" | "mobilePhone" | "whatsappNumber" | "clinicEmail" | "pmdcRegNumber" | "receiptFooter" | "workDayStart" | "workDayEnd" | "slotDurationMin" | "weeklyWorkingDays" | "updatedAt", ExtArgs["result"]["systemSettings"]>
 
   export type $SystemSettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "SystemSettings"
@@ -7354,9 +7544,18 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       clinicName: string
+      clinicAddress: string
+      landlinePhone: string
+      mobilePhone: string
+      whatsappNumber: string
+      clinicEmail: string
+      pmdcRegNumber: string
+      receiptFooter: string
       workDayStart: string
       workDayEnd: string
       slotDurationMin: number
+      weeklyWorkingDays: string
+      updatedAt: Date
     }, ExtArgs["result"]["systemSettings"]>
     composites: {}
   }
@@ -7782,9 +7981,18 @@ export namespace Prisma {
   interface SystemSettingsFieldRefs {
     readonly id: FieldRef<"SystemSettings", 'String'>
     readonly clinicName: FieldRef<"SystemSettings", 'String'>
+    readonly clinicAddress: FieldRef<"SystemSettings", 'String'>
+    readonly landlinePhone: FieldRef<"SystemSettings", 'String'>
+    readonly mobilePhone: FieldRef<"SystemSettings", 'String'>
+    readonly whatsappNumber: FieldRef<"SystemSettings", 'String'>
+    readonly clinicEmail: FieldRef<"SystemSettings", 'String'>
+    readonly pmdcRegNumber: FieldRef<"SystemSettings", 'String'>
+    readonly receiptFooter: FieldRef<"SystemSettings", 'String'>
     readonly workDayStart: FieldRef<"SystemSettings", 'String'>
     readonly workDayEnd: FieldRef<"SystemSettings", 'String'>
     readonly slotDurationMin: FieldRef<"SystemSettings", 'Int'>
+    readonly weeklyWorkingDays: FieldRef<"SystemSettings", 'String'>
+    readonly updatedAt: FieldRef<"SystemSettings", 'DateTime'>
   }
     
 
@@ -8148,6 +8356,1053 @@ export namespace Prisma {
      * Omit specific fields from the SystemSettings
      */
     omit?: SystemSettingsOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ClinicHoliday
+   */
+
+  export type AggregateClinicHoliday = {
+    _count: ClinicHolidayCountAggregateOutputType | null
+    _min: ClinicHolidayMinAggregateOutputType | null
+    _max: ClinicHolidayMaxAggregateOutputType | null
+  }
+
+  export type ClinicHolidayMinAggregateOutputType = {
+    id: string | null
+    title: string | null
+    startDate: Date | null
+    endDate: Date | null
+    reason: string | null
+    showOnWeb: boolean | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ClinicHolidayMaxAggregateOutputType = {
+    id: string | null
+    title: string | null
+    startDate: Date | null
+    endDate: Date | null
+    reason: string | null
+    showOnWeb: boolean | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ClinicHolidayCountAggregateOutputType = {
+    id: number
+    title: number
+    startDate: number
+    endDate: number
+    reason: number
+    showOnWeb: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ClinicHolidayMinAggregateInputType = {
+    id?: true
+    title?: true
+    startDate?: true
+    endDate?: true
+    reason?: true
+    showOnWeb?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ClinicHolidayMaxAggregateInputType = {
+    id?: true
+    title?: true
+    startDate?: true
+    endDate?: true
+    reason?: true
+    showOnWeb?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ClinicHolidayCountAggregateInputType = {
+    id?: true
+    title?: true
+    startDate?: true
+    endDate?: true
+    reason?: true
+    showOnWeb?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ClinicHolidayAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ClinicHoliday to aggregate.
+     */
+    where?: ClinicHolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ClinicHolidays to fetch.
+     */
+    orderBy?: ClinicHolidayOrderByWithRelationInput | ClinicHolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ClinicHolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ClinicHolidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ClinicHolidays.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ClinicHolidays
+    **/
+    _count?: true | ClinicHolidayCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ClinicHolidayMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ClinicHolidayMaxAggregateInputType
+  }
+
+  export type GetClinicHolidayAggregateType<T extends ClinicHolidayAggregateArgs> = {
+        [P in keyof T & keyof AggregateClinicHoliday]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateClinicHoliday[P]>
+      : GetScalarType<T[P], AggregateClinicHoliday[P]>
+  }
+
+
+
+
+  export type ClinicHolidayGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ClinicHolidayWhereInput
+    orderBy?: ClinicHolidayOrderByWithAggregationInput | ClinicHolidayOrderByWithAggregationInput[]
+    by: ClinicHolidayScalarFieldEnum[] | ClinicHolidayScalarFieldEnum
+    having?: ClinicHolidayScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ClinicHolidayCountAggregateInputType | true
+    _min?: ClinicHolidayMinAggregateInputType
+    _max?: ClinicHolidayMaxAggregateInputType
+  }
+
+  export type ClinicHolidayGroupByOutputType = {
+    id: string
+    title: string
+    startDate: Date
+    endDate: Date
+    reason: string | null
+    showOnWeb: boolean
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: ClinicHolidayCountAggregateOutputType | null
+    _min: ClinicHolidayMinAggregateOutputType | null
+    _max: ClinicHolidayMaxAggregateOutputType | null
+  }
+
+  type GetClinicHolidayGroupByPayload<T extends ClinicHolidayGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ClinicHolidayGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ClinicHolidayGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ClinicHolidayGroupByOutputType[P]>
+            : GetScalarType<T[P], ClinicHolidayGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ClinicHolidaySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    reason?: boolean
+    showOnWeb?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["clinicHoliday"]>
+
+  export type ClinicHolidaySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    reason?: boolean
+    showOnWeb?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["clinicHoliday"]>
+
+  export type ClinicHolidaySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    reason?: boolean
+    showOnWeb?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["clinicHoliday"]>
+
+  export type ClinicHolidaySelectScalar = {
+    id?: boolean
+    title?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    reason?: boolean
+    showOnWeb?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ClinicHolidayOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "startDate" | "endDate" | "reason" | "showOnWeb" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["clinicHoliday"]>
+
+  export type $ClinicHolidayPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ClinicHoliday"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      title: string
+      startDate: Date
+      endDate: Date
+      reason: string | null
+      showOnWeb: boolean
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["clinicHoliday"]>
+    composites: {}
+  }
+
+  type ClinicHolidayGetPayload<S extends boolean | null | undefined | ClinicHolidayDefaultArgs> = $Result.GetResult<Prisma.$ClinicHolidayPayload, S>
+
+  type ClinicHolidayCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ClinicHolidayFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ClinicHolidayCountAggregateInputType | true
+    }
+
+  export interface ClinicHolidayDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ClinicHoliday'], meta: { name: 'ClinicHoliday' } }
+    /**
+     * Find zero or one ClinicHoliday that matches the filter.
+     * @param {ClinicHolidayFindUniqueArgs} args - Arguments to find a ClinicHoliday
+     * @example
+     * // Get one ClinicHoliday
+     * const clinicHoliday = await prisma.clinicHoliday.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ClinicHolidayFindUniqueArgs>(args: SelectSubset<T, ClinicHolidayFindUniqueArgs<ExtArgs>>): Prisma__ClinicHolidayClient<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ClinicHoliday that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ClinicHolidayFindUniqueOrThrowArgs} args - Arguments to find a ClinicHoliday
+     * @example
+     * // Get one ClinicHoliday
+     * const clinicHoliday = await prisma.clinicHoliday.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ClinicHolidayFindUniqueOrThrowArgs>(args: SelectSubset<T, ClinicHolidayFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ClinicHolidayClient<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ClinicHoliday that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClinicHolidayFindFirstArgs} args - Arguments to find a ClinicHoliday
+     * @example
+     * // Get one ClinicHoliday
+     * const clinicHoliday = await prisma.clinicHoliday.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ClinicHolidayFindFirstArgs>(args?: SelectSubset<T, ClinicHolidayFindFirstArgs<ExtArgs>>): Prisma__ClinicHolidayClient<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ClinicHoliday that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClinicHolidayFindFirstOrThrowArgs} args - Arguments to find a ClinicHoliday
+     * @example
+     * // Get one ClinicHoliday
+     * const clinicHoliday = await prisma.clinicHoliday.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ClinicHolidayFindFirstOrThrowArgs>(args?: SelectSubset<T, ClinicHolidayFindFirstOrThrowArgs<ExtArgs>>): Prisma__ClinicHolidayClient<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ClinicHolidays that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClinicHolidayFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ClinicHolidays
+     * const clinicHolidays = await prisma.clinicHoliday.findMany()
+     * 
+     * // Get first 10 ClinicHolidays
+     * const clinicHolidays = await prisma.clinicHoliday.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const clinicHolidayWithIdOnly = await prisma.clinicHoliday.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ClinicHolidayFindManyArgs>(args?: SelectSubset<T, ClinicHolidayFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ClinicHoliday.
+     * @param {ClinicHolidayCreateArgs} args - Arguments to create a ClinicHoliday.
+     * @example
+     * // Create one ClinicHoliday
+     * const ClinicHoliday = await prisma.clinicHoliday.create({
+     *   data: {
+     *     // ... data to create a ClinicHoliday
+     *   }
+     * })
+     * 
+     */
+    create<T extends ClinicHolidayCreateArgs>(args: SelectSubset<T, ClinicHolidayCreateArgs<ExtArgs>>): Prisma__ClinicHolidayClient<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ClinicHolidays.
+     * @param {ClinicHolidayCreateManyArgs} args - Arguments to create many ClinicHolidays.
+     * @example
+     * // Create many ClinicHolidays
+     * const clinicHoliday = await prisma.clinicHoliday.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ClinicHolidayCreateManyArgs>(args?: SelectSubset<T, ClinicHolidayCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ClinicHolidays and returns the data saved in the database.
+     * @param {ClinicHolidayCreateManyAndReturnArgs} args - Arguments to create many ClinicHolidays.
+     * @example
+     * // Create many ClinicHolidays
+     * const clinicHoliday = await prisma.clinicHoliday.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ClinicHolidays and only return the `id`
+     * const clinicHolidayWithIdOnly = await prisma.clinicHoliday.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ClinicHolidayCreateManyAndReturnArgs>(args?: SelectSubset<T, ClinicHolidayCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ClinicHoliday.
+     * @param {ClinicHolidayDeleteArgs} args - Arguments to delete one ClinicHoliday.
+     * @example
+     * // Delete one ClinicHoliday
+     * const ClinicHoliday = await prisma.clinicHoliday.delete({
+     *   where: {
+     *     // ... filter to delete one ClinicHoliday
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ClinicHolidayDeleteArgs>(args: SelectSubset<T, ClinicHolidayDeleteArgs<ExtArgs>>): Prisma__ClinicHolidayClient<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ClinicHoliday.
+     * @param {ClinicHolidayUpdateArgs} args - Arguments to update one ClinicHoliday.
+     * @example
+     * // Update one ClinicHoliday
+     * const clinicHoliday = await prisma.clinicHoliday.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ClinicHolidayUpdateArgs>(args: SelectSubset<T, ClinicHolidayUpdateArgs<ExtArgs>>): Prisma__ClinicHolidayClient<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ClinicHolidays.
+     * @param {ClinicHolidayDeleteManyArgs} args - Arguments to filter ClinicHolidays to delete.
+     * @example
+     * // Delete a few ClinicHolidays
+     * const { count } = await prisma.clinicHoliday.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ClinicHolidayDeleteManyArgs>(args?: SelectSubset<T, ClinicHolidayDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ClinicHolidays.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClinicHolidayUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ClinicHolidays
+     * const clinicHoliday = await prisma.clinicHoliday.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ClinicHolidayUpdateManyArgs>(args: SelectSubset<T, ClinicHolidayUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ClinicHolidays and returns the data updated in the database.
+     * @param {ClinicHolidayUpdateManyAndReturnArgs} args - Arguments to update many ClinicHolidays.
+     * @example
+     * // Update many ClinicHolidays
+     * const clinicHoliday = await prisma.clinicHoliday.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ClinicHolidays and only return the `id`
+     * const clinicHolidayWithIdOnly = await prisma.clinicHoliday.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ClinicHolidayUpdateManyAndReturnArgs>(args: SelectSubset<T, ClinicHolidayUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ClinicHoliday.
+     * @param {ClinicHolidayUpsertArgs} args - Arguments to update or create a ClinicHoliday.
+     * @example
+     * // Update or create a ClinicHoliday
+     * const clinicHoliday = await prisma.clinicHoliday.upsert({
+     *   create: {
+     *     // ... data to create a ClinicHoliday
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ClinicHoliday we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ClinicHolidayUpsertArgs>(args: SelectSubset<T, ClinicHolidayUpsertArgs<ExtArgs>>): Prisma__ClinicHolidayClient<$Result.GetResult<Prisma.$ClinicHolidayPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ClinicHolidays.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClinicHolidayCountArgs} args - Arguments to filter ClinicHolidays to count.
+     * @example
+     * // Count the number of ClinicHolidays
+     * const count = await prisma.clinicHoliday.count({
+     *   where: {
+     *     // ... the filter for the ClinicHolidays we want to count
+     *   }
+     * })
+    **/
+    count<T extends ClinicHolidayCountArgs>(
+      args?: Subset<T, ClinicHolidayCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ClinicHolidayCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ClinicHoliday.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClinicHolidayAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ClinicHolidayAggregateArgs>(args: Subset<T, ClinicHolidayAggregateArgs>): Prisma.PrismaPromise<GetClinicHolidayAggregateType<T>>
+
+    /**
+     * Group by ClinicHoliday.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClinicHolidayGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ClinicHolidayGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ClinicHolidayGroupByArgs['orderBy'] }
+        : { orderBy?: ClinicHolidayGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ClinicHolidayGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetClinicHolidayGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ClinicHoliday model
+   */
+  readonly fields: ClinicHolidayFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ClinicHoliday.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ClinicHolidayClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ClinicHoliday model
+   */
+  interface ClinicHolidayFieldRefs {
+    readonly id: FieldRef<"ClinicHoliday", 'String'>
+    readonly title: FieldRef<"ClinicHoliday", 'String'>
+    readonly startDate: FieldRef<"ClinicHoliday", 'DateTime'>
+    readonly endDate: FieldRef<"ClinicHoliday", 'DateTime'>
+    readonly reason: FieldRef<"ClinicHoliday", 'String'>
+    readonly showOnWeb: FieldRef<"ClinicHoliday", 'Boolean'>
+    readonly isActive: FieldRef<"ClinicHoliday", 'Boolean'>
+    readonly createdAt: FieldRef<"ClinicHoliday", 'DateTime'>
+    readonly updatedAt: FieldRef<"ClinicHoliday", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ClinicHoliday findUnique
+   */
+  export type ClinicHolidayFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * Filter, which ClinicHoliday to fetch.
+     */
+    where: ClinicHolidayWhereUniqueInput
+  }
+
+  /**
+   * ClinicHoliday findUniqueOrThrow
+   */
+  export type ClinicHolidayFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * Filter, which ClinicHoliday to fetch.
+     */
+    where: ClinicHolidayWhereUniqueInput
+  }
+
+  /**
+   * ClinicHoliday findFirst
+   */
+  export type ClinicHolidayFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * Filter, which ClinicHoliday to fetch.
+     */
+    where?: ClinicHolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ClinicHolidays to fetch.
+     */
+    orderBy?: ClinicHolidayOrderByWithRelationInput | ClinicHolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ClinicHolidays.
+     */
+    cursor?: ClinicHolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ClinicHolidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ClinicHolidays.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ClinicHolidays.
+     */
+    distinct?: ClinicHolidayScalarFieldEnum | ClinicHolidayScalarFieldEnum[]
+  }
+
+  /**
+   * ClinicHoliday findFirstOrThrow
+   */
+  export type ClinicHolidayFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * Filter, which ClinicHoliday to fetch.
+     */
+    where?: ClinicHolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ClinicHolidays to fetch.
+     */
+    orderBy?: ClinicHolidayOrderByWithRelationInput | ClinicHolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ClinicHolidays.
+     */
+    cursor?: ClinicHolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ClinicHolidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ClinicHolidays.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ClinicHolidays.
+     */
+    distinct?: ClinicHolidayScalarFieldEnum | ClinicHolidayScalarFieldEnum[]
+  }
+
+  /**
+   * ClinicHoliday findMany
+   */
+  export type ClinicHolidayFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * Filter, which ClinicHolidays to fetch.
+     */
+    where?: ClinicHolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ClinicHolidays to fetch.
+     */
+    orderBy?: ClinicHolidayOrderByWithRelationInput | ClinicHolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ClinicHolidays.
+     */
+    cursor?: ClinicHolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ClinicHolidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ClinicHolidays.
+     */
+    skip?: number
+    distinct?: ClinicHolidayScalarFieldEnum | ClinicHolidayScalarFieldEnum[]
+  }
+
+  /**
+   * ClinicHoliday create
+   */
+  export type ClinicHolidayCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ClinicHoliday.
+     */
+    data: XOR<ClinicHolidayCreateInput, ClinicHolidayUncheckedCreateInput>
+  }
+
+  /**
+   * ClinicHoliday createMany
+   */
+  export type ClinicHolidayCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ClinicHolidays.
+     */
+    data: ClinicHolidayCreateManyInput | ClinicHolidayCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ClinicHoliday createManyAndReturn
+   */
+  export type ClinicHolidayCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * The data used to create many ClinicHolidays.
+     */
+    data: ClinicHolidayCreateManyInput | ClinicHolidayCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ClinicHoliday update
+   */
+  export type ClinicHolidayUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ClinicHoliday.
+     */
+    data: XOR<ClinicHolidayUpdateInput, ClinicHolidayUncheckedUpdateInput>
+    /**
+     * Choose, which ClinicHoliday to update.
+     */
+    where: ClinicHolidayWhereUniqueInput
+  }
+
+  /**
+   * ClinicHoliday updateMany
+   */
+  export type ClinicHolidayUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ClinicHolidays.
+     */
+    data: XOR<ClinicHolidayUpdateManyMutationInput, ClinicHolidayUncheckedUpdateManyInput>
+    /**
+     * Filter which ClinicHolidays to update
+     */
+    where?: ClinicHolidayWhereInput
+    /**
+     * Limit how many ClinicHolidays to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ClinicHoliday updateManyAndReturn
+   */
+  export type ClinicHolidayUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * The data used to update ClinicHolidays.
+     */
+    data: XOR<ClinicHolidayUpdateManyMutationInput, ClinicHolidayUncheckedUpdateManyInput>
+    /**
+     * Filter which ClinicHolidays to update
+     */
+    where?: ClinicHolidayWhereInput
+    /**
+     * Limit how many ClinicHolidays to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ClinicHoliday upsert
+   */
+  export type ClinicHolidayUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ClinicHoliday to update in case it exists.
+     */
+    where: ClinicHolidayWhereUniqueInput
+    /**
+     * In case the ClinicHoliday found by the `where` argument doesn't exist, create a new ClinicHoliday with this data.
+     */
+    create: XOR<ClinicHolidayCreateInput, ClinicHolidayUncheckedCreateInput>
+    /**
+     * In case the ClinicHoliday was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ClinicHolidayUpdateInput, ClinicHolidayUncheckedUpdateInput>
+  }
+
+  /**
+   * ClinicHoliday delete
+   */
+  export type ClinicHolidayDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
+    /**
+     * Filter which ClinicHoliday to delete.
+     */
+    where: ClinicHolidayWhereUniqueInput
+  }
+
+  /**
+   * ClinicHoliday deleteMany
+   */
+  export type ClinicHolidayDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ClinicHolidays to delete
+     */
+    where?: ClinicHolidayWhereInput
+    /**
+     * Limit how many ClinicHolidays to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ClinicHoliday without action
+   */
+  export type ClinicHolidayDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClinicHoliday
+     */
+    select?: ClinicHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClinicHoliday
+     */
+    omit?: ClinicHolidayOmit<ExtArgs> | null
   }
 
 
@@ -14062,12 +15317,36 @@ export namespace Prisma {
   export const SystemSettingsScalarFieldEnum: {
     id: 'id',
     clinicName: 'clinicName',
+    clinicAddress: 'clinicAddress',
+    landlinePhone: 'landlinePhone',
+    mobilePhone: 'mobilePhone',
+    whatsappNumber: 'whatsappNumber',
+    clinicEmail: 'clinicEmail',
+    pmdcRegNumber: 'pmdcRegNumber',
+    receiptFooter: 'receiptFooter',
     workDayStart: 'workDayStart',
     workDayEnd: 'workDayEnd',
-    slotDurationMin: 'slotDurationMin'
+    slotDurationMin: 'slotDurationMin',
+    weeklyWorkingDays: 'weeklyWorkingDays',
+    updatedAt: 'updatedAt'
   };
 
   export type SystemSettingsScalarFieldEnum = (typeof SystemSettingsScalarFieldEnum)[keyof typeof SystemSettingsScalarFieldEnum]
+
+
+  export const ClinicHolidayScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    startDate: 'startDate',
+    endDate: 'endDate',
+    reason: 'reason',
+    showOnWeb: 'showOnWeb',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ClinicHolidayScalarFieldEnum = (typeof ClinicHolidayScalarFieldEnum)[keyof typeof ClinicHolidayScalarFieldEnum]
 
 
   export const PatientTreatmentScalarFieldEnum: {
@@ -14836,17 +16115,35 @@ export namespace Prisma {
     NOT?: SystemSettingsWhereInput | SystemSettingsWhereInput[]
     id?: StringFilter<"SystemSettings"> | string
     clinicName?: StringFilter<"SystemSettings"> | string
+    clinicAddress?: StringFilter<"SystemSettings"> | string
+    landlinePhone?: StringFilter<"SystemSettings"> | string
+    mobilePhone?: StringFilter<"SystemSettings"> | string
+    whatsappNumber?: StringFilter<"SystemSettings"> | string
+    clinicEmail?: StringFilter<"SystemSettings"> | string
+    pmdcRegNumber?: StringFilter<"SystemSettings"> | string
+    receiptFooter?: StringFilter<"SystemSettings"> | string
     workDayStart?: StringFilter<"SystemSettings"> | string
     workDayEnd?: StringFilter<"SystemSettings"> | string
     slotDurationMin?: IntFilter<"SystemSettings"> | number
+    weeklyWorkingDays?: StringFilter<"SystemSettings"> | string
+    updatedAt?: DateTimeFilter<"SystemSettings"> | Date | string
   }
 
   export type SystemSettingsOrderByWithRelationInput = {
     id?: SortOrder
     clinicName?: SortOrder
+    clinicAddress?: SortOrder
+    landlinePhone?: SortOrder
+    mobilePhone?: SortOrder
+    whatsappNumber?: SortOrder
+    clinicEmail?: SortOrder
+    pmdcRegNumber?: SortOrder
+    receiptFooter?: SortOrder
     workDayStart?: SortOrder
     workDayEnd?: SortOrder
     slotDurationMin?: SortOrder
+    weeklyWorkingDays?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SystemSettingsWhereUniqueInput = Prisma.AtLeast<{
@@ -14855,17 +16152,35 @@ export namespace Prisma {
     OR?: SystemSettingsWhereInput[]
     NOT?: SystemSettingsWhereInput | SystemSettingsWhereInput[]
     clinicName?: StringFilter<"SystemSettings"> | string
+    clinicAddress?: StringFilter<"SystemSettings"> | string
+    landlinePhone?: StringFilter<"SystemSettings"> | string
+    mobilePhone?: StringFilter<"SystemSettings"> | string
+    whatsappNumber?: StringFilter<"SystemSettings"> | string
+    clinicEmail?: StringFilter<"SystemSettings"> | string
+    pmdcRegNumber?: StringFilter<"SystemSettings"> | string
+    receiptFooter?: StringFilter<"SystemSettings"> | string
     workDayStart?: StringFilter<"SystemSettings"> | string
     workDayEnd?: StringFilter<"SystemSettings"> | string
     slotDurationMin?: IntFilter<"SystemSettings"> | number
+    weeklyWorkingDays?: StringFilter<"SystemSettings"> | string
+    updatedAt?: DateTimeFilter<"SystemSettings"> | Date | string
   }, "id">
 
   export type SystemSettingsOrderByWithAggregationInput = {
     id?: SortOrder
     clinicName?: SortOrder
+    clinicAddress?: SortOrder
+    landlinePhone?: SortOrder
+    mobilePhone?: SortOrder
+    whatsappNumber?: SortOrder
+    clinicEmail?: SortOrder
+    pmdcRegNumber?: SortOrder
+    receiptFooter?: SortOrder
     workDayStart?: SortOrder
     workDayEnd?: SortOrder
     slotDurationMin?: SortOrder
+    weeklyWorkingDays?: SortOrder
+    updatedAt?: SortOrder
     _count?: SystemSettingsCountOrderByAggregateInput
     _avg?: SystemSettingsAvgOrderByAggregateInput
     _max?: SystemSettingsMaxOrderByAggregateInput
@@ -14879,9 +16194,90 @@ export namespace Prisma {
     NOT?: SystemSettingsScalarWhereWithAggregatesInput | SystemSettingsScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"SystemSettings"> | string
     clinicName?: StringWithAggregatesFilter<"SystemSettings"> | string
+    clinicAddress?: StringWithAggregatesFilter<"SystemSettings"> | string
+    landlinePhone?: StringWithAggregatesFilter<"SystemSettings"> | string
+    mobilePhone?: StringWithAggregatesFilter<"SystemSettings"> | string
+    whatsappNumber?: StringWithAggregatesFilter<"SystemSettings"> | string
+    clinicEmail?: StringWithAggregatesFilter<"SystemSettings"> | string
+    pmdcRegNumber?: StringWithAggregatesFilter<"SystemSettings"> | string
+    receiptFooter?: StringWithAggregatesFilter<"SystemSettings"> | string
     workDayStart?: StringWithAggregatesFilter<"SystemSettings"> | string
     workDayEnd?: StringWithAggregatesFilter<"SystemSettings"> | string
     slotDurationMin?: IntWithAggregatesFilter<"SystemSettings"> | number
+    weeklyWorkingDays?: StringWithAggregatesFilter<"SystemSettings"> | string
+    updatedAt?: DateTimeWithAggregatesFilter<"SystemSettings"> | Date | string
+  }
+
+  export type ClinicHolidayWhereInput = {
+    AND?: ClinicHolidayWhereInput | ClinicHolidayWhereInput[]
+    OR?: ClinicHolidayWhereInput[]
+    NOT?: ClinicHolidayWhereInput | ClinicHolidayWhereInput[]
+    id?: StringFilter<"ClinicHoliday"> | string
+    title?: StringFilter<"ClinicHoliday"> | string
+    startDate?: DateTimeFilter<"ClinicHoliday"> | Date | string
+    endDate?: DateTimeFilter<"ClinicHoliday"> | Date | string
+    reason?: StringNullableFilter<"ClinicHoliday"> | string | null
+    showOnWeb?: BoolFilter<"ClinicHoliday"> | boolean
+    isActive?: BoolFilter<"ClinicHoliday"> | boolean
+    createdAt?: DateTimeFilter<"ClinicHoliday"> | Date | string
+    updatedAt?: DateTimeFilter<"ClinicHoliday"> | Date | string
+  }
+
+  export type ClinicHolidayOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    reason?: SortOrderInput | SortOrder
+    showOnWeb?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ClinicHolidayWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ClinicHolidayWhereInput | ClinicHolidayWhereInput[]
+    OR?: ClinicHolidayWhereInput[]
+    NOT?: ClinicHolidayWhereInput | ClinicHolidayWhereInput[]
+    title?: StringFilter<"ClinicHoliday"> | string
+    startDate?: DateTimeFilter<"ClinicHoliday"> | Date | string
+    endDate?: DateTimeFilter<"ClinicHoliday"> | Date | string
+    reason?: StringNullableFilter<"ClinicHoliday"> | string | null
+    showOnWeb?: BoolFilter<"ClinicHoliday"> | boolean
+    isActive?: BoolFilter<"ClinicHoliday"> | boolean
+    createdAt?: DateTimeFilter<"ClinicHoliday"> | Date | string
+    updatedAt?: DateTimeFilter<"ClinicHoliday"> | Date | string
+  }, "id">
+
+  export type ClinicHolidayOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    reason?: SortOrderInput | SortOrder
+    showOnWeb?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ClinicHolidayCountOrderByAggregateInput
+    _max?: ClinicHolidayMaxOrderByAggregateInput
+    _min?: ClinicHolidayMinOrderByAggregateInput
+  }
+
+  export type ClinicHolidayScalarWhereWithAggregatesInput = {
+    AND?: ClinicHolidayScalarWhereWithAggregatesInput | ClinicHolidayScalarWhereWithAggregatesInput[]
+    OR?: ClinicHolidayScalarWhereWithAggregatesInput[]
+    NOT?: ClinicHolidayScalarWhereWithAggregatesInput | ClinicHolidayScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ClinicHoliday"> | string
+    title?: StringWithAggregatesFilter<"ClinicHoliday"> | string
+    startDate?: DateTimeWithAggregatesFilter<"ClinicHoliday"> | Date | string
+    endDate?: DateTimeWithAggregatesFilter<"ClinicHoliday"> | Date | string
+    reason?: StringNullableWithAggregatesFilter<"ClinicHoliday"> | string | null
+    showOnWeb?: BoolWithAggregatesFilter<"ClinicHoliday"> | boolean
+    isActive?: BoolWithAggregatesFilter<"ClinicHoliday"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"ClinicHoliday"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ClinicHoliday"> | Date | string
   }
 
   export type PatientTreatmentWhereInput = {
@@ -15831,57 +17227,204 @@ export namespace Prisma {
   export type SystemSettingsCreateInput = {
     id?: string
     clinicName?: string
+    clinicAddress?: string
+    landlinePhone?: string
+    mobilePhone?: string
+    whatsappNumber?: string
+    clinicEmail?: string
+    pmdcRegNumber?: string
+    receiptFooter?: string
     workDayStart?: string
     workDayEnd?: string
     slotDurationMin?: number
+    weeklyWorkingDays?: string
+    updatedAt?: Date | string
   }
 
   export type SystemSettingsUncheckedCreateInput = {
     id?: string
     clinicName?: string
+    clinicAddress?: string
+    landlinePhone?: string
+    mobilePhone?: string
+    whatsappNumber?: string
+    clinicEmail?: string
+    pmdcRegNumber?: string
+    receiptFooter?: string
     workDayStart?: string
     workDayEnd?: string
     slotDurationMin?: number
+    weeklyWorkingDays?: string
+    updatedAt?: Date | string
   }
 
   export type SystemSettingsUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     clinicName?: StringFieldUpdateOperationsInput | string
+    clinicAddress?: StringFieldUpdateOperationsInput | string
+    landlinePhone?: StringFieldUpdateOperationsInput | string
+    mobilePhone?: StringFieldUpdateOperationsInput | string
+    whatsappNumber?: StringFieldUpdateOperationsInput | string
+    clinicEmail?: StringFieldUpdateOperationsInput | string
+    pmdcRegNumber?: StringFieldUpdateOperationsInput | string
+    receiptFooter?: StringFieldUpdateOperationsInput | string
     workDayStart?: StringFieldUpdateOperationsInput | string
     workDayEnd?: StringFieldUpdateOperationsInput | string
     slotDurationMin?: IntFieldUpdateOperationsInput | number
+    weeklyWorkingDays?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SystemSettingsUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     clinicName?: StringFieldUpdateOperationsInput | string
+    clinicAddress?: StringFieldUpdateOperationsInput | string
+    landlinePhone?: StringFieldUpdateOperationsInput | string
+    mobilePhone?: StringFieldUpdateOperationsInput | string
+    whatsappNumber?: StringFieldUpdateOperationsInput | string
+    clinicEmail?: StringFieldUpdateOperationsInput | string
+    pmdcRegNumber?: StringFieldUpdateOperationsInput | string
+    receiptFooter?: StringFieldUpdateOperationsInput | string
     workDayStart?: StringFieldUpdateOperationsInput | string
     workDayEnd?: StringFieldUpdateOperationsInput | string
     slotDurationMin?: IntFieldUpdateOperationsInput | number
+    weeklyWorkingDays?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SystemSettingsCreateManyInput = {
     id?: string
     clinicName?: string
+    clinicAddress?: string
+    landlinePhone?: string
+    mobilePhone?: string
+    whatsappNumber?: string
+    clinicEmail?: string
+    pmdcRegNumber?: string
+    receiptFooter?: string
     workDayStart?: string
     workDayEnd?: string
     slotDurationMin?: number
+    weeklyWorkingDays?: string
+    updatedAt?: Date | string
   }
 
   export type SystemSettingsUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     clinicName?: StringFieldUpdateOperationsInput | string
+    clinicAddress?: StringFieldUpdateOperationsInput | string
+    landlinePhone?: StringFieldUpdateOperationsInput | string
+    mobilePhone?: StringFieldUpdateOperationsInput | string
+    whatsappNumber?: StringFieldUpdateOperationsInput | string
+    clinicEmail?: StringFieldUpdateOperationsInput | string
+    pmdcRegNumber?: StringFieldUpdateOperationsInput | string
+    receiptFooter?: StringFieldUpdateOperationsInput | string
     workDayStart?: StringFieldUpdateOperationsInput | string
     workDayEnd?: StringFieldUpdateOperationsInput | string
     slotDurationMin?: IntFieldUpdateOperationsInput | number
+    weeklyWorkingDays?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SystemSettingsUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     clinicName?: StringFieldUpdateOperationsInput | string
+    clinicAddress?: StringFieldUpdateOperationsInput | string
+    landlinePhone?: StringFieldUpdateOperationsInput | string
+    mobilePhone?: StringFieldUpdateOperationsInput | string
+    whatsappNumber?: StringFieldUpdateOperationsInput | string
+    clinicEmail?: StringFieldUpdateOperationsInput | string
+    pmdcRegNumber?: StringFieldUpdateOperationsInput | string
+    receiptFooter?: StringFieldUpdateOperationsInput | string
     workDayStart?: StringFieldUpdateOperationsInput | string
     workDayEnd?: StringFieldUpdateOperationsInput | string
     slotDurationMin?: IntFieldUpdateOperationsInput | number
+    weeklyWorkingDays?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ClinicHolidayCreateInput = {
+    id?: string
+    title: string
+    startDate: Date | string
+    endDate: Date | string
+    reason?: string | null
+    showOnWeb?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ClinicHolidayUncheckedCreateInput = {
+    id?: string
+    title: string
+    startDate: Date | string
+    endDate: Date | string
+    reason?: string | null
+    showOnWeb?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ClinicHolidayUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    showOnWeb?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ClinicHolidayUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    showOnWeb?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ClinicHolidayCreateManyInput = {
+    id?: string
+    title: string
+    startDate: Date | string
+    endDate: Date | string
+    reason?: string | null
+    showOnWeb?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ClinicHolidayUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    showOnWeb?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ClinicHolidayUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    showOnWeb?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PatientTreatmentCreateInput = {
@@ -16947,9 +18490,18 @@ export namespace Prisma {
   export type SystemSettingsCountOrderByAggregateInput = {
     id?: SortOrder
     clinicName?: SortOrder
+    clinicAddress?: SortOrder
+    landlinePhone?: SortOrder
+    mobilePhone?: SortOrder
+    whatsappNumber?: SortOrder
+    clinicEmail?: SortOrder
+    pmdcRegNumber?: SortOrder
+    receiptFooter?: SortOrder
     workDayStart?: SortOrder
     workDayEnd?: SortOrder
     slotDurationMin?: SortOrder
+    weeklyWorkingDays?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SystemSettingsAvgOrderByAggregateInput = {
@@ -16959,21 +18511,75 @@ export namespace Prisma {
   export type SystemSettingsMaxOrderByAggregateInput = {
     id?: SortOrder
     clinicName?: SortOrder
+    clinicAddress?: SortOrder
+    landlinePhone?: SortOrder
+    mobilePhone?: SortOrder
+    whatsappNumber?: SortOrder
+    clinicEmail?: SortOrder
+    pmdcRegNumber?: SortOrder
+    receiptFooter?: SortOrder
     workDayStart?: SortOrder
     workDayEnd?: SortOrder
     slotDurationMin?: SortOrder
+    weeklyWorkingDays?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SystemSettingsMinOrderByAggregateInput = {
     id?: SortOrder
     clinicName?: SortOrder
+    clinicAddress?: SortOrder
+    landlinePhone?: SortOrder
+    mobilePhone?: SortOrder
+    whatsappNumber?: SortOrder
+    clinicEmail?: SortOrder
+    pmdcRegNumber?: SortOrder
+    receiptFooter?: SortOrder
     workDayStart?: SortOrder
     workDayEnd?: SortOrder
     slotDurationMin?: SortOrder
+    weeklyWorkingDays?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SystemSettingsSumOrderByAggregateInput = {
     slotDurationMin?: SortOrder
+  }
+
+  export type ClinicHolidayCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    reason?: SortOrder
+    showOnWeb?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ClinicHolidayMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    reason?: SortOrder
+    showOnWeb?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ClinicHolidayMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    reason?: SortOrder
+    showOnWeb?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type EnumClinicalStatusFilter<$PrismaModel = never> = {

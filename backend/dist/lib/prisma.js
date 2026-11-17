@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const client_1 = require("../generated/client");
+const prismaClientSingleton = () => {
+    // Returns a new PrismaClient instance
+    return new client_1.PrismaClient();
+};
+const prisma = globalThis.prismaGlobalFix2 ?? prismaClientSingleton();
+exports.default = prisma;
+if (process.env.NODE_ENV !== "production")
+    globalThis.prismaGlobalFix2 = prisma;
+//# sourceMappingURL=prisma.js.map

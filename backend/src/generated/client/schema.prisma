@@ -154,11 +154,32 @@ model Treatment {
 }
 
 model SystemSettings {
-  id              String @id @default("settings")
-  clinicName      String @default("Elite Dental Centre")
-  workDayStart    String @default("09:00")
-  workDayEnd      String @default("17:00")
-  slotDurationMin Int    @default(30)
+  id                String   @id @default("settings")
+  clinicName        String   @default("Elite Dental & Aesthetic Centre")
+  clinicAddress     String   @default("Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad")
+  landlinePhone     String   @default("051-2340093")
+  mobilePhone       String   @default("0303-5080011")
+  whatsappNumber    String   @default("+92 314 5475528")
+  clinicEmail       String   @default("info@elitedental.com")
+  pmdcRegNumber     String   @default("14820-D")
+  receiptFooter     String   @default("Thank you for trusting Elite Dental & Aesthetic Centre. Valid for clinical record & tax submission.")
+  workDayStart      String   @default("12:00")
+  workDayEnd        String   @default("20:00")
+  slotDurationMin   Int      @default(30)
+  weeklyWorkingDays String   @default("Monday,Tuesday,Wednesday,Thursday,Friday,Saturday")
+  updatedAt         DateTime @default(now()) @updatedAt
+}
+
+model ClinicHoliday {
+  id        String   @id @default(uuid())
+  title     String
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  showOnWeb Boolean  @default(true)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ─── Billing & Treatment Plans ───────────────────────────

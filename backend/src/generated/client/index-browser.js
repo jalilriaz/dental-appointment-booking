@@ -198,9 +198,30 @@ exports.Prisma.TreatmentScalarFieldEnum = {
 exports.Prisma.SystemSettingsScalarFieldEnum = {
   id: 'id',
   clinicName: 'clinicName',
+  clinicAddress: 'clinicAddress',
+  landlinePhone: 'landlinePhone',
+  mobilePhone: 'mobilePhone',
+  whatsappNumber: 'whatsappNumber',
+  clinicEmail: 'clinicEmail',
+  pmdcRegNumber: 'pmdcRegNumber',
+  receiptFooter: 'receiptFooter',
   workDayStart: 'workDayStart',
   workDayEnd: 'workDayEnd',
-  slotDurationMin: 'slotDurationMin'
+  slotDurationMin: 'slotDurationMin',
+  weeklyWorkingDays: 'weeklyWorkingDays',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ClinicHolidayScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  reason: 'reason',
+  showOnWeb: 'showOnWeb',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PatientTreatmentScalarFieldEnum = {
@@ -339,6 +360,7 @@ exports.Prisma.ModelName = {
   ClinicalNote: 'ClinicalNote',
   Treatment: 'Treatment',
   SystemSettings: 'SystemSettings',
+  ClinicHoliday: 'ClinicHoliday',
   PatientTreatment: 'PatientTreatment',
   PlanChangeLog: 'PlanChangeLog',
   Payment: 'Payment',

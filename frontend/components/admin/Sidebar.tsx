@@ -11,7 +11,6 @@ import {
   PeopleAltOutlined,
   AttachMoneyOutlined,
   SettingsOutlined,
-  Inventory2Outlined,
   BadgeOutlined,
   LogoutOutlined,
   CloseOutlined,
@@ -35,7 +34,6 @@ const navSections = [
     items: [
       { label: "Services & Pricing", href: "/admin/services", icon: MedicalServicesOutlined },
       { label: "Revenue Analytics", href: "/admin/revenue", icon: AttachMoneyOutlined },
-      { label: "Supplies & Inventory", href: "/admin/inventory", icon: Inventory2Outlined },
     ],
   },
   {
@@ -67,7 +65,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           sessionStorage.clear();
           document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
           document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        } catch {}
+        } catch { }
         window.location.href = "/";
       }
     }
@@ -90,9 +88,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-200/90 flex flex-col text-slate-800 transition-transform duration-300 lg:translate-x-0 shadow-sm ${
-          open ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-200/90 flex flex-col text-slate-800 transition-transform duration-300 lg:translate-x-0 shadow-sm ${open ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Brand Area */}
         <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100">
@@ -143,13 +140,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                       key={item.href}
                       href={item.href}
                       onClick={onClose}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
-                        active
-                          ? "bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs font-extrabold"
-                          : item.highlight
+                      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${active
+                        ? "bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs font-extrabold"
+                        : item.highlight
                           ? "text-teal-700 hover:bg-teal-50/50 hover:text-teal-800 font-bold"
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 font-semibold"
-                      }`}
+                        }`}
                     >
                       <Icon
                         sx={{
@@ -157,8 +153,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                           color: active
                             ? "#0d9488"
                             : item.highlight
-                            ? "#0d9488"
-                            : "#94a3b8",
+                              ? "#0d9488"
+                              : "#94a3b8",
                         }}
                       />
                       <span className="truncate">{item.label}</span>

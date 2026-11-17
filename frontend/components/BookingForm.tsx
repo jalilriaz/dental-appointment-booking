@@ -188,6 +188,34 @@ export default function BookingForm({
     }
   }, [newPatientData, setValue]);
 
+  // Dynamic Clinic Settings & Holidays
+  const [weeklyWorkingDays, setWeeklyWorkingDays] = useState<string[]>([
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"
+  ]);
+  const [activeHolidays, setActiveHolidays] = useState<{ startDate: string; endDate: string; title: string }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/settings/public")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.settings?.weeklyWorkingDays) {
+          setWeeklyWorkingDays(
+            data.settings.weeklyWorkingDays.split(",").map((d: string) => d.trim().toLowerCase())
+          );
+        }
+        if (data?.activeHolidays) {
+          setActiveHolidays(
+            data.activeHolidays.map((h: any) => ({
+              startDate: typeof h.startDate === "string" ? h.startDate.split("T")[0] : "",
+              endDate: typeof h.endDate === "string" ? h.endDate.split("T")[0] : "",
+              title: h.title,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const selectedTreatment = treatments.find((t) => t.id === watchTreatmentId);
 
   const nextStep = async () => {
@@ -559,7 +587,19 @@ export default function BookingForm({
                     setValue("time", "");
                   }}
                   placeholder="Select appointment date..."
-                  disabledDays={(date) => date.getDay() === 0}
+                  disabledDays={(date) => {
+                    const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+                    const dayName = dayNames[date.getDay()];
+                    if (!weeklyWorkingDays.includes(dayName)) return true;
+
+                    // Check if date falls in any active holiday
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, "0");
+                    const d = String(date.getDate()).padStart(2, "0");
+                    const dateStr = `${y}-${m}-${d}`;
+
+                    return activeHolidays.some((h) => dateStr >= h.startDate && dateStr <= h.endDate);
+                  }}
                 />
                 {errors.date && <p className={errorClasses}>{errors.date.message}</p>}
               </div>

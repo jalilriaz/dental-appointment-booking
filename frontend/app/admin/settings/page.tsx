@@ -11,20 +11,39 @@ export default async function AdminSettingsPage() {
     let session;
     try { session = await decrypt(cookie); } catch { redirect("/login"); }
 
-    // Load saved settings from DB
-    const settings = await prisma.systemSettings.findUnique({
-        where: { id: "settings" },
-    });
+    // Load saved settings & holidays from DB
+    const [settings, holidays, admin] = await Promise.all([
+        prisma.systemSettings?.findUnique({ where: { id: "settings" } }).catch(() => null),
+        (prisma as any).clinicHoliday?.findMany({ orderBy: { startDate: "desc" } }).catch(() => []) ?? [],
+        prisma.user.findUnique({
+            where: { id: session.id as string },
+            select: { googleCalendarConnected: true },
+        }),
+    ]);
 
-    // Check if admin has Google Calendar connected
-    const admin = await prisma.user.findUnique({
-        where: { id: session.id as string },
-        select: { googleCalendarConnected: true },
-    });
+    const serializedHolidays = (holidays || []).map((h: any) => ({
+        id: h.id,
+        title: h.title,
+        startDate: h.startDate.toISOString().split("T")[0],
+        endDate: h.endDate.toISOString().split("T")[0],
+        reason: h.reason || "",
+        showOnWeb: h.showOnWeb,
+        isActive: h.isActive,
+    }));
 
     const initialSettings = settings ? {
+        clinicName: settings.clinicName,
+        clinicAddress: settings.clinicAddress,
+        landlinePhone: settings.landlinePhone,
+        mobilePhone: settings.mobilePhone,
+        whatsappNumber: settings.whatsappNumber,
+        clinicEmail: settings.clinicEmail,
+        pmdcRegNumber: settings.pmdcRegNumber,
+        receiptFooter: settings.receiptFooter,
         workingHoursStart: settings.workDayStart,
         workingHoursEnd: settings.workDayEnd,
+        slotDurationMin: settings.slotDurationMin,
+        weeklyWorkingDays: settings.weeklyWorkingDays,
     } : null;
 
     return (
@@ -40,13 +59,14 @@ export default async function AdminSettingsPage() {
                         Clinic Settings
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                        Configure practice working hours, appointment booking capacity, and external calendar synchronization.
+                        Configure practice identity, official receipts, operating hours, holidays, and external calendar synchronization.
                     </p>
                 </div>
             </div>
 
             <SettingsForm
                 initialSettings={initialSettings}
+                initialHolidays={serializedHolidays}
                 googleCalendarConnected={admin?.googleCalendarConnected || false}
             />
         </div>
