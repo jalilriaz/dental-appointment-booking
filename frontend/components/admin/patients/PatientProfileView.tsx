@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
     ArrowBackOutlined,
     PhoneOutlined,
@@ -37,6 +38,7 @@ import CreateTreatmentPlan from "@/components/admin/patients/CreateTreatmentPlan
 import RecordPayment from "@/components/admin/patients/RecordPayment";
 import SendPrecautionsButton from "@/components/admin/SendPrecautionsButton";
 import ReceiptDialog, { ReceiptData } from "@/components/admin/ReceiptDialog";
+import SchedulePatientSessionDialog, { PlanBookingContext } from "@/components/shared/SchedulePatientSessionDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -139,6 +141,7 @@ export default function PatientProfileView({
     availableTreatments,
     baseRoute = "/staff",
 }: PatientProfileViewProps) {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>("PLANS");
     const [expandedPlanIds, setExpandedPlanIds] = useState<Record<string, boolean>>({
         [patient.patientTreatments[0]?.id || ""]: true,
@@ -147,6 +150,8 @@ export default function PatientProfileView({
     const [encounterFilter, setEncounterFilter] = useState<string>("ALL");
     const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
     const [receiptOpen, setReceiptOpen] = useState(false);
+    const [scheduleOpen, setScheduleOpen] = useState(false);
+    const [selectedPlanForBooking, setSelectedPlanForBooking] = useState<PlanBookingContext | null>(null);
 
     // ─── Demographic Age Helper ───
     const getAge = (dob: Date | string | null | undefined) => {
@@ -462,6 +467,17 @@ export default function PatientProfileView({
 
                 {/* Top Quick Actions */}
                 <div className="flex items-center gap-2 flex-wrap">
+                    <Button
+                        type="button"
+                        onClick={() => {
+                            setSelectedPlanForBooking(null);
+                            setScheduleOpen(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-2xs transition-all active:scale-[0.98] cursor-pointer"
+                    >
+                        <CalendarMonthOutlined sx={{ fontSize: 15 }} />
+                        <span>+ Book Visit / Session</span>
+                    </Button>
                     {whatsAppHref && (
                         <a
                             href={whatsAppHref}
@@ -879,6 +895,26 @@ export default function PatientProfileView({
 
                                                 {/* Action Buttons */}
                                                 <div className="flex items-center gap-2">
+                                                    {pt.clinicalStatus === "IN_PROGRESS" && (
+                                                        <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => {
+                                setSelectedPlanForBooking({
+                                    id: pt.id,
+                                    treatmentId: pt.treatment.id || "",
+                                    treatmentName: pt.treatment.name,
+                                    sessionNumber: (pt.appointments?.length || 0) + 1,
+                                    totalSessions: pt.totalSessions,
+                                });
+                                setScheduleOpen(true);
+                            }}
+                            className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-9 px-3 rounded-xl shadow-2xs transition-all active:scale-[0.98] flex items-center gap-1 cursor-pointer"
+                                                        >
+                            <CalendarMonthOutlined sx={{ fontSize: 14 }} />
+                            <span>+ Schedule Next Session</span>
+                                                        </Button>
+                                                    )}
                                                     {remaining > 0 && (
                                                         <RecordPayment
                                                             treatmentPlanId={pt.id}
@@ -1086,6 +1122,18 @@ export default function PatientProfileView({
                                     {mode === "ALL" ? "All Visits" : mode}
                                 </button>
                             ))}
+                            <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => {
+                                    setSelectedPlanForBooking(null);
+                                    setScheduleOpen(true);
+                                }}
+                                className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-8 px-3 rounded-xl shadow-2xs transition-all active:scale-[0.98] flex items-center gap-1 cursor-pointer shrink-0 ml-1"
+                            >
+                                <CalendarMonthOutlined sx={{ fontSize: 14 }} />
+                                <span>+ Book Visit</span>
+                            </Button>
                         </div>
                     </div>
 
@@ -1273,6 +1321,23 @@ export default function PatientProfileView({
                 open={receiptOpen}
                 onOpenChange={setReceiptOpen}
                 data={receiptData}
+            />
+
+            {/* ─── Schedule Patient Visit / Session Dialog ─── */}
+            <SchedulePatientSessionDialog
+                open={scheduleOpen}
+                onOpenChange={setScheduleOpen}
+                patient={{
+                    id: patient.id,
+                    name: patient.name || "Patient",
+                    phone: patient.phone || "",
+                    patientCode: patient.patientCode,
+                }}
+                plan={selectedPlanForBooking}
+                availableTreatments={availableTreatments}
+                onSuccess={() => {
+                    router.refresh();
+                }}
             />
         </div>
     );

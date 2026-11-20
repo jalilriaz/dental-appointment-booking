@@ -19,7 +19,7 @@ const doctorCreateSchema = z.object({
     operatory: cleanString('Chair 1 · Surgical Suite A'),
     schedule: cleanString('Mon – Fri: 12:00 PM – 8:00 PM'),
     consultationFee: z.coerce.number().int().min(0).default(2000),
-    image: cleanString('/images/dr_sheriyaar.jpg'),
+    image: cleanString('/dr_sheriyaar.webp'),
     isLead: z.boolean().optional().default(false),
     isActive: z.boolean().optional().default(true),
 });

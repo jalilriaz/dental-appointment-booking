@@ -125,7 +125,7 @@ export default async function AdminDashboard() {
               Clinical Operations Hub
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-              Live practice metrics, daily patient schedule, and procedural ledger for Dr. Sheriyaar at G-8 Markaz Islamabad.
+              Live practice metrics, daily patient schedule, and procedural ledger for Dr. Shehryar Akhtar at G-8 Markaz Islamabad.
             </p>
           </div>
 
@@ -307,7 +307,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* ──────────────────────────────────────────────────────────────────
-          3.5. DOCTORS ON DUTY & OPERATORY ALLOCATIONS
+          3.5. ATTENDING DENTAL SURGEON
           ────────────────────────────────────────────────────────────────── */}
       <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-7">
         <div className="flex items-center justify-between gap-4 mb-5">
@@ -317,99 +317,55 @@ export default async function AdminDashboard() {
             </div>
             <div>
               <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
-                Doctors & Specialists on Shift Today
+                Attending Dental Surgeon
               </h2>
               <p className="text-xs text-slate-500 font-medium">
-                Live operatory chair status and consulting hours across clinical suites.
+                Lead practitioner on duty and active clinical consulting schedule.
               </p>
             </div>
           </div>
           <Link
-            href="/admin/doctors"
+            href="/admin/settings#doctor-profile"
             className="text-xs text-teal-700 hover:text-teal-800 font-bold inline-flex items-center gap-1 transition-colors px-3 py-1.5 rounded-lg hover:bg-teal-50 shrink-0"
           >
-            <span>Manage Doctors</span>
+            <span>Edit in Settings</span>
             <ArrowForwardOutlined sx={{ fontSize: 13 }} />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {doctorsList.map((doc) => {
-            if (doc.isLead) {
-              return (
-                <div
-                  key={doc.id}
-                  className="p-4 rounded-2xl bg-gradient-to-br from-[#0B1528] via-[#0E2438] to-teal-950 border border-teal-500/40 hover:border-teal-400/80 text-white transition-all shadow-sm flex flex-col justify-between relative overflow-hidden group"
-                >
-                  <div className="flex items-center gap-3 relative z-10">
-                    <div className="relative size-13 rounded-xl overflow-hidden ring-2 ring-teal-400/70 shrink-0 bg-slate-800 shadow-md">
-                      <Image
-                        src={doc.image || "/images/dr_sheriyaar.jpg"}
-                        alt={doc.name}
-                        fill
-                        className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <p className="text-xs font-black text-white truncate">{doc.name}</p>
-                        <span className="size-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                      </div>
-                      <p className="text-[11px] font-bold text-teal-300 truncate">Lead Surgeon</p>
-                      <p className="text-[10px] text-slate-300 font-medium truncate">{doc.operatory}</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-2.5 border-t border-teal-500/30 flex items-center justify-between text-[11px] relative z-10">
-                    <span className="font-semibold text-slate-300">{doc.schedule.split(":")[1]?.trim() || "12 PM – 8 PM"}</span>
-                    <span className="font-extrabold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded">Active</span>
-                  </div>
-                </div>
-              );
-            }
-
-            return (
-              <div
-                key={doc.id}
-                className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 transition-all flex flex-col justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="size-12 rounded-xl bg-teal-100 text-teal-800 font-black text-sm flex items-center justify-center shrink-0">
-                    {doc.name.replace("Dr. ", "").charAt(0)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-black text-slate-900 truncate">{doc.name}</p>
-                      <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
-                    </div>
-                    <p className="text-[11px] font-bold text-slate-700 truncate">{doc.role}</p>
-                    <p className="text-[10px] text-slate-500 font-medium truncate">{doc.operatory}</p>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
-                  <span className="font-semibold text-slate-600">{doc.schedule.split(":")[1]?.trim() || doc.schedule}</span>
-                  <span className="font-extrabold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded">In Operatory</span>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Quick-Action slot to register visiting specialists if less than 4 */}
-          {doctorsList.length < 4 && (
-            <Link
-              href="/admin/doctors"
-              className="p-4 rounded-2xl border-2 border-dashed border-slate-200 hover:border-teal-400 bg-slate-50/40 hover:bg-teal-50/30 transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
+        <div className="max-w-md">
+          {doctorsList.filter(d => d.isLead || d.name.includes("Shehryar") || d.name.includes("Sheriyaar")).slice(0, 1).map((doc) => (
+            <div
+              key={doc.id}
+              className="p-5 rounded-2xl bg-gradient-to-br from-[#0B1528] via-[#0E2438] to-teal-950 border border-teal-500/40 hover:border-teal-400/80 text-white transition-all shadow-sm flex flex-col justify-between relative overflow-hidden group"
             >
-              <div className="size-10 rounded-xl bg-white border border-slate-200 group-hover:border-teal-300 text-slate-400 group-hover:text-teal-600 flex items-center justify-center mb-2 transition-colors shadow-2xs">
-                <PersonAddAlt1Outlined sx={{ fontSize: 20 }} />
+              <div className="flex items-center gap-3.5 relative z-10">
+                <div className="relative size-14 rounded-xl overflow-hidden ring-2 ring-teal-400/70 shrink-0 bg-slate-800 shadow-md">
+                  <Image
+                    src={doc.image || "/dr_sheriyaar.webp"}
+                    alt={doc.name}
+                    fill
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-black text-white truncate">{doc.name}</p>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      ON DUTY
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold text-teal-300 truncate mt-0.5">{doc.role || "Lead Dental Surgeon & Implantologist"}</p>
+                  <p className="text-[11px] text-slate-300 font-medium truncate mt-0.5">{doc.operatory || "Chair 1 · Main Surgical Suite"}</p>
+                </div>
               </div>
-              <p className="text-xs font-extrabold text-slate-700 group-hover:text-teal-700">
-                + Add Dental Specialist
-              </p>
-              <p className="text-[10px] text-slate-400 font-medium mt-0.5">
-                Assign to Operatory Chairs 2–4
-              </p>
-            </Link>
-          )}
+              <div className="mt-4 pt-3 border-t border-teal-500/30 flex items-center justify-between text-xs relative z-10">
+                <span className="font-semibold text-slate-300">Schedule: {doc.schedule.split(":")[1]?.trim() || doc.schedule || "12 PM – 8 PM"}</span>
+                <span className="font-extrabold text-teal-200">Consultation Fee: Rs. {doc.consultationFee?.toLocaleString() || "2,000"}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

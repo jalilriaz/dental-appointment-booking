@@ -180,13 +180,13 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
       ? doctors
       : [
           {
-            id: "doc-sheriyaar",
-            name: "Dr. Sheriyaar",
-            role: "Lead Surgeon",
+            id: "doc-shehryar",
+            name: "Dr. Shehryar Akhtar",
+            role: "Lead Dental Surgeon",
             operatory: "Chair 1 · Surgical Suite",
             schedule: "12:00 PM – 8:00 PM",
             isLead: true,
-            image: "/images/dr_sheriyaar.jpg",
+            image: "/dr_sheriyaar.webp",
           },
         ];
 
@@ -447,14 +447,14 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
             <div className="flex items-center gap-2 justify-center">
               <div className="relative size-8 rounded-xl overflow-hidden ring-1 ring-teal-500/30 shrink-0 bg-slate-900">
                 <Image
-                  src="/images/dr_sheriyaar.jpg"
-                  alt="Dr. Sheriyaar"
+                  src="/dr_sheriyaar.webp"
+                  alt="Dr. Shehryar Akhtar"
                   fill
                   className="object-cover object-top"
                 />
               </div>
               <div className="text-left min-w-0">
-                <p className="text-xs font-black text-slate-900 truncate">Dr. Sheriyaar</p>
+                <p className="text-xs font-black text-slate-900 truncate">Dr. Shehryar</p>
                 <p className="text-[10px] text-slate-400 font-medium">Head Surgeon</p>
               </div>
             </div>
@@ -688,7 +688,7 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
                       <div className="flex items-center gap-3.5">
                         <div className="relative size-14 rounded-2xl overflow-hidden ring-2 ring-teal-500/30 shadow-md shrink-0 bg-slate-100">
                           <Image
-                            src={doc.image || "/images/dr_sheriyaar.jpg"}
+                            src={doc.image || "/dr_sheriyaar.webp"}
                             alt={doc.name}
                             fill
                             className="object-cover object-top group-hover:scale-105 transition-transform duration-300"

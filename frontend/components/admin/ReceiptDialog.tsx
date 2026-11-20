@@ -359,7 +359,7 @@ export default function ReceiptDialog({
                     </div>
                     <div>
                         <div class="info-label">Attending Doctor</div>
-                        <div class="info-val">${receiptData.recordedBy || receiptData.doctorName || "Dr. Sheriyaar Akhtar"}</div>
+                        <div class="info-val">${receiptData.recordedBy || receiptData.doctorName || "Dr. Shehryar Akhtar"}</div>
                         <div class="info-sub">${receiptData.operatory || "Chair 1 · Surgical Suite"}</div>
                     </div>
                 </div>
@@ -526,7 +526,7 @@ export default function ReceiptDialog({
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attending Doctor</p>
-                                <p className="font-extrabold text-teal-900 mt-0.5">{data.recordedBy || data.doctorName || "Dr. Sheriyaar Akhtar"}</p>
+                                <p className="font-extrabold text-teal-900 mt-0.5">{data.recordedBy || data.doctorName || "Dr. Shehryar Akhtar"}</p>
                                 <p className="text-[10px] text-slate-500 font-semibold">{data.operatory || "Chair 1 · Surgical Suite"}</p>
                             </div>
                         </div>

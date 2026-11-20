@@ -1,51 +1,28 @@
 "use client";
 
-import { useState, useEffect, useCallback, FormEvent, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { fetchApi } from "@/lib/api-client";
-
-// Material UI Icons (100% SVG, Zero Emojis)
-import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
-import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
-import ChevronLeftOutlinedIcon from "@mui/icons-material/ChevronLeftOutlined";
-import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
-import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
-import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
-import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
-import MedicalServicesOutlinedIcon from "@mui/icons-material/MedicalServicesOutlined";
-import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
-import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
-import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
-import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
 import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
 import DirectionsWalkOutlinedIcon from "@mui/icons-material/DirectionsWalkOutlined";
-import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
+import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 
-import { DatePicker } from "@/components/ui/date-picker";
-import { TimeSlotSelector } from "@/components/ui/time-slot-selector";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { formatDate, formatTime, isSunday, formatPKR } from "@/lib/utils";
-import StatusBadge from "@/components/shared/StatusBadge";
-import SundayWarning from "@/components/shared/SundayWarning";
+import { fetchApi } from "@/lib/api-client";
+import { isSundayInKarachi } from "@/lib/timezone";
 import { PremiumLoader } from "@/components/ui/premium-loader";
+
+import PatientDirectorySearch from "./PatientDirectorySearch";
+import PatientDossierHeader from "./PatientDossierHeader";
+import ActivePlanBanner from "./ActivePlanBanner";
+import WalkInBookingForm from "./WalkInBookingForm";
+import PatientHistoryTimeline from "./PatientHistoryTimeline";
 
 import type {
     TreatmentOption,
-    DoctorOption,
     PatientResult,
     PatientHistory,
     BookingForm,
@@ -54,11 +31,10 @@ import type {
 
 interface RegisteredPatientWorkspaceProps {
     treatments: TreatmentOption[];
-    doctors?: DoctorOption[];
     onSuccess: (data: SuccessData) => void;
 }
 
-function getChannelBadge(bookedBy?: string) {
+export function getChannelBadge(bookedBy?: string) {
     if (bookedBy === "WHATSAPP_BOT") {
         return (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
@@ -71,7 +47,7 @@ function getChannelBadge(bookedBy?: string) {
         return (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-50 text-teal-800 border border-teal-200 shadow-2xs">
                 <LanguageOutlinedIcon sx={{ fontSize: 13, color: "#0D9488" }} />
-                <span>Website Booking</span>
+                <span>Website Portal</span>
             </span>
         );
     }
@@ -83,7 +59,7 @@ function getChannelBadge(bookedBy?: string) {
     );
 }
 
-function getPatientChannelPills(appointments?: { bookedBy?: string }[]) {
+export function getPatientChannelPills(appointments?: { bookedBy?: string }[]) {
     if (!appointments || appointments.length === 0) return null;
     const channels = Array.from(new Set(appointments.map((a) => a.bookedBy).filter(Boolean)));
     if (channels.length === 0) return null;
@@ -118,9 +94,17 @@ function getPatientChannelPills(appointments?: { bookedBy?: string }[]) {
     );
 }
 
+function SundayWarning({ date }: { date: string }) {
+    if (!date || !isSundayInKarachi(date)) return null;
+    return (
+        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
+            <span>Clinic is closed on Sundays for scheduled appointments.</span>
+        </div>
+    );
+}
+
 export default function RegisteredPatientWorkspace({
     treatments,
-    doctors = [],
     onSuccess,
 }: RegisteredPatientWorkspaceProps) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -143,7 +127,6 @@ export default function RegisteredPatientWorkspace({
         time: "",
         treatmentId: "",
         notes: "",
-        doctorId: doctors[0]?.id || "",
     });
     const [booking, setBooking] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -154,53 +137,65 @@ export default function RegisteredPatientWorkspace({
     const fetchPatients = useCallback(async (q: string, page: number, ch: string = channelFilter) => {
         setSearching(true);
         try {
-            const params = new URLSearchParams({ page: String(page) });
-            if (q.trim().length >= 2) params.set("q", q.trim());
-            if (ch && ch !== "ALL") params.set("channel", ch);
-            const res = await fetchApi(`/api/admin/walk-in/search?${params}`);
-            const data = await res.json();
-            setResults(data.patients || []);
-            setTotalPages(data.totalPages || 1);
-            setTotalPatients(data.total || 0);
-        } catch {
-            setResults([]);
+            const chParam = ch !== "ALL" ? `&channel=${ch}` : "";
+            const res = await fetchApi(`/api/admin/walk-in/search?q=${encodeURIComponent(q)}&page=${page}&limit=12${chParam}`);
+            if (res.ok) {
+                const data = await res.json();
+                setResults(data.patients || []);
+                setTotalPages(data.pagination?.totalPages || 1);
+                setTotalPatients(data.pagination?.total || 0);
+            }
+        } catch (err) {
+            console.error("Patient search error:", err);
         } finally {
             setSearching(false);
         }
     }, [channelFilter]);
 
-    // Initial load
     useEffect(() => {
-        fetchPatients("", 1, channelFilter);
-    }, [fetchPatients, channelFilter]);
-
-    // Debounced search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setCurrentPage(1);
-            fetchPatients(searchQuery, 1, channelFilter);
+        const timeout = setTimeout(() => {
+            fetchPatients(searchQuery, currentPage, channelFilter);
         }, 300);
-        return () => clearTimeout(timer);
-    }, [searchQuery, channelFilter, fetchPatients]);
+        return () => clearTimeout(timeout);
+    }, [searchQuery, currentPage, channelFilter, fetchPatients]);
 
-    // Page navigation
-    const goToPage = (page: number) => {
-        setCurrentPage(page);
-        fetchPatients(searchQuery, page, channelFilter);
+    const goToPage = (p: number) => {
+        if (p >= 1 && p <= totalPages) {
+            setCurrentPage(p);
+        }
     };
 
-    // Load full clinical dossier
+    // Load Patient Clinical History
     const loadHistory = async (patientId: string) => {
         setSelectedPatientId(patientId);
         setLoadingHistory(true);
         setError(null);
         try {
             const res = await fetchApi(`/api/patients/${patientId}/history`);
-            const data = await res.json();
-            setHistory(data);
-            setActiveDetailTab("book");
-        } catch {
-            setHistory(null);
+            if (res.ok) {
+                const data: PatientHistory = await res.json();
+                setHistory(data);
+
+                // Auto-fill active plan if available
+                const activePlan = data.plans?.find((p) => p.clinicalStatus === "IN_PROGRESS");
+                if (activePlan) {
+                    setBookingForm((prev) => ({
+                        ...prev,
+                        treatmentId: activePlan.treatment.id,
+                        patientTreatmentId: activePlan.id,
+                    }));
+                } else {
+                    setBookingForm((prev) => ({
+                        ...prev,
+                        treatmentId: treatments[0]?.id || "",
+                        patientTreatmentId: undefined,
+                    }));
+                }
+            } else {
+                throw new Error("Failed to load patient history");
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error loading patient dossier");
         } finally {
             setLoadingHistory(false);
         }
@@ -216,7 +211,6 @@ export default function RegisteredPatientWorkspace({
             treatmentId: "",
             notes: "",
             patientTreatmentId: undefined,
-            doctorId: doctors[0]?.id || "",
         });
     };
 
@@ -237,7 +231,6 @@ export default function RegisteredPatientWorkspace({
                     time: bookingForm.time,
                     treatmentId: bookingForm.treatmentId,
                     patientTreatmentId: bookingForm.patientTreatmentId,
-                    doctorId: bookingForm.doctorId || (doctors.length > 0 ? doctors[0].id : undefined),
                     notes: bookingForm.notes || undefined,
                 }),
             });
@@ -255,7 +248,6 @@ export default function RegisteredPatientWorkspace({
                 treatmentId: "",
                 notes: "",
                 patientTreatmentId: undefined,
-                doctorId: doctors[0]?.id || "",
             });
         } catch (err) {
             setError(err instanceof Error ? err.message : "Something went wrong while booking");
@@ -263,11 +255,6 @@ export default function RegisteredPatientWorkspace({
             setBooking(false);
         }
     };
-
-    const today = new Date().toISOString().split("T")[0];
-    const selectedTreatment = treatments.find((t) => t.id === bookingForm.treatmentId);
-
-    const leadDoctor = doctors.find((d) => d.isLead) || doctors[0];
 
     // Selected Patient Object
     const currentPatient = useMemo(() => {
@@ -278,15 +265,8 @@ export default function RegisteredPatientWorkspace({
     // Unique channels patient has used across their entire history
     const patientAllChannels = useMemo(() => {
         if (!history?.appointments) return [];
-        return Array.from(new Set(history.appointments.map((a) => a.bookedBy).filter(Boolean)));
+        return Array.from(new Set(history.appointments.map((a) => a.bookedBy).filter(Boolean))) as string[];
     }, [history]);
-
-    // Filtered appointments in Visit History tab
-    const filteredHistoryAppointments = useMemo(() => {
-        if (!history?.appointments) return [];
-        if (historyChannelFilter === "ALL") return history.appointments;
-        return history.appointments.filter((a) => a.bookedBy === historyChannelFilter);
-    }, [history, historyChannelFilter]);
 
     return (
         <div className="space-y-6">
@@ -309,279 +289,25 @@ export default function RegisteredPatientWorkspace({
                 </div>
             )}
 
-            {/* ── CONDITIONAL FULL-WIDTH WORKSPACE ── */}
+            {/* CONDITIONAL FULL-WIDTH WORKSPACE */}
             {!selectedPatientId ? (
-                /* PATIENT DIRECTORY & REGISTERED PATIENTS BOXES (FULL WIDTH) */
-                <div className="space-y-6">
-                    {/* Box 1: Patient Directory Search & Origin Channel Filters */}
-                    <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-2xs space-y-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div>
-                                <span className="text-xs font-black text-teal-800 uppercase tracking-wider flex items-center gap-2">
-                                    <SearchOutlinedIcon sx={{ fontSize: 16 }} />
-                                    <span>Patient Directory</span>
-                                </span>
-                                <p className="text-xs text-slate-500 font-medium mt-0.5">
-                                    Search registered patients across Website, WhatsApp Bot, and Walk-In to review clinical history and schedule appointments.
-                                </p>
-                            </div>
-                            <span className="text-xs font-black text-teal-900 bg-teal-50 px-3.5 py-1 rounded-full border border-teal-200/80 w-fit shrink-0">
-                                {totalPatients} Registered Patients
-                            </span>
-                        </div>
-
-                        {/* Search Input Box */}
-                        <div className="relative">
-                            <SearchOutlinedIcon sx={{ fontSize: 18 }} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search by name, phone (03xx / +92), or MRN (1001)..."
-                                className="w-full pl-10 pr-9 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all font-medium"
-                            />
-                            {searchQuery && (
-                                <button
-                                    type="button"
-                                    onClick={() => setSearchQuery("")}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
-                                    title="Clear search"
-                                >
-                                    <ClearOutlinedIcon sx={{ fontSize: 16 }} />
-                                </button>
-                            )}
-                            {searching && !searchQuery && (
-                                <AutorenewOutlinedIcon sx={{ fontSize: 16 }} className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600 animate-spin" />
-                            )}
-                        </div>
-
-                        {/* Booking Origin Channel Quick Filter Chips */}
-                        <div className="flex flex-wrap items-center gap-2 pt-1">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">Origin Channel:</span>
-                            <button
-                                type="button"
-                                onClick={() => { setChannelFilter("ALL"); setCurrentPage(1); }}
-                                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer border ${channelFilter === "ALL"
-                                    ? "bg-teal-600 text-white border-teal-600 shadow-2xs"
-                                    : "bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200/80"
-                                    }`}
-                            >
-                                All Channels
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => { setChannelFilter("WHATSAPP_BOT"); setCurrentPage(1); }}
-                                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 border ${channelFilter === "WHATSAPP_BOT"
-                                    ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
-                                    : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border-emerald-200/80"
-                                    }`}
-                            >
-                                <WhatsAppIcon sx={{ fontSize: 13 }} />
-                                <span>WhatsApp Bot</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => { setChannelFilter("WEBSITE"); setCurrentPage(1); }}
-                                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 border ${channelFilter === "WEBSITE"
-                                    ? "bg-teal-700 text-white border-teal-700 shadow-2xs"
-                                    : "bg-teal-50 text-teal-800 hover:bg-teal-100 border-teal-200/80"
-                                    }`}
-                            >
-                                <LanguageOutlinedIcon sx={{ fontSize: 13 }} />
-                                <span>Website</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => { setChannelFilter("WALK_IN"); setCurrentPage(1); }}
-                                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 border ${channelFilter === "WALK_IN"
-                                    ? "bg-slate-800 text-white border-slate-800 shadow-2xs"
-                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200/80"
-                                    }`}
-                            >
-                                <DirectionsWalkOutlinedIcon sx={{ fontSize: 13 }} />
-                                <span>Walk-In</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Box 2: Registered Patients Responsive Cards */}
-                    <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xs overflow-hidden">
-                        <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between text-xs text-slate-500 font-semibold">
-                            <span className="font-extrabold text-slate-700">
-                                {searchQuery.trim().length >= 2 ? (
-                                    <>Results for <span className="text-teal-700 font-bold">&quot;{searchQuery}&quot;</span></>
-                                ) : (
-                                    <>Registered Patients Directory</>
-                                )}
-                            </span>
-                            {totalPages > 1 && (
-                                <span className="text-[11px] text-slate-400 font-bold">Page {currentPage} of {totalPages}</span>
-                            )}
-                        </div>
-
-                        {results.length === 0 ? (
-                            <div className="p-12 text-center space-y-3">
-                                <PersonOutlineOutlinedIcon sx={{ fontSize: 44 }} className="text-slate-300 mx-auto" />
-                                <p className="text-base font-black text-slate-800">
-                                    {searchQuery.length >= 2 ? "No matching patients" : "No registered patients"}
-                                </p>
-                                <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                                    {searchQuery.length >= 2
-                                        ? "Try searching by phone number (e.g. 03xx or +92) or click '+ Register New Walk-In'."
-                                        : "Use the '+ Register New Walk-In' tab above to register a new arrival."}
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="p-4 sm:p-5 lg:p-6">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                    {results.map((patient) => {
-                                        const visitCount = patient._count?.appointments ?? patient.appointments?.length ?? 0;
-                                        const hasActivePlan = Boolean(patient.patientTreatments && patient.patientTreatments.length > 0);
-
-                                        return (
-                                            <div
-                                                key={patient.id}
-                                                onClick={() => loadHistory(patient.id)}
-                                                className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 hover:border-teal-400 hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer relative"
-                                            >
-                                                {/* Card Top: Avatar, Name & MRN */}
-                                                <div className="space-y-3">
-                                                    <div className="flex items-start justify-between gap-2">
-                                                        <div className="flex items-center gap-3 min-w-0">
-                                                            <div className="size-11 rounded-2xl bg-teal-50 text-teal-800 border border-teal-200/80 flex items-center justify-center font-black text-sm shrink-0 group-hover:bg-teal-600 group-hover:text-white transition-all shadow-2xs">
-                                                                {(patient.name || "P").charAt(0).toUpperCase()}
-                                                            </div>
-                                                            <div className="min-w-0">
-                                                                <h4 className="text-sm font-black text-slate-900 group-hover:text-teal-700 transition-colors truncate">
-                                                                    {patient.name}
-                                                                </h4>
-                                                                {patient.patientCode ? (
-                                                                    <span className="inline-block mt-0.5 text-[10px] font-mono font-extrabold px-1.5 py-0.2 rounded bg-teal-100/80 text-teal-800 border border-teal-200">
-                                                                        MRN #{patient.patientCode}
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-[10px] text-slate-400 font-medium">No MRN</span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        {patient.medicalAlerts && (
-                                                            <div
-                                                                className="size-7 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center shrink-0"
-                                                                title={patient.medicalAlerts}
-                                                            >
-                                                                <SecurityOutlinedIcon sx={{ fontSize: 14, color: "#DC2626" }} />
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Card Body: Phone, Visits, Channels */}
-                                                    <div className="space-y-2 text-xs">
-                                                        <div className="flex items-center justify-between text-slate-600 pt-2 border-t border-slate-100">
-                                                            <span className="flex items-center gap-1 font-semibold text-[11px] truncate">
-                                                                <PhoneOutlinedIcon sx={{ fontSize: 13, color: "#0D9488" }} />
-                                                                <span>{patient.phone || "No phone"}</span>
-                                                            </span>
-                                                            <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md text-[10px] shrink-0">
-                                                                {visitCount} {visitCount === 1 ? "Visit" : "Visits"}
-                                                            </span>
-                                                        </div>
-
-                                                        {/* Origin Channels */}
-                                                        <div className="pt-0.5 flex flex-wrap gap-1">
-                                                            {getPatientChannelPills(patient.appointments)}
-                                                        </div>
-
-                                                        {/* Active Plan Tag */}
-                                                        {hasActivePlan && (
-                                                            <div className="flex items-center gap-1 text-[10px] font-black text-teal-800 bg-teal-50 px-2 py-1 rounded-lg border border-teal-200/70">
-                                                                <AutoAwesomeOutlinedIcon sx={{ fontSize: 11 }} />
-                                                                <span className="truncate">Active Plan: {patient.patientTreatments![0].treatment.name}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Card Footer: Action Button */}
-                                                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                                                    <span className="text-[11px] font-extrabold text-teal-700 group-hover:text-teal-900 flex items-center gap-1">
-                                                        <EventAvailableOutlinedIcon sx={{ fontSize: 14 }} />
-                                                        <span>Schedule Appointment</span>
-                                                    </span>
-                                                    <ChevronRightOutlinedIcon
-                                                        sx={{ fontSize: 16 }}
-                                                        className="text-slate-300 group-hover:text-teal-600 group-hover:translate-x-0.5 transition-all"
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Pagination Bar */}
-                        {totalPages > 1 && (
-                            <div className="px-5 py-3.5 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between text-xs font-bold text-slate-700">
-                                <button
-                                    type="button"
-                                    onClick={() => goToPage(currentPage - 1)}
-                                    disabled={currentPage <= 1}
-                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
-                                >
-                                    <ChevronLeftOutlinedIcon sx={{ fontSize: 14 }} />
-                                    <span>Prev</span>
-                                </button>
-
-                                <span className="text-[11px] font-bold text-slate-500">
-                                    Page {currentPage} of {totalPages}
-                                </span>
-
-                                <button
-                                    type="button"
-                                    onClick={() => goToPage(currentPage + 1)}
-                                    disabled={currentPage >= totalPages}
-                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
-                                >
-                                    <span>Next</span>
-                                    <ChevronRightOutlinedIcon sx={{ fontSize: 14 }} />
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <PatientDirectorySearch
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    channelFilter={channelFilter}
+                    setChannelFilter={setChannelFilter}
+                    results={results}
+                    searching={searching}
+                    totalPatients={totalPatients}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    goToPage={goToPage}
+                    onSelectPatient={loadHistory}
+                    channelPillsRenderer={getPatientChannelPills}
+                />
             ) : (
-                /* ── SELECTED PATIENT DOSSIER & FAST BOOKING STUDIO (FULL WIDTH) ── */
+                /* SELECTED PATIENT DOSSIER & FAST BOOKING STUDIO */
                 <div className="space-y-5 animate-fade-in">
-                    {/* Top Navigation Bar: Back to Directory & Switch Patient */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs">
-                        <button
-                            type="button"
-                            onClick={handleClearSelection}
-                            className="inline-flex items-center gap-2 text-xs sm:text-sm font-black text-teal-800 bg-teal-50 hover:bg-teal-100/80 border border-teal-200/80 px-4 py-2.5 rounded-xl shadow-2xs transition-all cursor-pointer w-fit"
-                        >
-                            <ArrowBackOutlinedIcon sx={{ fontSize: 16 }} />
-                            <span>Back to Patient Directory</span>
-                        </button>
-
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <span className="text-xs text-slate-500 font-medium">
-                                Active Patient: <strong className="text-slate-900">{currentPatient?.name}</strong>{" "}
-                                {currentPatient?.patientCode && (
-                                    <span className="font-mono text-teal-700 font-black ml-1">MRN #{currentPatient.patientCode}</span>
-                                )}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={handleClearSelection}
-                                className="inline-flex items-center gap-1 text-xs font-black text-slate-600 hover:text-red-700 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
-                            >
-                                <CloseOutlinedIcon sx={{ fontSize: 14 }} />
-                                <span>Switch Patient</span>
-                            </button>
-                        </div>
-                    </div>
-
                     {loadingHistory ? (
                         <div className="bg-white rounded-3xl border border-slate-200/80 p-16 text-center shadow-2xs space-y-3">
                             <AutorenewOutlinedIcon sx={{ fontSize: 32 }} className="text-teal-600 animate-spin mx-auto" />
@@ -590,142 +316,28 @@ export default function RegisteredPatientWorkspace({
                         </div>
                     ) : history && currentPatient ? (
                         <div className="space-y-5">
+                            {/* 1. Patient Dossier Header */}
+                            <PatientDossierHeader
+                                patient={history.patient}
+                                visitsCount={history.appointments?.length || 0}
+                                patientAllChannels={patientAllChannels}
+                                channelBadgeRenderer={getChannelBadge}
+                                onClearSelection={handleClearSelection}
+                            />
 
-                            {/* 1. Selected Patient Dossier Header */}
-                            <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs relative overflow-hidden">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                    <div className="flex items-center gap-3.5 min-w-0">
-                                        <div className="size-13 rounded-2xl bg-gradient-to-br from-[#0F766E] to-[#0B1528] text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0">
-                                            {(history.patient.name || "P").charAt(0).toUpperCase()}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <h2 className="text-lg sm:text-xl font-black text-slate-900 truncate tracking-tight">
-                                                    {history.patient.name}
-                                                </h2>
-                                                {history.patient.patientCode && (
-                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-teal-50 text-teal-800 border border-teal-200">
-                                                        MRN #{history.patient.patientCode}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 mt-1">
-                                                {history.patient.phone && (
-                                                    <span className="flex items-center gap-1 text-slate-700 font-semibold">
-                                                        <PhoneOutlinedIcon sx={{ fontSize: 13, color: "#0D9488" }} />
-                                                        <span>{history.patient.phone}</span>
-                                                    </span>
-                                                )}
-                                                {history.patient.email && (
-                                                    <span className="text-slate-400 truncate">{history.patient.email}</span>
-                                                )}
-                                                <span className="text-teal-800 font-extrabold">
-                                                    {(history.appointments?.length || 0)} Visits Recorded
-                                                </span>
-                                            </div>
+                            {/* 2. Active Multi-Session Treatment Plans Banner */}
+                            <ActivePlanBanner plans={history.plans} />
 
-                                            {/* Booking Channels Source Bar */}
-                                            {patientAllChannels.length > 0 && (
-                                                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Booked via:</span>
-                                                    {patientAllChannels.map((ch) => (
-                                                        <span key={ch}>
-                                                            {getChannelBadge(ch)}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Action Shortcuts */}
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        {history.patient.phone && (
-                                            <a
-                                                href={`https://wa.me/${history.patient.phone.replace(/[^0-9]/g, "")}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all cursor-pointer shadow-2xs"
-                                                title="Open WhatsApp message with patient"
-                                            >
-                                                <WhatsAppIcon sx={{ fontSize: 15, color: "#10B981" }} />
-                                                <span className="hidden sm:inline">WhatsApp</span>
-                                            </a>
-                                        )}
-                                        <button
-                                            type="button"
-                                            onClick={handleClearSelection}
-                                            className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer"
-                                            title="Close dossier"
-                                        >
-                                            <CloseOutlinedIcon sx={{ fontSize: 15 }} />
-                                            <span className="ml-1 hidden sm:inline">Deselect</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 2. Active Multi-Session Treatment Plans Card */}
-                            {history.plans && history.plans.filter((p) => p.clinicalStatus === "IN_PROGRESS").length > 0 && (
-                                <div className="rounded-3xl bg-teal-50/70 border border-teal-200/90 p-5 sm:p-6 space-y-4 shadow-2xs">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs font-extrabold text-teal-950 uppercase tracking-wider flex items-center gap-1.5">
-                                            <AutoAwesomeOutlinedIcon sx={{ fontSize: 15, color: "#0D9488" }} />
-                                            <span>Active Multi-Session Plan</span>
-                                        </span>
-                                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-white text-teal-800 border border-teal-200/80 shadow-2xs">
-                                            Installment Schedule Active
-                                        </span>
-                                    </div>
-
-                                    {history.plans
-                                        .filter((p) => p.clinicalStatus === "IN_PROGRESS")
-                                        .map((plan) => (
-                                            <div
-                                                key={plan.id}
-                                                className="bg-white rounded-2xl border border-teal-200/80 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs"
-                                            >
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <h4 className="text-sm font-black text-slate-900">{plan.treatment.name}</h4>
-                                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-teal-50 text-teal-800 border border-teal-200">
-                                                            Session {plan.completedSessions + 1} of {plan.totalSessions}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-xs text-slate-600 font-medium">
-                                                        Total: <span className="font-bold text-slate-900">{formatPKR(plan.totalCost)}</span> · Paid: <span className="font-bold text-emerald-700">{formatPKR(plan.totalPaid)}</span> · Outstanding: <span className="font-black text-amber-800">{formatPKR(plan.remainingBalance)}</span>
-                                                    </p>
-                                                </div>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setBookingForm((prev) => ({
-                                                            ...prev,
-                                                            treatmentId: plan.treatment.id,
-                                                            patientTreatmentId: plan.id,
-                                                        }));
-                                                        setActiveDetailTab("book");
-                                                    }}
-                                                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-black transition-all shadow-xs shrink-0 cursor-pointer active:scale-95"
-                                                >
-                                                    <EventAvailableOutlinedIcon sx={{ fontSize: 16 }} />
-                                                    <span>Book Session #{plan.completedSessions + 1}</span>
-                                                </button>
-                                            </div>
-                                        ))}
-                                </div>
-                            )}
-
-                            {/* 3. Sub-View Switcher: Schedule Appointment vs Clinical History */}
-                            <div className="flex items-center gap-2 border-b border-slate-200/80 pb-2">
+                            {/* 3. Segmented Action Switcher Tabs */}
+                            <div className="flex items-center gap-2 pt-1">
                                 <button
                                     type="button"
                                     onClick={() => setActiveDetailTab("book")}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${activeDetailTab === "book"
-                                        ? "bg-teal-600 text-white shadow-xs"
-                                        : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
-                                        }`}
+                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                                        activeDetailTab === "book"
+                                            ? "bg-teal-600 text-white shadow-xs"
+                                            : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
+                                    }`}
                                 >
                                     <EventAvailableOutlinedIcon sx={{ fontSize: 15 }} />
                                     <span>Schedule Appointment</span>
@@ -734,273 +346,36 @@ export default function RegisteredPatientWorkspace({
                                 <button
                                     type="button"
                                     onClick={() => setActiveDetailTab("history")}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${activeDetailTab === "history"
-                                        ? "bg-teal-600 text-white shadow-xs"
-                                        : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
-                                        }`}
+                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                                        activeDetailTab === "history"
+                                            ? "bg-teal-600 text-white shadow-xs"
+                                            : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
+                                    }`}
                                 >
                                     <HistoryOutlinedIcon sx={{ fontSize: 15 }} />
                                     <span>Visit History ({(history.appointments || []).length})</span>
                                 </button>
                             </div>
 
-                            {/* 4. Scheduling Workspace */}
+                            {/* 4. Sub-Panel Switcher */}
                             {activeDetailTab === "book" ? (
-                                <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-5">
-                                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                                        <div className="flex items-center gap-2">
-                                            <EventAvailableOutlinedIcon sx={{ fontSize: 18, color: "#0D9488" }} />
-                                            <div>
-                                                <h3 className="text-sm font-extrabold text-slate-900">
-                                                    New Booking for {history.patient.name}
-                                                </h3>
-                                                <p className="text-[11px] text-slate-500 font-medium">
-                                                    This visit will append directly to this patient&apos;s records and sync across Website, WhatsApp, and Google Calendar.
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <span className="text-[11px] font-bold text-slate-400">G-8 Clinical Suite</span>
-                                    </div>
-
-                                    <form onSubmit={handleBook} className="space-y-4">
-                                        <div className={`grid ${doctors.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2"} gap-4`}>
-                                            {/* Date Picker */}
-                                            <div className="space-y-1.5">
-                                                <label className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
-                                                    <CalendarTodayOutlinedIcon sx={{ fontSize: 14, color: "#0D9488" }} />
-                                                    <span>Appointment Date</span>
-                                                    <span className="text-red-500">*</span>
-                                                </label>
-                                                <DatePicker
-                                                    value={bookingForm.date}
-                                                    onChange={(val) => setBookingForm((p) => ({ ...p, date: val, time: "" }))}
-                                                    min={today}
-                                                    placeholder="Select appointment date"
-                                                    disabledDays={(date) => date.getDay() === 0}
-                                                />
-                                                <SundayWarning date={bookingForm.date} />
-                                            </div>
-
-                                            {/* Treatment Selector */}
-                                            <div className="space-y-1.5">
-                                                <label className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
-                                                    <MedicalServicesOutlinedIcon sx={{ fontSize: 14, color: "#0D9488" }} />
-                                                    <span>Clinical Procedure</span>
-                                                    <span className="text-red-500">*</span>
-                                                </label>
-                                                <Select
-                                                    value={bookingForm.treatmentId || "NONE"}
-                                                    onValueChange={(val) => setBookingForm((p) => ({ ...p, treatmentId: val === "NONE" ? "" : val, time: "" }))}
-                                                >
-                                                    <SelectTrigger className="w-full">
-                                                        <SelectValue placeholder="Select clinical procedure..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent position="popper" align="start" className="max-h-72">
-                                                        <SelectItem value="NONE">Select procedure...</SelectItem>
-                                                        {treatments.map((t) => (
-                                                            <SelectItem key={t.id} value={t.id}>
-                                                                {t.name} — Rs. {t.price.toLocaleString()} ({t.durationMin}m)
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            {/* Attending Specialist / Doctor */}
-                                            {doctors.length > 1 && (
-                                                <div className="space-y-1.5">
-                                                    <label className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
-                                                        <PersonOutlineOutlinedIcon sx={{ fontSize: 14, color: "#0D9488" }} />
-                                                        <span>Attending Specialist</span>
-                                                        <span className="text-red-500">*</span>
-                                                    </label>
-                                                    <Select
-                                                        value={bookingForm.doctorId || doctors[0]?.id || ""}
-                                                        onValueChange={(val) => setBookingForm((p) => ({ ...p, doctorId: val }))}
-                                                    >
-                                                        <SelectTrigger className="w-full">
-                                                            <SelectValue placeholder="Select attending doctor..." />
-                                                        </SelectTrigger>
-                                                        <SelectContent position="popper" align="start" className="max-h-72">
-                                                            {doctors.map((doc) => (
-                                                                <SelectItem key={doc.id} value={doc.id}>
-                                                                    {doc.name} {doc.isLead ? "★ Lead Surgeon" : `(${doc.role})`}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Available Operatory Time Slots */}
-                                        <div className="space-y-2 pt-1">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
-                                                    <AccessTimeOutlinedIcon sx={{ fontSize: 14, color: "#0D9488" }} />
-                                                    <span>Available Time Slots (Chairs 1–4)</span>
-                                                    <span className="text-red-500">*</span>
-                                                </label>
-                                                <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-                                                    12:00 PM – 8:00 PM
-                                                </span>
-                                            </div>
-
-                                            <TimeSlotSelector
-                                                date={bookingForm.date}
-                                                treatmentId={bookingForm.treatmentId}
-                                                value={bookingForm.time}
-                                                onChange={(val) => setBookingForm((p) => ({ ...p, time: val }))}
-                                            />
-                                            <input type="text" name="time" value={bookingForm.time} required className="sr-only" readOnly tabIndex={-1} />
-                                        </div>
-
-                                        {/* Selected Procedure Preview Chip */}
-                                        {selectedTreatment && (
-                                            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-teal-50/60 border border-teal-200/80 text-xs text-slate-700 font-semibold">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="size-2 rounded-full bg-teal-600" />
-                                                    <span>{selectedTreatment.name}</span>
-                                                    <span className="text-slate-400">·</span>
-                                                    <span className="text-slate-500">{selectedTreatment.durationMin} min duration</span>
-                                                </div>
-                                                <span className="font-black text-teal-900 text-sm">
-                                                    Rs. {selectedTreatment.price.toLocaleString()}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        {/* Optional Receptionist Notes */}
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-extrabold text-slate-700">
-                                                Clinical & Desk Notes (Optional)
-                                            </label>
-                                            <textarea
-                                                rows={2}
-                                                value={bookingForm.notes}
-                                                onChange={(e) => setBookingForm((p) => ({ ...p, notes: e.target.value }))}
-                                                placeholder="e.g., Patient prefers Chair 1 with Dr. Sheriyaar, medical alert check..."
-                                                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all resize-none font-medium"
-                                            />
-                                        </div>
-
-                                        {/* Submit Action */}
-                                        <button
-                                            type="submit"
-                                            disabled={booking || isSunday(bookingForm.date) || !bookingForm.time}
-                                            className="w-full py-3.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-teal-600/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
-                                        >
-                                            {booking ? (
-                                                <>
-                                                    <AutorenewOutlinedIcon sx={{ fontSize: 18 }} className="animate-spin" />
-                                                    <span>Securing Operatory Slot...</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <CheckCircleOutlineOutlinedIcon sx={{ fontSize: 18 }} />
-                                                    <span>Confirm Appointment &amp; Dispatch Confirmation</span>
-                                                </>
-                                            )}
-                                        </button>
-                                    </form>
-                                </div>
+                                <WalkInBookingForm
+                                    patientName={history.patient.name}
+                                    treatments={treatments}
+                                    bookingForm={bookingForm}
+                                    setBookingForm={setBookingForm}
+                                    booking={booking}
+                                    onSubmit={handleBook}
+                                    sundayWarningRenderer={(d) => <SundayWarning date={d} />}
+                                    isSundayChecker={isSundayInKarachi}
+                                />
                             ) : (
-                                /* 5. Clinical History Log */
-                                <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xs overflow-hidden">
-                                    <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                        <div>
-                                            <h3 className="text-sm font-extrabold text-slate-900">Treatment & Visit Log</h3>
-                                            <p className="text-[11px] text-slate-500 font-medium">All visits from Website, WhatsApp Chatbot, and Reception Walk-Ins</p>
-                                        </div>
-
-                                        {/* History Channel Filter */}
-                                        <div className="flex items-center gap-1 bg-white border border-slate-200/90 p-1 rounded-xl shadow-2xs">
-                                            <button
-                                                type="button"
-                                                onClick={() => setHistoryChannelFilter("ALL")}
-                                                className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${historyChannelFilter === "ALL" ? "bg-teal-600 text-white" : "text-slate-600 hover:text-slate-900"}`}
-                                            >
-                                                All ({history.appointments.length})
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setHistoryChannelFilter("WHATSAPP_BOT")}
-                                                className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-0.5 ${historyChannelFilter === "WHATSAPP_BOT" ? "bg-emerald-600 text-white" : "text-emerald-700 hover:text-emerald-900"}`}
-                                            >
-                                                <WhatsAppIcon sx={{ fontSize: 11 }} />
-                                                <span>Bot ({history.appointments.filter(a => a.bookedBy === "WHATSAPP_BOT").length})</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setHistoryChannelFilter("WEBSITE")}
-                                                className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-0.5 ${historyChannelFilter === "WEBSITE" ? "bg-teal-600 text-white" : "text-teal-700 hover:text-teal-900"}`}
-                                            >
-                                                <LanguageOutlinedIcon sx={{ fontSize: 11 }} />
-                                                <span>Web ({history.appointments.filter(a => a.bookedBy === "WEBSITE").length})</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setHistoryChannelFilter("WALK_IN")}
-                                                className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-0.5 ${historyChannelFilter === "WALK_IN" ? "bg-slate-700 text-white" : "text-slate-600 hover:text-slate-900"}`}
-                                            >
-                                                <DirectionsWalkOutlinedIcon sx={{ fontSize: 11 }} />
-                                                <span>Desk ({history.appointments.filter(a => a.bookedBy === "WALK_IN").length})</span>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {!filteredHistoryAppointments || filteredHistoryAppointments.length === 0 ? (
-                                        <div className="p-10 text-center space-y-2">
-                                            <AssignmentOutlinedIcon sx={{ fontSize: 32 }} className="text-slate-300 mx-auto" />
-                                            <p className="text-xs font-bold text-slate-700">No Appointments Found</p>
-                                            <p className="text-[11px] text-slate-400">No visits recorded under this channel filter.</p>
-                                        </div>
-                                    ) : (
-                                        <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
-                                            {filteredHistoryAppointments.map((apt) => (
-                                                <div key={apt.id} className="p-4 sm:p-5 space-y-2.5 hover:bg-slate-50/60 transition-colors">
-                                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
-                                                        <div className="flex items-center gap-2.5">
-                                                            <div className="size-9 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center shrink-0">
-                                                                <MedicalServicesOutlinedIcon sx={{ fontSize: 16, color: "#0D9488" }} />
-                                                            </div>
-                                                            <div>
-                                                                <div className="flex items-center gap-2 flex-wrap">
-                                                                    <p className="text-xs sm:text-sm font-black text-slate-900">
-                                                                        {apt.treatment.name}
-                                                                    </p>
-                                                                    {getChannelBadge(apt.bookedBy)}
-                                                                </div>
-                                                                <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                                                                    {formatDate(apt.startTime, "short")} · {formatTime(apt.startTime)}
-                                                                    {apt.doctor && (
-                                                                        <span className="text-slate-600 font-bold ml-1.5">
-                                                                            · {apt.doctor.name} {apt.doctor.operatory ? `(${apt.doctor.operatory.split("·")[0].trim()})` : ""}
-                                                                        </span>
-                                                                    )}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-2.5 self-end sm:self-auto">
-                                                            <span className="text-xs font-black text-slate-800">
-                                                                Rs. {apt.price.toLocaleString()}
-                                                            </span>
-                                                            <StatusBadge status={apt.status} />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Booking notes / presenting complaints from website or WhatsApp bot */}
-                                                    {apt.notes && (
-                                                        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 text-[11px] text-slate-600">
-                                                            <span className="font-extrabold text-slate-800">Booking Note:</span> {apt.notes}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                                <PatientHistoryTimeline
+                                    appointments={history.appointments || []}
+                                    historyChannelFilter={historyChannelFilter}
+                                    setHistoryChannelFilter={setHistoryChannelFilter}
+                                    channelBadgeRenderer={getChannelBadge}
+                                />
                             )}
                         </div>
                     ) : null}

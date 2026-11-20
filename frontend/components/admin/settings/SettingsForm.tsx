@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { fetchApi } from "@/lib/api-client";
@@ -26,6 +27,13 @@ import {
     DeleteOutlineOutlined,
     CampaignOutlined,
     WarningAmberOutlined,
+    LocalHospitalOutlined,
+    MedicalServicesOutlined,
+    VerifiedOutlined,
+    ChairOutlined,
+    AttachMoneyOutlined,
+    CameraAltOutlined,
+    AutorenewOutlined,
 } from "@mui/icons-material";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +57,21 @@ export interface ClinicHolidayItem {
     isActive: boolean;
 }
 
+export interface DoctorSettingsData {
+    id: string;
+    name: string;
+    role: string;
+    pmdcReg: string;
+    qualifications: string;
+    experience: string;
+    specialty: string;
+    operatory: string;
+    schedule: string;
+    consultationFee: number;
+    isActive: boolean;
+    image?: string | null;
+}
+
 interface SettingsFormProps {
     initialSettings: {
         clinicName?: string;
@@ -64,6 +87,7 @@ interface SettingsFormProps {
         slotDurationMin?: number;
         weeklyWorkingDays?: string;
     } | null;
+    initialDoctor?: DoctorSettingsData | null;
     initialHolidays?: ClinicHolidayItem[];
     googleCalendarConnected?: boolean;
 }
@@ -80,12 +104,32 @@ const ALL_DAYS = [
 
 export default function SettingsForm({
     initialSettings,
+    initialDoctor,
     initialHolidays = [],
     googleCalendarConnected = false,
 }: SettingsFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [syncing, setSyncing] = useState(false);
+    const [doctorSaving, setDoctorSaving] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Doctor State
+    const [doctorData, setDoctorData] = useState<DoctorSettingsData>({
+        id: initialDoctor?.id || "doc-shehryar",
+        name: initialDoctor?.name || "Dr. Shehryar Akhtar",
+        role: initialDoctor?.role || "Dental Surgeon & Orthodontist",
+        pmdcReg: initialDoctor?.pmdcReg || "14820-D (Active)",
+        qualifications: initialDoctor?.qualifications || "BDS | MDS Orthodontist (Speciality Registrar) | Certification in Restorative Dentistry",
+        experience: initialDoctor?.experience || "12+ Years",
+        specialty: initialDoctor?.specialty || "Orthodontics, Clear Aligners, Guided Implants, Cosmetic Makeovers",
+        operatory: initialDoctor?.operatory || "Chair 1 · Surgical Suite A",
+        schedule: initialDoctor?.schedule || "Mon – Sat: 12:00 PM – 8:00 PM",
+        consultationFee: initialDoctor?.consultationFee ?? 2000,
+        isActive: initialDoctor?.isActive !== false,
+        image: initialDoctor?.image || "/dr_sheriyaar.webp",
+    });
 
     // Form Data State
     const [formData, setFormData] = useState({
@@ -159,6 +203,124 @@ export default function SettingsForm({
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
+    const handleDoctorChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) => {
+        const { name, value } = e.target;
+        setDoctorData((prev) => ({
+            ...prev,
+            [name]: name === "consultationFee" ? Number(value) : value,
+        }));
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("File too large", {
+                description: "Please select an image smaller than 5MB.",
+            });
+            return;
+        }
+
+        try {
+            setUploadingImage(true);
+            const formPayload = new FormData();
+            formPayload.append("file", file);
+
+            const res = await fetchApi("/api/upload", {
+                method: "POST",
+                body: formPayload,
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to upload image");
+
+            const newImageUrl = data.url;
+            setDoctorData((prev) => ({ ...prev, image: newImageUrl }));
+
+            // Immediately persist to doctor record in DB
+            if (doctorData.id) {
+                await fetchApi(`/api/doctors/${doctorData.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ image: newImageUrl }),
+                });
+            }
+
+            // Dispatch global event for sidebar and other UI synchronization
+            if (typeof window !== "undefined") {
+                window.dispatchEvent(
+                    new CustomEvent("doctor-profile-updated", {
+                        detail: { image: newImageUrl },
+                    })
+                );
+            }
+
+            toast.success("Profile Photo Updated", {
+                description: "Dr. Shehryar's photo has been uploaded and saved.",
+            });
+            router.refresh();
+        } catch (err: any) {
+            toast.error(err.message || "Image upload failed");
+        } finally {
+            setUploadingImage(false);
+            if (e.target) e.target.value = "";
+        }
+    };
+
+    const handleSaveDoctor = async () => {
+        if (!doctorData.name.trim() || !doctorData.pmdcReg.trim()) {
+            toast.error("Doctor name and PMDC registration are required.");
+            return;
+        }
+
+        try {
+            setDoctorSaving(true);
+            const res = await fetchApi(`/api/doctors/${doctorData.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: doctorData.name.trim(),
+                    role: doctorData.role.trim(),
+                    pmdcReg: doctorData.pmdcReg.trim(),
+                    specialty: doctorData.specialty.trim(),
+                    qualifications: doctorData.qualifications.trim(),
+                    experience: doctorData.experience.trim(),
+                    operatory: doctorData.operatory.trim(),
+                    schedule: doctorData.schedule.trim(),
+                    consultationFee: Number(doctorData.consultationFee) || 2000,
+                    isActive: doctorData.isActive,
+                    image: doctorData.image,
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to update doctor profile");
+            }
+
+            // Broadcast update event
+            if (typeof window !== "undefined" && doctorData.image) {
+                window.dispatchEvent(
+                    new CustomEvent("doctor-profile-updated", {
+                        detail: { image: doctorData.image, name: doctorData.name, role: doctorData.role },
+                    })
+                );
+            }
+
+            toast.success("Doctor Profile Updated", {
+                description: `${doctorData.name}'s credentials and clinical status have been saved.`,
+            });
+            router.refresh();
+        } catch (err: any) {
+            toast.error(err.message || "Failed to save doctor profile");
+        } finally {
+            setDoctorSaving(false);
+        }
+    };
+
     // ──────────────────────────────────────────────────────────────────
     // SAVE GLOBAL SETTINGS
     // ──────────────────────────────────────────────────────────────────
@@ -191,10 +353,39 @@ export default function SettingsForm({
                 throw new Error(err.error || "Failed to update settings");
             }
 
+            // Also update Lead Doctor profile
+            if (doctorData?.id) {
+                await fetchApi(`/api/doctors/${doctorData.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: doctorData.name.trim(),
+                        role: doctorData.role.trim(),
+                        pmdcReg: doctorData.pmdcReg.trim(),
+                        specialty: doctorData.specialty.trim(),
+                        qualifications: doctorData.qualifications.trim(),
+                        experience: doctorData.experience.trim(),
+                        operatory: doctorData.operatory.trim(),
+                        schedule: doctorData.schedule.trim(),
+                        consultationFee: Number(doctorData.consultationFee) || 2000,
+                        isActive: doctorData.isActive,
+                        image: doctorData.image,
+                    }),
+                });
+
+                if (typeof window !== "undefined" && doctorData.image) {
+                    window.dispatchEvent(
+                        new CustomEvent("doctor-profile-updated", {
+                            detail: { image: doctorData.image, name: doctorData.name, role: doctorData.role },
+                        })
+                    );
+                }
+            }
+
             router.refresh();
-            toast.success("Clinic Settings Saved", {
+            toast.success("All Settings Saved", {
                 description:
-                    "Clinic profile, working hours, and official receipt information updated successfully.",
+                    "Clinic profile, Dr. Shehryar Akhtar's credentials, and operational schedule updated successfully.",
             });
         } catch (error: any) {
             console.error(error);
@@ -506,7 +697,280 @@ export default function SettingsForm({
                 </div>
 
                 {/* ─────────────────────────────────────────────────────────────
-                    CARD 2: WORKING HOURS & CLINICAL SHIFT CAPACITY
+                    CARD 2: ATTENDING DENTAL SURGEON & CLINICAL CREDENTIALS
+                    ───────────────────────────────────────────────────────────── */}
+                <div id="doctor-profile" className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs space-y-5 flex flex-col justify-between">
+                    <div>
+                        <div className="flex items-start justify-between gap-4 pb-3 border-b border-slate-100 flex-wrap">
+                            <div className="flex items-center gap-4">
+                                {/* Interactive Avatar with Upload Trigger */}
+                                <div
+                                    className="relative group cursor-pointer shrink-0"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    title="Click to upload / change Dr. Shehryar's photo"
+                                >
+                                    <div className="relative size-16 sm:size-20 rounded-2xl overflow-hidden ring-2 ring-teal-500/40 bg-slate-100 shadow-sm transition-all group-hover:ring-teal-600 group-hover:shadow-md">
+                                        <Image
+                                            src={doctorData.image || "/dr_sheriyaar.webp"}
+                                            alt={doctorData.name}
+                                            fill
+                                            className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                                        />
+                                        {/* Hover Overlay */}
+                                        <div className="absolute inset-0 bg-slate-950/45 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
+                                            <CameraAltOutlined sx={{ fontSize: 20 }} />
+                                            <span className="text-[9px] font-black uppercase tracking-tight mt-0.5">Change</span>
+                                        </div>
+                                        {/* Uploading Spinner */}
+                                        {uploadingImage && (
+                                            <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center text-white gap-1">
+                                                <AutorenewOutlined sx={{ fontSize: 20 }} className="animate-spin text-teal-400" />
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-teal-300">Uploading</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="absolute -bottom-1 -right-1 size-6 rounded-full bg-teal-600 text-white flex items-center justify-center shadow-md border-2 border-white group-hover:bg-teal-700 transition-colors">
+                                        <CameraAltOutlined sx={{ fontSize: 13 }} />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                                            Lead Dental Surgeon Profile
+                                        </h2>
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-50 text-teal-800 border border-teal-200/80">
+                                            Sole Practitioner
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                                        Manage Dr. Shehryar Akhtar&apos;s PMDC credentials, qualifications, fees, and duty status.
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-1.5">
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={uploadingImage}
+                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline cursor-pointer"
+                                        >
+                                            <CameraAltOutlined sx={{ fontSize: 13 }} />
+                                            <span>{uploadingImage ? "Uploading Photo..." : "Change Profile Photo"}</span>
+                                        </button>
+                                        <span className="text-slate-300 text-xs">·</span>
+                                        <span className="text-[10px] text-slate-400 font-medium">PNG, JPG or WEBP (Max 5MB)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <Button
+                                type="button"
+                                size="sm"
+                                disabled={doctorSaving || uploadingImage}
+                                onClick={handleSaveDoctor}
+                                className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-9 px-3.5 rounded-xl shadow-2xs transition-all active:scale-[0.98] flex items-center gap-1.5 cursor-pointer shrink-0"
+                            >
+                                <SaveOutlined sx={{ fontSize: 14 }} />
+                                <span>{doctorSaving ? "Saving..." : "Save Doctor"}</span>
+                            </Button>
+                        </div>
+
+                        {/* Hidden Native File Input */}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            className="hidden"
+                            onChange={handleImageUpload}
+                        />
+
+                        <div className="mt-4 space-y-4">
+                            {/* Doctor Photo URL (Editable text field as secondary option) */}
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                                    <span className="flex items-center gap-1.5">
+                                        <CameraAltOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                                        <span>Profile Photo Path / URL</span>
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline cursor-pointer"
+                                    >
+                                        Browse Device
+                                    </button>
+                                </Label>
+                                <Input
+                                    name="image"
+                                    value={doctorData.image || ""}
+                                    onChange={handleDoctorChange}
+                                    placeholder="/dr_sheriyaar.webp or /uploads/treatments/..."
+                                    className="rounded-xl border-slate-200 text-xs h-10 font-mono"
+                                />
+                            </div>
+
+                            {/* Doctor Name & Clinical Role */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                        <LocalHospitalOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                                        <span>Doctor Full Name *</span>
+                                    </Label>
+                                    <Input
+                                        name="name"
+                                        value={doctorData.name}
+                                        onChange={handleDoctorChange}
+                                        required
+                                        placeholder="Dr. Shehryar Akhtar"
+                                        className="rounded-xl border-slate-200 text-xs h-10 font-bold"
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                        <VerifiedOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                                        <span>Clinical Role &amp; Title *</span>
+                                    </Label>
+                                    <Input
+                                        name="role"
+                                        value={doctorData.role}
+                                        onChange={handleDoctorChange}
+                                        required
+                                        placeholder="Chief Dental Surgeon & Head of Implantology"
+                                        className="rounded-xl border-slate-200 text-xs h-10"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* PMDC Reg & Experience */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                        <BadgeOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                                        <span>PMDC Reg Number *</span>
+                                    </Label>
+                                    <Input
+                                        name="pmdcReg"
+                                        value={doctorData.pmdcReg}
+                                        onChange={handleDoctorChange}
+                                        required
+                                        placeholder="14820-D (Active)"
+                                        className="rounded-xl border-slate-200 text-xs h-10 font-mono font-bold"
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                        <AccessTimeOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                                        <span>Clinical Experience</span>
+                                    </Label>
+                                    <Input
+                                        name="experience"
+                                        value={doctorData.experience}
+                                        onChange={handleDoctorChange}
+                                        placeholder="12+ Years"
+                                        className="rounded-xl border-slate-200 text-xs h-10"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Qualifications */}
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                    <MedicalServicesOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                                    <span>Academic Degrees &amp; Qualifications</span>
+                                </Label>
+                                <Input
+                                    name="qualifications"
+                                    value={doctorData.qualifications}
+                                    onChange={handleDoctorChange}
+                                    placeholder="BDS, RDS, FCPS (Oral & Maxillofacial Surgery)"
+                                    className="rounded-xl border-slate-200 text-xs h-10"
+                                />
+                            </div>
+
+                            {/* Key Specialty Focus */}
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                    <MedicalServicesOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                                    <span>Key Specialty Focus</span>
+                                </Label>
+                                <Input
+                                    name="specialty"
+                                    value={doctorData.specialty}
+                                    onChange={handleDoctorChange}
+                                    placeholder="Implantology, Surgical Extractions, Cosmetic Dentistry"
+                                    className="rounded-xl border-slate-200 text-xs h-10"
+                                />
+                            </div>
+
+                            {/* Operatory Chair & Consultation Fee */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                        <ChairOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                                        <span>Operatory Chair</span>
+                                    </Label>
+                                    <Input
+                                        name="operatory"
+                                        value={doctorData.operatory}
+                                        onChange={handleDoctorChange}
+                                        placeholder="Chair 1 · Surgical Suite A"
+                                        className="rounded-xl border-slate-200 text-xs h-10"
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                        <AttachMoneyOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                                        <span>Consultation Fee (PKR)</span>
+                                    </Label>
+                                    <Input
+                                        name="consultationFee"
+                                        type="number"
+                                        value={doctorData.consultationFee}
+                                        onChange={handleDoctorChange}
+                                        placeholder="2000"
+                                        className="rounded-xl border-slate-200 text-xs h-10 font-bold"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Consultation Hours & Days */}
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                    <AccessTimeOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                                    <span>Consultation Hours &amp; Days</span>
+                                </Label>
+                                <Input
+                                    name="schedule"
+                                    value={doctorData.schedule}
+                                    onChange={handleDoctorChange}
+                                    placeholder="Mon – Sat: 12:00 PM – 8:00 PM"
+                                    className="rounded-xl border-slate-200 text-xs h-10"
+                                />
+                            </div>
+
+                            {/* Active Doctor on Duty Toggle */}
+                            <div className="p-3.5 rounded-2xl bg-teal-50/60 border border-teal-200/80 flex items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-xs font-bold text-slate-900">Active Doctor on Duty</p>
+                                    <p className="text-[11px] text-slate-500 mt-0.5">
+                                        Doctor appears on public website and is open for appointments.
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={doctorData.isActive}
+                                    onCheckedChange={(checked) =>
+                                        setDoctorData((prev) => ({ ...prev, isActive: checked }))
+                                    }
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ─────────────────────────────────────────────────────────────
+                    CARD 3: WORKING HOURS & CLINICAL SHIFT CAPACITY
                     ───────────────────────────────────────────────────────────── */}
                 <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs space-y-5 flex flex-col justify-between">
                     <div>
@@ -653,52 +1117,52 @@ export default function SettingsForm({
                 </div>
 
                 {/* ─────────────────────────────────────────────────────────────
-                    CARD 3: HOLIDAYS & SPECIAL CLINIC CLOSURES
+                    CARD 4: HOLIDAYS & SPECIAL CLINIC CLOSURES
                     ───────────────────────────────────────────────────────────── */}
-                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs space-y-5 lg:col-span-2">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-                        <div className="flex items-start gap-4">
-                            <div className="size-11 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700 shadow-2xs shrink-0">
-                                <EventBusyOutlined sx={{ fontSize: 22 }} />
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                                        Holidays &amp; Special Clinic Closures
-                                    </h2>
-                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800">
-                                        {holidays.filter((h) => h.isActive).length} Active Closures
-                                    </span>
+                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs space-y-4 flex flex-col justify-between">
+                    <div className="space-y-4">
+                        <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 flex-wrap sm:flex-nowrap">
+                            <div className="flex items-start gap-3">
+                                <div className="size-10 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700 shadow-2xs shrink-0">
+                                    <EventBusyOutlined sx={{ fontSize: 20 }} />
                                 </div>
-                                <p className="text-xs text-slate-500 font-medium mt-0.5">
-                                    Manage Eid holidays, official gazetted days off, and emergency closures. When active, dates are blocked from booking and alerted on the website.
-                                </p>
+                                <div>
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                                            Holidays &amp; Closures
+                                        </h2>
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800">
+                                            {holidays.filter((h) => h.isActive).length} Active
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                                        Blocks booking slots &amp; alerts patients on public website.
+                                    </p>
+                                </div>
                             </div>
+
+                            <Button
+                                type="button"
+                                onClick={() => setIsAddHolidayOpen(true)}
+                                className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl h-9 px-3 text-xs font-bold shadow-2xs cursor-pointer inline-flex items-center gap-1 shrink-0 self-start sm:self-auto"
+                            >
+                                <AddOutlined sx={{ fontSize: 15 }} />
+                                <span>Add Holiday</span>
+                            </Button>
                         </div>
 
-                        <Button
-                            type="button"
-                            onClick={() => setIsAddHolidayOpen(true)}
-                            className="bg-amber-600 hover:bg-amber-700 text-white rounded-2xl h-10 px-4 text-xs font-bold shadow-2xs cursor-pointer inline-flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
-                        >
-                            <AddOutlined sx={{ fontSize: 16 }} />
-                            <span>Add Holiday / Closure</span>
-                        </Button>
-                    </div>
-
-                    {/* Holidays List */}
-                    <div className="space-y-3">
-                        {holidays.length === 0 ? (
-                            <div className="p-8 rounded-2xl bg-slate-50/70 border border-dashed border-slate-200 text-center">
-                                <EventBusyOutlined sx={{ fontSize: 32, color: "#94a3b8", mb: 1 }} />
-                                <p className="text-xs font-bold text-slate-700">No Clinic Holidays Scheduled</p>
-                                <p className="text-[11px] text-slate-500 mt-0.5">
-                                    Add upcoming holidays (like Eid or renovation off-periods) to notify patients and block booking slots.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                                {holidays.map((h) => {
+                        {/* Holidays List */}
+                        <div className="space-y-2.5 max-h-[350px] overflow-y-auto pr-1 custom-scrollbar">
+                            {holidays.length === 0 ? (
+                                <div className="p-6 rounded-2xl bg-slate-50/70 border border-dashed border-slate-200 text-center">
+                                    <EventBusyOutlined sx={{ fontSize: 28, color: "#94a3b8" }} className="mb-1" />
+                                    <p className="text-xs font-bold text-slate-700">No Clinic Holidays Scheduled</p>
+                                    <p className="text-[11px] text-slate-400 mt-0.5">
+                                        Add Eid or clinic renovation off-periods to block booking slots.
+                                    </p>
+                                </div>
+                            ) : (
+                                holidays.map((h) => {
                                     const todayStr = new Date().toISOString().split("T")[0];
                                     const isOngoing = h.startDate <= todayStr && h.endDate >= todayStr;
                                     const isUpcoming = h.startDate > todayStr;
@@ -707,7 +1171,7 @@ export default function SettingsForm({
                                     return (
                                         <div
                                             key={h.id}
-                                            className={`p-4 rounded-2xl border transition-all ${
+                                            className={`p-3.5 rounded-2xl border transition-all ${
                                                 !h.isActive
                                                     ? "bg-slate-50/50 border-slate-200 opacity-60"
                                                     : isOngoing
@@ -738,17 +1202,18 @@ export default function SettingsForm({
                                                         )}
                                                     </div>
 
-                                                    <p className="text-xs font-bold text-slate-700">
-                                                        {h.startDate} → {h.endDate}
+                                                    <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                                        <CalendarTodayOutlined sx={{ fontSize: 13, color: "#f59e0b" }} />
+                                                        <span>{h.startDate} → {h.endDate}</span>
                                                     </p>
                                                     {h.reason && (
-                                                        <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                                                        <p className="text-[11px] text-slate-500 mt-1 line-clamp-1">
                                                             {h.reason}
                                                         </p>
                                                     )}
 
                                                     {h.showOnWeb && h.isActive && (
-                                                        <div className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-md bg-teal-50 border border-teal-200 text-teal-800 text-[10px] font-bold">
+                                                        <div className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-md bg-teal-50 border border-teal-200 text-teal-800 text-[10px] font-bold">
                                                             <CampaignOutlined sx={{ fontSize: 13 }} />
                                                             <span>Website Alert Active</span>
                                                         </div>
@@ -758,7 +1223,7 @@ export default function SettingsForm({
                                                 {/* Actions */}
                                                 <div className="flex items-center gap-2 shrink-0">
                                                     <div className="flex flex-col items-end">
-                                                        <span className="text-[10px] font-bold text-slate-400 mb-1">
+                                                        <span className="text-[10px] font-bold text-slate-400 mb-0.5">
                                                             {h.isActive ? "Active" : "Off"}
                                                         </span>
                                                         <Switch
@@ -779,9 +1244,17 @@ export default function SettingsForm({
                                             </div>
                                         </div>
                                     );
-                                })}
-                            </div>
-                        )}
+                                })
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Symmetrical Bottom Helper Note */}
+                    <div className="rounded-2xl bg-amber-50/60 border border-amber-200/80 p-3 flex items-center gap-2 text-xs font-medium text-amber-900 mt-2">
+                        <InfoOutlined sx={{ fontSize: 16, color: "#d97706" }} className="shrink-0" />
+                        <span>
+                            Active dates are blocked across Website, Walk-In Booking &amp; WhatsApp Bot.
+                        </span>
                     </div>
                 </div>
 
@@ -798,7 +1271,7 @@ export default function SettingsForm({
                                 Google Calendar Cloud Integration
                             </h2>
                             <p className="text-xs text-slate-500 font-medium">
-                                Two-way synchronization for Dr. Sheriyaar. Appointments sync directly to Google Calendar in real time.
+                                Two-way synchronization for Dr. Shehryar Akhtar. Appointments sync directly to Google Calendar in real time.
                             </p>
                         </div>
                     </div>

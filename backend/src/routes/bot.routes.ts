@@ -477,7 +477,7 @@ router.get('/daily-reminders', async (_req: Request, res: Response) => {
                     treatmentName,
                     timeString,
                     dateString,
-                    message: `Salam ${patientName}, this is a reminder for your dental appointment for ${treatmentName} today at ${timeString} at Dr. Sheriyaar's Dental Surgery. Reply CANCEL or RESCHEDULE if needed.`,
+                    message: `Salam ${patientName}, this is a reminder for your dental appointment for ${treatmentName} today at ${timeString} with Dr. Shehryar Akhtar at Elite Dental Centre. Reply CANCEL or RESCHEDULE if needed.`,
                 };
             });
 

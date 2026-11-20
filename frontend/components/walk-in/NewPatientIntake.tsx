@@ -28,7 +28,6 @@ import { PremiumLoader } from "@/components/ui/premium-loader";
 
 import type {
   TreatmentOption,
-  DoctorOption,
   NewPatientForm,
   SuccessData,
 } from "./types";
@@ -42,24 +41,18 @@ const initialNew: NewPatientForm = {
     time: "",
     treatmentId: "",
     notes: "",
-    doctorId: "",
 };
 
 interface NewPatientIntakeProps {
     treatments: TreatmentOption[];
-    doctors?: DoctorOption[];
     onSuccess: (data: SuccessData) => void;
 }
 
 export default function NewPatientIntake({
     treatments,
-    doctors = [],
     onSuccess,
 }: NewPatientIntakeProps) {
-    const [formData, setFormData] = useState<NewPatientForm>({
-        ...initialNew,
-        doctorId: doctors[0]?.id || "",
-    });
+    const [formData, setFormData] = useState<NewPatientForm>(initialNew);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
@@ -101,7 +94,6 @@ export default function NewPatientIntake({
                     date: formData.date,
                     time: formData.time,
                     treatmentId: formData.treatmentId,
-                    doctorId: formData.doctorId || (doctors.length > 0 ? doctors[0].id : undefined),
                     notes: formData.notes || undefined,
                 }),
             });
@@ -110,7 +102,7 @@ export default function NewPatientIntake({
 
             onSuccess(data);
             router.refresh();
-            setFormData({ ...initialNew, doctorId: doctors[0]?.id || "" });
+            setFormData(initialNew);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Registration failed. Check patient phone number.");
         } finally {
@@ -250,7 +242,7 @@ export default function NewPatientIntake({
                         </h3>
                     </div>
 
-                    <div className={`grid ${doctors.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2"} gap-4`}>
+                    <div className="grid sm:grid-cols-2 gap-4">
                         {/* Date Picker */}
                         <div className="space-y-1.5">
                             <label className="text-xs font-extrabold text-slate-700 flex items-center gap-1">
@@ -290,31 +282,6 @@ export default function NewPatientIntake({
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {/* Attending Specialist / Doctor */}
-                        {doctors.length > 1 && (
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-extrabold text-slate-700 flex items-center gap-1">
-                                    <span>Attending Specialist</span>
-                                    <span className="text-red-500">*</span>
-                                </label>
-                                <Select
-                                    value={formData.doctorId || doctors[0]?.id || ""}
-                                    onValueChange={(val) => setFormData((p) => ({ ...p, doctorId: val }))}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select doctor..." />
-                                    </SelectTrigger>
-                                    <SelectContent position="popper" align="start" className="max-h-72">
-                                        {doctors.map((doc) => (
-                                            <SelectItem key={doc.id} value={doc.id}>
-                                                {doc.name} {doc.isLead ? "★ Lead Surgeon" : `(${doc.role})`}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
                     </div>
 
                     {/* Time Slot Selector */}

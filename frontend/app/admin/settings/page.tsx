@@ -12,13 +12,16 @@ export default async function AdminSettingsPage() {
     try { session = await decrypt(cookie); } catch { redirect("/login"); }
 
     // Load saved settings & holidays from DB
-    const [settings, holidays, admin] = await Promise.all([
+    const [settings, holidays, admin, doctor] = await Promise.all([
         prisma.systemSettings?.findUnique({ where: { id: "settings" } }).catch(() => null),
         (prisma as any).clinicHoliday?.findMany({ orderBy: { startDate: "desc" } }).catch(() => []) ?? [],
         prisma.user.findUnique({
             where: { id: session.id as string },
             select: { googleCalendarConnected: true },
         }),
+        prisma.doctor.findFirst({
+            where: { isLead: true },
+        }).catch(() => null) || prisma.doctor.findFirst().catch(() => null),
     ]);
 
     const serializedHolidays = (holidays || []).map((h: any) => ({
@@ -46,6 +49,21 @@ export default async function AdminSettingsPage() {
         weeklyWorkingDays: settings.weeklyWorkingDays,
     } : null;
 
+    const initialDoctor = doctor ? {
+        id: doctor.id,
+        name: doctor.name,
+        role: doctor.role,
+        pmdcReg: doctor.pmdcReg,
+        qualifications: doctor.qualifications,
+        experience: doctor.experience,
+        specialty: doctor.specialty,
+        operatory: doctor.operatory,
+        schedule: doctor.schedule,
+        consultationFee: doctor.consultationFee,
+        isActive: doctor.isActive,
+        image: doctor.image,
+    } : null;
+
     return (
         <div className="space-y-6 font-sans">
             {/* Header with Clinical Pill */}
@@ -53,19 +71,20 @@ export default async function AdminSettingsPage() {
                 <div className="space-y-1.5">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200/80 text-teal-800 text-[11px] font-extrabold uppercase tracking-wider">
                         <TuneOutlinedIcon sx={{ fontSize: 14 }} />
-                        <span>Practice Governance · Cloud Integrations</span>
+                        <span>Practice Governance · Single-Doctor Setup</span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-sans">
-                        Clinic Settings
+                        Clinic &amp; Doctor Settings
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                        Configure practice identity, official receipts, operating hours, holidays, and external calendar synchronization.
+                        Configure practice identity, Dr. Shehryar Akhtar&apos;s clinical credentials, operating hours, holidays, and calendar sync.
                     </p>
                 </div>
             </div>
 
             <SettingsForm
                 initialSettings={initialSettings}
+                initialDoctor={initialDoctor}
                 initialHolidays={serializedHolidays}
                 googleCalendarConnected={admin?.googleCalendarConnected || false}
             />

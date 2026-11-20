@@ -7,16 +7,14 @@ import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import RegisteredPatientWorkspace from "@/components/walk-in/RegisteredPatientWorkspace";
 import NewPatientIntake from "@/components/walk-in/NewPatientIntake";
 import SuccessModal from "@/components/walk-in/SuccessModal";
-import type { TreatmentOption, DoctorOption, SuccessData } from "@/components/walk-in/types";
+import type { TreatmentOption, SuccessData } from "@/components/walk-in/types";
 
 // ─── Main Orchestrator ──────────────────────────────────
 
 export default function WalkInRegistration({
     treatments,
-    doctors = [],
 }: {
     treatments: TreatmentOption[];
-    doctors?: DoctorOption[];
 }) {
     const [activeTab, setActiveTab] = useState<"registered" | "new">("registered");
     const [success, setSuccess] = useState<SuccessData | null>(null);
@@ -79,13 +77,11 @@ export default function WalkInRegistration({
             {activeTab === "registered" ? (
                 <RegisteredPatientWorkspace
                     treatments={treatments}
-                    doctors={doctors}
                     onSuccess={setSuccess}
                 />
             ) : (
                 <NewPatientIntake
                     treatments={treatments}
-                    doctors={doctors}
                     onSuccess={setSuccess}
                 />
             )}
@@ -93,4 +89,4 @@ export default function WalkInRegistration({
     );
 }
 
-export type { TreatmentOption, DoctorOption, SuccessData };
+export type { TreatmentOption, SuccessData };

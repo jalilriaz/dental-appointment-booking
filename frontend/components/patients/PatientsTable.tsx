@@ -467,30 +467,25 @@ export default function PatientsTable({
                                 >
                                     {/* Mobile Card Header */}
                                     <div className="flex items-start justify-between gap-2.5">
-                                        <div className="flex items-start gap-2.5 min-w-0">
-                                            <div className="size-9 rounded-xl bg-teal-50 text-teal-800 font-black text-xs border border-teal-200/80 flex items-center justify-center shrink-0 shadow-2xs">
-                                                {(p.name || "P").charAt(0).toUpperCase()}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <div className="flex items-center gap-1.5 flex-wrap">
-                                                    <span className="font-mono bg-teal-50 text-teal-800 border border-teal-200/80 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                                                        #{p.patientCode || p.id.slice(-4).toUpperCase()}
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                <span className="font-mono bg-teal-50 text-teal-800 border border-teal-200/80 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                                    #{p.patientCode || p.id.slice(-4).toUpperCase()}
+                                                </span>
+                                                <span className="font-black text-slate-900 text-[15px] sm:text-base truncate">
+                                                    {p.name || "Anonymous Patient"}
+                                                </span>
+                                                {(p.gender || age) && (
+                                                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">
+                                                        {[p.gender, age ? `${age}y` : null].filter(Boolean).join(" · ")}
                                                     </span>
-                                                    <span className="font-extrabold text-slate-900 text-sm truncate">
-                                                        {p.name || "Anonymous Patient"}
-                                                    </span>
-                                                    {(p.gender || age) && (
-                                                        <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">
-                                                            {[p.gender, age ? `${age}y` : null].filter(Boolean).join(" · ")}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {p.email && (
-                                                    <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
-                                                        {p.email}
-                                                    </p>
                                                 )}
                                             </div>
+                                            {p.email && (
+                                                <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                                                    {p.email}
+                                                </p>
+                                            )}
                                         </div>
 
                                         {/* Action Buttons */}
@@ -584,20 +579,21 @@ export default function PatientsTable({
 
                 {/* 2. Desktop & Laptop Table View (Hidden on mobile) */}
                 <div className="hidden md:block overflow-x-auto custom-scrollbar">
-                    <table className="w-full text-left border-collapse table-fixed min-w-[780px]">
+                    <table className="w-full text-left border-collapse table-fixed min-w-[800px]">
                         <thead>
-                            <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10.5px] font-black uppercase tracking-wider text-slate-500">
-                                <th className="py-3 px-3.5 sm:px-4 w-[27%] min-w-[190px]">Patient Profile &amp; Alerts</th>
-                                <th className="py-3 px-3.5 sm:px-4 w-[20%] min-w-[150px]">Contact &amp; Reach</th>
-                                <th className="py-3 px-3.5 sm:px-4 w-[22%] min-w-[160px]">Active Clinical Plan</th>
-                                <th className="py-3 px-3.5 sm:px-4 w-[18%] min-w-[130px] whitespace-nowrap">Visit Timeline</th>
-                                <th className="py-3 px-3.5 sm:px-4 w-[13%] min-w-[100px] text-center">Actions</th>
+                            <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10.5px] font-black uppercase tracking-wider text-slate-500 font-sans">
+                                <th className="py-3 px-3 w-[7%] min-w-[65px] text-center"># / ID</th>
+                                <th className="py-3 px-3.5 w-[24%] min-w-[190px]">Patient Name</th>
+                                <th className="py-3 px-3.5 w-[20%] min-w-[150px]">Contact &amp; Reach</th>
+                                <th className="py-3 px-3.5 w-[24%] min-w-[170px]">Active Clinical Plan</th>
+                                <th className="py-3 px-3.5 w-[15%] min-w-[125px] whitespace-nowrap">Visit Timeline</th>
+                                <th className="py-3 px-3 w-[10%] min-w-[85px] text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-xs">
                             {pagedPatients.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="py-16 text-center text-slate-500">
+                                    <td colSpan={6} className="py-16 text-center text-slate-500">
                                         <div className="size-14 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-3">
                                             <PersonOutlineOutlined sx={{ fontSize: 28, color: "#94a3b8" }} />
                                         </div>
@@ -619,9 +615,10 @@ export default function PatientsTable({
                                     </td>
                                 </tr>
                             ) : (
-                                pagedPatients.map((p) => {
+                                pagedPatients.map((p, index) => {
                                     const age = getAge(p.dateOfBirth);
                                     const cleanPhone = (p.phone || "").replace(/[^0-9]/g, "");
+                                    const seq = (page - 1) * perPage + index + 1;
 
                                     return (
                                         <tr
@@ -629,50 +626,47 @@ export default function PatientsTable({
                                             className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
                                             onClick={() => setDossierPatientId(p.id)}
                                         >
-                                            {/* 1. Patient Profile & Demographics (with Code badge integrated) */}
-                                            <td className="py-3.5 px-3.5 sm:px-4">
-                                                <div className="flex items-start gap-2.5 sm:gap-3">
-                                                    <div className="size-9 sm:size-10 rounded-2xl bg-teal-50 text-teal-800 font-black text-xs sm:text-sm border border-teal-200/80 flex items-center justify-center shrink-0 shadow-2xs group-hover:border-teal-400 group-hover:scale-105 transition-all">
-                                                        {(p.name || "P").charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <div className="flex items-center gap-1.5 flex-wrap">
-                                                            <span className="font-mono bg-teal-50 text-teal-800 border border-teal-200/80 px-1.5 py-0.5 rounded text-[10px] sm:text-[10.5px] font-bold shrink-0">
-                                                                #{p.patientCode || p.id.slice(-4).toUpperCase()}
-                                                            </span>
-                                                            <span className="font-extrabold text-slate-900 text-xs sm:text-sm group-hover:text-teal-700 transition-colors truncate">
-                                                                {p.name || "Anonymous Patient"}
-                                                            </span>
-                                                            {(p.gender || age) && (
-                                                                <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">
-                                                                    {[p.gender, age ? `${age}y` : null].filter(Boolean).join(" · ")}
-                                                                </span>
-                                                            )}
-                                                        </div>
+                                            {/* 0. Sequence & Patient ID */}
+                                            <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                                                <span className="font-mono text-xs font-black text-slate-400 block leading-none">
+                                                    #{seq < 10 ? `0${seq}` : seq}
+                                                </span>
+                                                <span className="font-mono bg-teal-50 text-teal-800 border border-teal-200/80 px-1.5 py-0.5 rounded text-[10px] font-bold inline-block mt-1 shadow-2xs">
+                                                    #{p.patientCode || p.id.slice(-4).toUpperCase()}
+                                                </span>
+                                            </td>
 
+                                            {/* 1. Patient Profile & Demographics (Single-line focus) */}
+                                            <td className="py-3.5 px-3.5">
+                                                <div className="min-w-0 pr-2">
+                                                    <span className="font-black text-slate-900 text-[14.5px] group-hover:text-teal-700 transition-colors block leading-snug tracking-tight truncate">
+                                                        {p.name || "Anonymous Patient"}
+                                                    </span>
+                                                    <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                                                        {(p.gender || age) && (
+                                                            <span className="text-[10.5px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">
+                                                                {[p.gender, age ? `${age}y` : null].filter(Boolean).join(" · ")}
+                                                            </span>
+                                                        )}
                                                         {p.email && (
-                                                            <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                                                            <span className="text-[11px] text-slate-400 font-medium truncate max-w-[150px]" title={p.email}>
                                                                 {p.email}
-                                                            </p>
-                                                        )}
-
-                                                        {/* Medical Alert Warning Pill */}
-                                                        {p.medicalAlerts ? (
-                                                            <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 font-extrabold text-[10px] shadow-2xs">
-                                                                <WarningAmberOutlined sx={{ fontSize: 12 }} className="text-amber-600 shrink-0" />
-                                                                <span className="truncate max-w-[200px]">{p.medicalAlerts}</span>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
-                                                                No medical allergies flagged
                                                             </span>
                                                         )}
                                                     </div>
+
+                                                    {/* Medical Alert Warning Pill (Shown ONLY if flagged, otherwise hidden) */}
+                                                    {p.medicalAlerts && (
+                                                        <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 font-extrabold text-[10px] shadow-2xs max-w-full">
+                                                            <WarningAmberOutlined sx={{ fontSize: 12 }} className="text-amber-600 shrink-0" />
+                                                            <span className="truncate max-w-[170px]">{p.medicalAlerts}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </td>
 
                                             {/* 2. Contact & Reach */}
-                                            <td className="py-3.5 px-3.5 sm:px-4" onClick={(e) => e.stopPropagation()}>
+                                            <td className="py-3.5 px-3.5" onClick={(e) => e.stopPropagation()}>
                                                 {p.phone ? (
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
@@ -683,7 +677,7 @@ export default function PatientsTable({
                                                             href={`https://wa.me/${cleanPhone}?text=Hello%20${encodeURIComponent(p.name || "Patient")},%20this%20is%20Elite%20Dental%20Centre.`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="inline-flex items-center gap-1 text-[10.5px] font-extrabold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/90 px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                                                            className="inline-flex items-center gap-1 text-[10.5px] font-extrabold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/90 px-2 py-0.5 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                                                         >
                                                             <WhatsApp sx={{ fontSize: 12 }} className="text-emerald-600 shrink-0" />
                                                             <span>WhatsApp Reach</span>
@@ -695,7 +689,7 @@ export default function PatientsTable({
                                             </td>
 
                                             {/* 3. Active Clinical Plan */}
-                                            <td className="py-3.5 px-3.5 sm:px-4">
+                                            <td className="py-3.5 px-3.5">
                                                 {p.activePlan ? (
                                                     <div className="p-2 rounded-xl bg-teal-50/70 border border-teal-200/80 space-y-0.5">
                                                         <div className="flex items-center gap-1 text-teal-900 font-extrabold text-xs">
@@ -715,7 +709,7 @@ export default function PatientsTable({
                                             </td>
 
                                             {/* 4. Visit Timeline & History */}
-                                            <td className="py-3.5 px-3.5 sm:px-4">
+                                            <td className="py-3.5 px-3.5">
                                                 <div className="space-y-1">
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-black bg-slate-100 text-slate-800 border border-slate-200 whitespace-nowrap">
                                                         {p.appointmentCount} {p.appointmentCount === 1 ? "Encounter" : "Encounters"}
@@ -732,7 +726,7 @@ export default function PatientsTable({
                                             </td>
 
                                             {/* 5. Actions (Directly beneath Actions header) */}
-                                            <td className="py-3.5 px-3.5 sm:px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                                            <td className="py-3.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
                                                 <div className="flex items-center justify-center gap-1.5">
                                                     <Button
                                                         variant="outline"

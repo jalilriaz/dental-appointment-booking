@@ -1,8 +1,11 @@
 "use client";
 
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { toast } from "sonner";
+import { fetchApi } from "@/lib/api-client";
 import {
   DashboardOutlined,
   PersonAddAlt1Outlined,
@@ -16,6 +19,8 @@ import {
   CloseOutlined,
   VerifiedUserOutlined,
   LocalHospitalOutlined,
+  CameraAltOutlined,
+  AutorenewOutlined,
 } from "@mui/icons-material";
 
 const navSections = [
@@ -26,7 +31,6 @@ const navSections = [
       { label: "Walk-In Booking", href: "/admin/walk-in", icon: PersonAddAlt1Outlined, highlight: true },
       { label: "Appointments", href: "/admin/appointments", icon: CalendarMonthOutlined },
       { label: "Patients Directory", href: "/admin/patients", icon: PeopleAltOutlined },
-      { label: "Doctors & Specialists", href: "/admin/doctors", icon: LocalHospitalOutlined },
     ],
   },
   {
@@ -52,6 +56,99 @@ interface SidebarProps {
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
+
+  // Doctor Profile State for Sidebar Identity Card
+  const [doctorInfo, setDoctorInfo] = useState({
+    id: "doc-shehryar",
+    name: "Dr. Shehryar Akhtar",
+    role: "Dental Surgeon & Orthodontist",
+    image: "/dr_sheriyaar.webp",
+  });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Fetch current doctor record
+    fetchApi("/api/doctors")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.doctors && data.doctors.length > 0) {
+          const lead = data.doctors.find((d: any) => d.isLead) || data.doctors[0];
+          setDoctorInfo({
+            id: lead.id,
+            name: lead.name || "Dr. Shehryar Akhtar",
+            role: lead.role || "Dental Surgeon & Orthodontist",
+            image: lead.image || "/dr_sheriyaar.webp",
+          });
+        }
+      })
+      .catch(() => {});
+
+    // Listen to live updates from SettingsForm
+    const onUpdate = (e: any) => {
+      if (e.detail?.image) {
+        setDoctorInfo((prev) => ({
+          ...prev,
+          image: e.detail.image,
+          name: e.detail.name || prev.name,
+          role: e.detail.role || prev.role,
+        }));
+      }
+    };
+
+    window.addEventListener("doctor-profile-updated", onUpdate);
+    return () => window.removeEventListener("doctor-profile-updated", onUpdate);
+  }, []);
+
+  const handleSidebarPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Please choose an image under 5MB");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetchApi("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to upload image");
+
+      const newImageUrl = data.url;
+      setDoctorInfo((prev) => ({ ...prev, image: newImageUrl }));
+
+      // Immediately save to doctor record in database
+      await fetchApi(`/api/doctors/${doctorInfo.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: newImageUrl }),
+      });
+
+      // Broadcast update event to sync SettingsForm if active
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("doctor-profile-updated", {
+            detail: { image: newImageUrl },
+          })
+        );
+      }
+
+      toast.success("Profile photo updated successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update photo");
+    } finally {
+      setUploading(false);
+      if (e.target) e.target.value = "";
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -171,28 +268,71 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Doctor & Clinic Identity Card */}
         <div className="p-3 border-t border-slate-100 bg-slate-50/60 space-y-2">
-          <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center gap-2.5">
-            <div className="relative size-8 rounded-lg overflow-hidden border border-teal-500/40 shrink-0">
+          <div className="p-2 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center justify-between gap-2.5 group hover:border-teal-300 transition-all">
+            {/* Clickable / Editable Avatar */}
+            <div
+              className="relative size-9 rounded-xl overflow-hidden border border-teal-500/40 shrink-0 cursor-pointer shadow-2xs group/avatar"
+              onClick={() => fileInputRef.current?.click()}
+              title="Click to change profile photo"
+            >
               <Image
-                src="/images/dr_sheriyaar.jpg"
-                alt="Dr. Sheriyaar"
+                src={doctorInfo.image || "/dr_sheriyaar.webp"}
+                alt={doctorInfo.name}
                 fill
-                className="object-cover object-top"
-                sizes="32px"
+                className="object-cover object-top transition-transform group-hover/avatar:scale-105"
+                sizes="36px"
               />
+              {/* Hover overlay with camera icon */}
+              <div className="absolute inset-0 bg-slate-950/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center text-white">
+                <CameraAltOutlined sx={{ fontSize: 13 }} />
+              </div>
+              {/* Uploading Spinner */}
+              {uploading && (
+                <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center text-white">
+                  <AutorenewOutlined sx={{ fontSize: 14 }} className="animate-spin text-teal-400" />
+                </div>
+              )}
             </div>
-            <div className="min-w-0 flex-1">
+
+            {/* Doctor Info & Link to Settings */}
+            <Link
+              href="/admin/settings#doctor-profile"
+              onClick={onClose}
+              className="min-w-0 flex-1 hover:opacity-80 transition-opacity"
+              title="Manage in Clinic Settings"
+            >
               <div className="flex items-center gap-1">
                 <span className="text-[11px] font-extrabold text-slate-900 truncate block">
-                  Dr. Sheriyaar
+                  {doctorInfo.name}
                 </span>
                 <VerifiedUserOutlined sx={{ fontSize: 11, color: "#0d9488" }} />
               </div>
               <span className="text-[10px] text-slate-500 font-medium block truncate">
-                Head Dental Surgeon
+                {doctorInfo.role}
               </span>
-            </div>
+            </Link>
+
+            {/* Direct Edit / Camera Button */}
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+              className="size-7 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-2xs"
+              title="Upload new doctor photo"
+              aria-label="Upload new doctor photo"
+            >
+              <CameraAltOutlined sx={{ fontSize: 13 }} />
+            </button>
           </div>
+
+          {/* Hidden File Input for Sidebar */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleSidebarPhotoUpload}
+          />
 
           {/* Sign Out Action */}
           <button

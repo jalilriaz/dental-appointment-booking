@@ -3,8 +3,6 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { logger } from "@/lib/logger";
-import { createAppointment } from "@/lib/bookingService";
 import {
     getPrecautionsForTreatment,
     formatPrecautionsMessage,
@@ -253,27 +251,35 @@ export async function checkoutAppointment(
 
         // 6. Schedule Next Session if date & time provided
         let nextAppointment = null;
+        let nextSessionError: string | null = null;
         if (validData.nextSessionDate && validData.nextSessionTime) {
             const nextSessionNumber = (appointment.sessionNumber || 1) + 1;
             const nextSessionLabel = validData.nextSessionLabel || `Session #${nextSessionNumber} (Follow-Up / Adjustment)`;
 
-            const nextBookingResult = await createAppointment({
-                patientId: appointment.patientId,
-                treatmentId: appointment.treatmentId,
-                date: validData.nextSessionDate,
-                time: validData.nextSessionTime,
-                bookedBy: "ADMIN",
-                patientTreatmentId: patientTreatmentId || undefined,
-                sessionNumber: nextSessionNumber,
-                sessionLabel: nextSessionLabel,
-                notes: nextSessionLabel,
-                plannedFee: validData.nextSessionFee || undefined,
-            });
-
-            if (nextBookingResult.success) {
-                nextAppointment = nextBookingResult.appointment;
-            } else {
-                console.warn("[Billing] Next session booking failed:", nextBookingResult.error);
+            try {
+                const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:4000';
+                const nextRes = await fetch(`${API_BASE_URL}/api/admin/walk-in`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        patientId: appointment.patientId,
+                        treatmentId: appointment.treatmentId,
+                        date: validData.nextSessionDate,
+                        time: validData.nextSessionTime,
+                        patientTreatmentId: patientTreatmentId || undefined,
+                        notes: nextSessionLabel,
+                    }),
+                });
+                const nextData = await nextRes.json();
+                if (nextRes.ok && nextData.appointment) {
+                    nextAppointment = nextData.appointment;
+                } else {
+                    nextSessionError = nextData.error || 'Failed to allocate slot';
+                    console.warn('[Billing] Next session booking failed:', nextSessionError);
+                }
+            } catch (err: any) {
+                nextSessionError = err.message || 'Could not connect to booking server';
+                console.warn('[Billing] Next session network error:', nextSessionError);
             }
         }
 
@@ -339,7 +345,11 @@ export async function checkoutAppointment(
             success: true,
             nextAppointment,
             patientTreatment: updatedPlan,
-            message: nextAppointment ? "Visit checked out and next session booked!" : "Visit checked out successfully."
+            message: nextAppointment
+                ? "Visit checked out and next session booked!"
+                : nextSessionError
+                    ? `Visit checked out, but next session could not be scheduled: ${nextSessionError}`
+                    : "Visit checked out successfully."
         };
     } catch (error) {
         console.error("Checkout Error:", error);

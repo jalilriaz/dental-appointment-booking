@@ -60,7 +60,7 @@ export default function AboutClient({ treatments }: AboutClientProps) {
     {
       title: "Doctor Consultation & Surgical Suite 01",
       tagline: "Lead Specialist Operatory (my-clinic-11)",
-      desc: "Our primary clinical consultation and surgical operatory featuring ergonomic surgical illumination, direct doctor-patient counseling terminal, and precision micro-surgical instrumentation led by Dr. Sheriyaar.",
+      desc: "Our primary clinical consultation and surgical operatory featuring ergonomic surgical illumination, direct doctor-patient counseling terminal, and precision micro-surgical instrumentation led by Dr. Shehryar Akhtar.",
       image: "/my_clinic_11.webp",
       features: [
         "Specialist Surgical Operatory & Consultation Station",
@@ -170,8 +170,8 @@ export default function AboutClient({ treatments }: AboutClientProps) {
               <div className="rounded-3xl border border-slate-200/90 bg-white p-3 sm:p-4 shadow-xl relative overflow-hidden group">
                 <div className="relative h-[420px] sm:h-[460px] w-full rounded-2xl overflow-hidden bg-slate-900">
                   <Image
-                    src="/images/dr_sheriyaar.jpg"
-                    alt="Dr. Sheriyaar - Lead Dental Surgeon & Founder"
+                    src="/dr_sheriyaar.webp"
+                    alt="Dr. Shehryar Akhtar - Lead Dental Surgeon & Orthodontist"
                     fill
                     className="object-cover object-top group-hover:scale-105 transition-transform duration-700"
                   />
@@ -182,8 +182,8 @@ export default function AboutClient({ treatments }: AboutClientProps) {
                     <span className="text-[10px] font-mono uppercase tracking-wider text-teal-400 font-bold block">
                       PMDC Registered Lead Surgeon
                     </span>
-                    <h3 className="text-xl font-black mt-0.5">Dr. Sheriyaar</h3>
-                    <p className="text-xs text-slate-300 font-medium">BDS, RDS • Head of Clinical Practice</p>
+                    <h3 className="text-xl font-black mt-0.5">Dr. Shehryar Akhtar</h3>
+                    <p className="text-xs text-slate-300 font-medium">BDS | MDS Orthodontist • Restorative Dentistry</p>
                     <div className="mt-2.5 pt-2 border-t border-slate-700/80 flex items-center justify-between text-[11px]">
                       <span className="text-teal-300 font-bold">12+ Years Clinical Excellence</span>
                       <span className="font-mono text-slate-400">Islamabad, PK</span>
@@ -200,10 +200,10 @@ export default function AboutClient({ treatments }: AboutClientProps) {
                   Lead Clinical Director
                 </span>
                 <h2 className="text-3xl sm:text-4xl font-black text-[#0B1528] mt-3 tracking-tight">
-                  Personalized Care Under Dr. Sheriyaar
+                  Personalized Care Under Dr. Shehryar Akhtar
                 </h2>
                 <p className="text-slate-600 mt-4 leading-relaxed text-base">
-                  At Elite Dental Centre, every patient is personally diagnosed and treated by Dr. Sheriyaar. With over 12 years of clinical excellence, his practice combines advanced titanium implant placement, microscope-guided root canals, and cosmetic aligners with a strict 100% pain-free philosophy.
+                  At Elite Dental Centre, every patient is personally diagnosed and treated by Dr. Shehryar Akhtar. With over 12 years of clinical excellence, his practice combines advanced orthodontics, clear aligners, titanium implantology, and aesthetic makeovers with a strict 100% pain-free philosophy.
                 </p>
               </div>
 
@@ -258,7 +258,7 @@ export default function AboutClient({ treatments }: AboutClientProps) {
                   className="px-7 py-3.5 rounded-xl bg-slate-950 hover:bg-teal-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-slate-950/15 transition-all inline-flex items-center gap-2 cursor-pointer"
                 >
                   <CalendarMonthOutlined sx={{ fontSize: 18 }} />
-                  <span>Book Consultation with Dr. Sheriyaar</span>
+                  <span>Book Consultation with Dr. Shehryar</span>
                 </button>
 
                 <a
@@ -571,7 +571,7 @@ export default function AboutClient({ treatments }: AboutClientProps) {
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-black text-[#0B1528]">
-                    Schedule Consultation with Dr. Sheriyaar
+                    Schedule Consultation with Dr. Shehryar
                   </h3>
                   <p className="text-xs text-slate-500 font-medium">
                     Elite Dental Centre • G-8 Markaz Islamabad

@@ -25,34 +25,34 @@ import prisma from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Meet Our Doctors & Specialists | Elite Dental Centre Islamabad",
   description:
-    "Meet Dr. Sheriyaar, PMDC-registered Lead Dental Surgeon & Implantologist, and our consultant dental specialists at Elite Dental Centre, G-8 Markaz, Islamabad.",
+    "Meet Dr. Shehryar Akhtar, PMDC-registered Lead Dental Surgeon & Orthodontist, and our consultant dental specialists at Elite Dental Centre, G-8 Markaz, Islamabad.",
   alternates: {
-    canonical: "https://elitedental.pk/doctors",
+    canonical: "https://elitedentalcentrepk.com/doctors",
   },
   openGraph: {
     title: "Meet Our Doctors & Specialists | Elite Dental Centre Islamabad",
     description:
-      "Direct personalized care by Dr. Sheriyaar (12+ years experience) and specialized dental consultants in G-8 Markaz Islamabad.",
-    url: "https://elitedental.pk/doctors",
+      "Direct personalized care by Dr. Shehryar Akhtar (12+ years experience) and specialized dental consultants in G-8 Markaz Islamabad.",
+    url: "https://elitedentalcentrepk.com/doctors",
     type: "website",
   },
 };
 
 const LEAD_DOCTOR_FALLBACK = [
   {
-    name: "Dr. Sheriyaar",
-    role: "Lead Dental Surgeon & Implantologist",
-    credentials: "BDS, RDS (PMDC Reg: 14820-D)",
+    name: "Dr. Shehryar Akhtar",
+    role: "Dental Surgeon & Orthodontist",
+    credentials: "BDS | MDS Orthodontist / Speciality Registrar | Certification in Restorative Dentistry (PMDC Reg: 14820-D)",
     experience: "12+ Years Clinical Practice",
-    image: "/images/dr_sheriyaar.jpg",
+    image: "/dr_sheriyaar.webp",
     isLead: true,
     focus: [
+      "Orthodontics & Clear Aligners",
       "3D Computer-Guided Dental Implants",
-      "Microscopic Rotary Endodontics (RCT)",
-      "Smile Makeovers & Porcelain Veneers",
-      "Full-Mouth Surgical Restorations",
+      "Cosmetic Restorations & Veneers",
+      "Full-Mouth Dental Rehabilitation",
     ],
-    bio: "Head dentist and founder of Elite Dental Centre. Dr. Sheriyaar personally oversees all surgical and aesthetic dental procedures. Trained in modern European implantology protocols, he prioritizes minimally invasive, pain-free patient experiences with zero handoffs to uncertified assistants.",
+    bio: "Head dental surgeon and CEO of Elite Dental Centre. Dr. Shehryar Akhtar personally oversees all orthodontic, surgical, and aesthetic dental procedures. Specialized in orthodontics, clear aligners, and restorative dentistry, he prioritizes minimally invasive, pain-free patient experiences with zero handoffs to junior assistants.",
     schedule: "Monday – Saturday: 12:00 PM – 8:00 PM",
   },
 ];
@@ -95,11 +95,11 @@ export default async function DoctorsPage() {
           role: doc.role,
           credentials: `${doc.qualifications} (PMDC Reg: ${doc.pmdcReg})`,
           experience: doc.experience,
-          image: doc.image || "/images/dr_sheriyaar.jpg",
+          image: doc.image || "/dr_sheriyaar.webp",
           isLead: doc.isLead,
           focus: doc.specialty ? doc.specialty.split(",").map((s: string) => s.trim()) : [],
           bio: doc.isLead
-            ? "Head dentist and founder of Elite Dental Centre. Dr. Sheriyaar personally oversees all surgical and aesthetic dental procedures. Trained in modern European implantology protocols, he prioritizes minimally invasive, pain-free patient experiences with zero handoffs to uncertified assistants."
+            ? "Head dental surgeon and CEO of Elite Dental Centre. Dr. Shehryar Akhtar personally oversees all orthodontic, surgical, and aesthetic dental procedures. Specialized in orthodontics, clear aligners, and restorative dentistry, he prioritizes minimally invasive, pain-free patient experiences with zero handoffs to junior assistants."
             : `Specialist consultant at Elite Dental Centre focusing on ${doc.specialty}. Dedicated to clinical precision, high patient satisfaction, and comfort.`,
           schedule: doc.schedule,
         }))
@@ -124,7 +124,7 @@ export default async function DoctorsPage() {
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0B1528] tracking-tight font-sans max-w-3xl mx-auto">
-              Meet Dr. Sheriyaar & Our Clinical Dental Team
+              Meet Dr. Shehryar Akhtar & Our Clinical Dental Team
             </h1>
 
             <p className="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -159,8 +159,8 @@ export default async function DoctorsPage() {
             {/* Doctor Portrait Image Column (5 Cols) */}
             <div className="lg:col-span-5 relative min-h-[380px] lg:min-h-[500px] bg-slate-900 overflow-hidden">
               <Image
-                src={leadDoctor.image || "/images/dr_sheriyaar.jpg"}
-                alt="Dr. Sheriyaar - Lead Dental Surgeon"
+                src={leadDoctor.image || "/dr_sheriyaar.webp"}
+                alt="Dr. Shehryar Akhtar - Lead Dental Surgeon"
                 fill
                 className="object-cover object-top"
                 sizes="(max-width: 1024px) 100vw, 40vw"
@@ -241,14 +241,14 @@ export default async function DoctorsPage() {
               <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
                 <a
                   href={`https://wa.me/923145475528?text=${encodeURIComponent(
-                    "Hello Dr. Sheriyaar, I would like to book a dental consultation."
+                    "Hello Dr. Shehryar Akhtar, I would like to book a dental consultation."
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#0D9488] hover:bg-teal-700 text-white font-extrabold text-xs shadow-md shadow-teal-700/20 active:scale-95 transition-all cursor-pointer"
                 >
                   <WhatsApp sx={{ fontSize: 18 }} />
-                  <span>Consult Dr. Sheriyaar on WhatsApp</span>
+                  <span>Consult Dr. Shehryar on WhatsApp</span>
                 </a>
 
                 <a

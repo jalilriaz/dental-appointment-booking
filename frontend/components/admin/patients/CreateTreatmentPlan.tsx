@@ -31,9 +31,11 @@ import type { Treatment } from "@/lib/types";
 interface CreateTreatmentPlanProps {
     patientId: string;
     availableTreatments: Treatment[];
+    onSuccess?: () => void;
+    customTrigger?: React.ReactNode;
 }
 
-export default function CreateTreatmentPlan({ patientId, availableTreatments }: CreateTreatmentPlanProps) {
+export default function CreateTreatmentPlan({ patientId, availableTreatments, onSuccess, customTrigger }: CreateTreatmentPlanProps) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -89,6 +91,7 @@ export default function CreateTreatmentPlan({ patientId, availableTreatments }: 
             setMethod("CASH");
 
             router.refresh();
+            onSuccess?.();
         } catch (error: any) {
             toast.error(error.message);
         } finally {
@@ -98,12 +101,18 @@ export default function CreateTreatmentPlan({ patientId, availableTreatments }: 
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button className="gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-xs transition-premium active:scale-95">
-                    <AddOutlinedIcon className="size-4" />
-                    New Treatment Plan
-                </Button>
-            </DialogTrigger>
+            {customTrigger ? (
+                <DialogTrigger asChild>
+                    {customTrigger}
+                </DialogTrigger>
+            ) : (
+                <DialogTrigger asChild>
+                    <Button className="gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-xs transition-premium active:scale-95">
+                        <AddOutlinedIcon className="size-4" />
+                        New Treatment Plan
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="sm:max-w-[440px] bg-white border border-slate-200 text-slate-900 shadow-2xl rounded-2xl">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold text-slate-900">Create Treatment Plan</DialogTitle>

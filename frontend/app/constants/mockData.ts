@@ -26,27 +26,32 @@ export const serviceHighlights = [
 
 export const testimonials = [
     {
-        name: "Ali Khan",
-        text: "Excellent service! My dental implant was completely pain-free. Dr. Sarah is truly professional and caring.",
+        name: "Hina Aman",
+        text: "The treatment was handled very gently and explained clearly. The whole experience was comfortable, reassuring, and highly professional.",
         rating: 5,
-        treatment: "German Implant",
+        treatment: "Orthodontics & Alignment",
     },
     {
-        name: "Sara Ahmed",
-        text: "I was nervous about whitening but the team made me feel comfortable. Amazing results — my teeth are 6 shades lighter!",
+        name: "Ayesha Shahid",
+        text: "I had a very positive experience at the clinic. Dr. Shehryar took the time to answer all my questions and made me feel completely at ease throughout the treatment.",
         rating: 5,
-        treatment: "Laser Whitening",
+        treatment: "Cosmetic Restoration",
     },
     {
-        name: "Hassan Ali",
-        text: "Best dental clinic in Rawalpindi. The staff is friendly and the facilities are top-notch. Highly recommended for families.",
+        name: "Hamza",
+        text: "The doctor was professional, patient and very clear about the treatment process. Everything was explained before starting the procedure with transparent options.",
         rating: 5,
-        treatment: "General Checkup",
-
+        treatment: "Dental Implant Consultation",
+    },
+    {
+        name: "Zara",
+        text: "Very happy with the overall experience. Dr. Shehryar was attentive and made sure I understood the procedure and after-care instructions clearly.",
+        rating: 5,
+        treatment: "Comprehensive Smile Care",
     },
     {
         name: "Fatima Khan",
-        text: "My invisalign journey has been smooth and comfortable. Dr. Sheriyaar explains every step clearly. Very satisfied!",
+        text: "My orthodontic journey has been smooth and comfortable. Dr. Shehryar explains every step clearly. Very satisfied with the care at G-8 Markaz!",
         rating: 5,
         treatment: "Invisible Aligners",
     },
@@ -54,13 +59,12 @@ export const testimonials = [
 
 export const teamMembers = [
     {
-        name: "Dr. Sheriyaar",
-        role: "General Doctor",
-        experience: "12 years",
-        qualification: "BDS, RDS",
-        image: "/images/dr_sheriyaar.jpg",
+        name: "Dr. Shehryar Akhtar",
+        role: "Dental Surgeon & Orthodontist",
+        experience: "12+ years",
+        qualification: "BDS | MDS Orthodontist / Speciality Registrar | Certification in Restorative Dentistry",
+        image: "/dr_sheriyaar.webp",
     },
-
 ];
 
 export const trustStats = [
@@ -77,7 +81,7 @@ export const whyChooseUs = [
     // { title: "Patient-First Approach", desc: "Your comfort and satisfaction is our top priority", icon: "❤️" },
     // { title: "Convenient Hours", desc: "Open 12 PM to 8 PM ", icon: "🕐" },
     // { title: "Easy Online Booking", desc: "Book your appointment anytime from your phone or laptop", icon: "📱" },
-    { title: "Personal Care by Dr. Sheriyaar ", desc: "Every patient is treated directly by our head dentist , no handoffs, no assistants doing the work", icon: "MedicalServices" },
+    { title: "Personal Care by Dr. Shehryar Akhtar", desc: "Every patient is treated directly by our head dental surgeon, no handoffs, no junior assistants doing the work", icon: "MedicalServices" },
     { title: "Modern Digital X-Rays", desc: "90% less radiation than traditional X-rays with instant on-screen results", icon: "Bolt" },
     // { title: "Transparent PKR Pricing", desc: "No hidden fees — you'll know the full cost before any treatment begins", icon: "💰" },
     { title: "No Surprise Bills", desc: "Full treatment breakdown explained before we begin , you decide, we proceed", icon: "✅" },

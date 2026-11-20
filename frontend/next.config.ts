@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: [
+      "@mui/icons-material",
+      "@mui/material",
+      "date-fns",
+      "lucide-react",
+    ],
+  },
   images: {
     remotePatterns: [
       {

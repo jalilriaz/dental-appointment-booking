@@ -162,7 +162,7 @@ export default function SendPrecautionsModal({
                             </span>
                         ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-teal-50 text-teal-700 border border-teal-200">
-                                Dr. Sheriyaar
+                                Dr. Shehryar Akhtar
                             </span>
                         )}
                     </div>

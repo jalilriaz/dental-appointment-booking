@@ -105,7 +105,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
     {
       question: "Do you provide same-day emergency dental appointments in Islamabad?",
       answer:
-        "Yes, Dr. Sheriyaar reserves daily priority slots for acute toothache, broken crowns, dental abscesses, or facial trauma. Please call our emergency hotline (+92 314 5475528) or WhatsApp us immediately for urgent triage.",
+        "Yes, Dr. Shehryar Akhtar reserves daily priority slots for acute toothache, broken crowns, dental abscesses, or facial trauma. Please call our emergency hotline (+92 314 5475528) or WhatsApp us immediately for urgent triage.",
       icon: MedicalServicesOutlined,
     },
     {
@@ -153,7 +153,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
               </div>
               <h3 className="text-lg font-black text-[#0B1528] tracking-tight">Acute Toothache & Trauma</h3>
               <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                Same-day priority emergency slot with Dr. Sheriyaar. Relief for severe nerve pain, cracked teeth, or swelling.
+                Same-day priority emergency slot with Dr. Shehryar Akhtar. Relief for severe nerve pain, cracked teeth, or swelling.
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-slate-100">
@@ -190,7 +190,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
             </div>
             <div className="mt-6 pt-4 border-t border-slate-100">
               <a
-                href={`https://wa.me/${clinicInfo.whatsapp}?text=Hello%20Dr.%20Sheriyaar%20team,%20I%20would%20like%20to%20inquire%20about%20a%20dental%20consultation.`}
+                href={`https://wa.me/${clinicInfo.whatsapp}?text=Hello%20Dr.%20Shehryar%20team,%20I%20would%20like%20to%20inquire%20about%20a%20dental%20consultation.`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full h-11 inline-flex items-center justify-center gap-2 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-md shadow-teal-600/20 active:scale-[0.98] transition-all cursor-pointer"
@@ -388,7 +388,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                 <span>Clinical Reception Dispatcher</span>
               </div>
               <h2 className="text-2xl font-black text-slate-950 tracking-tight">
-                Send an Inquiry to Dr. Sheriyaar
+                Send an Inquiry to Dr. Shehryar
               </h2>
               <p className="text-xs text-slate-600 mt-1">
                 Tell us about your dental concern or preferred appointment date. Our senior clinical coordinator responds promptly.
@@ -403,12 +403,12 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                     Inquiry Received Successfully!
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-md mx-auto leading-relaxed">
-                    Thank you, <strong>{fullName || "valued patient"}</strong>. Dr. Sheriyaar&apos;s receptionist has logged your concern for <strong>{selectedSymptom}</strong>. We will reach out to you via {contactMethod === "whatsapp" ? "WhatsApp" : "telephone"} at <strong>{phone}</strong> within 2 business hours.
+                    Thank you, <strong>{fullName || "valued patient"}</strong>. Dr. Shehryar&apos;s receptionist has logged your concern for <strong>{selectedSymptom}</strong>. We will reach out to you via {contactMethod === "whatsapp" ? "WhatsApp" : "telephone"} at <strong>{phone}</strong> within 2 business hours.
                   </p>
 
                   <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
                     <a
-                      href={`https://wa.me/${clinicInfo.whatsapp}?text=Hello%20Dr.%20Sheriyaar,%20I%20just%20submitted%20an%20inquiry%20regarding%20${encodeURIComponent(
+                      href={`https://wa.me/${clinicInfo.whatsapp}?text=Hello%20Dr.%20Shehryar,%20I%20just%20submitted%20an%20inquiry%20regarding%20${encodeURIComponent(
                         selectedSymptom
                       )}.%20My%20name%20is%20${encodeURIComponent(fullName || "a patient")}.`}
                       target="_blank"
@@ -687,7 +687,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                   </div>
                   <div>
                     <span className="inline-block px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-teal-50 text-teal-800 border border-teal-200 mb-1">
-                      Lead Surgeon Dr. Sheriyaar
+                      Lead Surgeon Dr. Shehryar Akhtar
                     </span>
                     <h4 className="text-sm font-black text-slate-950 tracking-tight">
                       Elite Dental Centre

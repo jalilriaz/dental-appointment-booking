@@ -289,7 +289,7 @@ model Doctor {
   schedule          String   // e.g. "Mon – Sat: 12:00 PM – 8:00 PM"
   consultationFee   Int      @default(2000)
   patientsThisMonth Int      @default(0)
-  image             String?  @default("/images/dr_sheriyaar.jpg")
+  image             String?  @default("/dr_sheriyaar.webp")
   isLead            Boolean  @default(false)
   isActive          Boolean  @default(true)
   appointments      Appointment[]

@@ -108,8 +108,8 @@ export default function ForgotPasswordPage() {
             <div className="flex items-center gap-4">
               <div className="relative size-20 rounded-2xl overflow-hidden border-2 border-teal-500/50 shadow-lg shrink-0">
                 <Image
-                  src="/images/dr_sheriyaar.jpg"
-                  alt="Dr. Sheriyaar - Lead Dental Surgeon"
+                  src="/dr_sheriyaar.webp"
+                  alt="Dr. Shehryar Akhtar - Lead Dental Surgeon"
                   fill
                   className="object-cover object-top"
                   sizes="80px"

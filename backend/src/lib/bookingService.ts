@@ -6,6 +6,7 @@ import { isSundayInKarachi, parseKarachiDateTime } from "@/lib/timezone";
 import { generateRandomPatientPasswordHash } from "@/lib/security";
 import { ALL_TREATMENTS } from "@/lib/treatmentsData";
 import { sendAppointmentConfirmationEmail } from "@/lib/email";
+import { dispatchN8nBookingWebhook } from "@/lib/n8n";
 import { formatTime, formatDate } from "@/lib/utils";
 
 const revalidatePath = (..._args: any[]) => {};
@@ -367,6 +368,25 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                 }
             } catch (emailErr) {
                 console.error("[BookingService] Email notification non-fatal error:", emailErr);
+            }
+
+            // Non-blocking WhatsApp confirmation via n8n webhook
+            try {
+                const recipientPhone = canonicalPhone || user.phone || guestPhone || phone;
+                if (recipientPhone) {
+                    await dispatchN8nBookingWebhook({
+                        phone: recipientPhone,
+                        patientName: user.name || patientName || guestName || "Valued Patient",
+                        treatmentName: treatment.name,
+                        doctorName: appointment.doctor?.name || "Dr. Shehryar Akhtar",
+                        date: formatDate(startTime),
+                        time: formatTime(startTime),
+                        appointmentId: appointment.id,
+                        patientCode,
+                    });
+                }
+            } catch (n8nErr) {
+                console.error("[BookingService] n8n WhatsApp notification non-fatal error:", n8nErr);
             }
         })();
 

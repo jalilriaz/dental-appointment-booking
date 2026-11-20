@@ -19,22 +19,22 @@ import prisma from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Our Clinic & Doctor | Elite Dental Centre Islamabad",
   description:
-    "Meet Dr. Sheriyaar, PMDC-registered Lead Dental Surgeon at Elite Dental Centre, G-8 Markaz Islamabad (Doctors Plaza, next to IDC). Explore our 3D CBCT imaging bay, Class-B sterilization, and patient-first care.",
+    "Meet Dr. Shehryar Akhtar, PMDC-registered Lead Dental Surgeon & Orthodontist at Elite Dental Centre, G-8 Markaz Islamabad (Doctors Plaza, next to IDC). Explore our 3D CBCT imaging bay, Class-B sterilization, and patient-first care.",
   alternates: {
-    canonical: "https://elitedental.pk/about",
+    canonical: "https://elitedentalcentrepk.com/about",
   },
   openGraph: {
     title: "Our Clinic & Doctor | Elite Dental Centre Islamabad",
-    description: "PMDC-registered Lead Dental Surgeon Dr. Sheriyaar, European Class-B sterilization, and 3D CBCT diagnostics in G-8 Markaz, Islamabad.",
-    url: "https://elitedental.pk/about",
+    description: "PMDC-registered Lead Dental Surgeon Dr. Shehryar Akhtar, European Class-B sterilization, and 3D CBCT diagnostics in G-8 Markaz, Islamabad.",
+    url: "https://elitedentalcentrepk.com/about",
     type: "website",
   },
 };
 
 const aboutFaqs = [
   {
-    question: "What qualifications and clinical experience does Dr. Sheriyaar possess?",
-    answer: "Dr. Sheriyaar holds BDS and RDS degrees with advanced certifications in dental implantology and microscopic endodontics. With over 12 years of dedicated clinical practice in Islamabad, he specializes in pain-free dental implants, root canals, and aesthetic smile restorations.",
+    question: "What qualifications and clinical experience does Dr. Shehryar Akhtar possess?",
+    answer: "Dr. Shehryar Akhtar holds BDS and MDS Orthodontics (Speciality Registrar) qualifications along with Certification in Restorative Dentistry. With over 12 years of dedicated clinical practice in Islamabad, he specializes in orthodontics, clear aligners, dental implants, root canals, and cosmetic smile makeovers.",
     icon: VerifiedOutlined,
   },
   {
@@ -127,18 +127,19 @@ export default async function AboutPage() {
       },
       {
         "@type": "Physician",
-        "@id": "https://elitedental.pk/about#dr-sheriyaar",
-        name: "Dr. Sheriyaar",
-        jobTitle: "Lead Dental Surgeon & Clinical Director",
+        "@id": "https://elitedentalcentrepk.com/about#dr-shehryar",
+        name: "Dr. Shehryar Akhtar",
+        jobTitle: "Dental Surgeon & Orthodontist (CEO, Elite Dental Centre)",
         medicalSpecialty: [
           "Dentistry",
+          "Orthodontics",
           "Implantology",
-          "Endodontics",
           "Restorative Dentistry",
+          "Endodontics",
         ],
-        alumniOf: "PMDC Registered BDS, RDS",
+        alumniOf: "BDS | MDS Orthodontist / Speciality Registrar | Certification in Restorative Dentistry",
         worksFor: {
-          "@id": "https://elitedental.pk/#clinic",
+          "@id": "https://elitedentalcentrepk.com/#clinic",
         },
       },
       {

@@ -44,12 +44,12 @@ export async function generateMetadata({
       treatment.description ||
       `Professional ${treatment.name} at Elite Dental Centre, Islamabad. Transparent pricing, computerized diagnostics, and pain-free care.`,
     alternates: {
-      canonical: `https://elitedentalcentre.com/services/${id}`,
+      canonical: `https://elitedentalcentrepk.com/services/${id}`,
     },
     openGraph: {
       title: `${treatment.name} | Elite Dental Centre Islamabad`,
       description: `Comprehensive procedure guide for ${treatment.name}. Transparent fee, pre-op prep, painless protocol, and post-op care.`,
-      url: `https://elitedentalcentre.com/services/${id}`,
+      url: `https://elitedentalcentrepk.com/services/${id}`,
       type: "website",
     },
   };
@@ -83,7 +83,7 @@ export default async function ServiceDetailPage({
     "@graph": [
       {
         "@type": "MedicalProcedure",
-        "@id": `https://elitedentalcentre.com/services/${id}#procedure`,
+        "@id": `https://elitedentalcentrepk.com/services/${id}#procedure`,
         name: treatment.name,
         procedureType: "NoninvasiveProcedure",
         description:
@@ -102,7 +102,7 @@ export default async function ServiceDetailPage({
           price: treatment.price,
           priceCurrency: "PKR",
           availability: "https://schema.org/InStock",
-          url: `https://elitedentalcentre.com/services/${id}`,
+          url: `https://elitedentalcentrepk.com/services/${id}`,
         },
         provider: {
           "@type": "Dentist",
@@ -118,7 +118,7 @@ export default async function ServiceDetailPage({
       },
       {
         "@type": "FAQPage",
-        "@id": `https://elitedentalcentre.com/services/${id}#faq`,
+        "@id": `https://elitedentalcentrepk.com/services/${id}#faq`,
         mainEntity: detailData.faqs.map((f) => ({
           "@type": "Question",
           name: f.question,
@@ -135,19 +135,19 @@ export default async function ServiceDetailPage({
             "@type": "ListItem",
             position: 1,
             name: "Home",
-            item: "https://elitedentalcentre.com",
+            item: "https://elitedentalcentrepk.com",
           },
           {
             "@type": "ListItem",
             position: 2,
             name: "Services",
-            item: "https://elitedentalcentre.com/services",
+            item: "https://elitedentalcentrepk.com/services",
           },
           {
             "@type": "ListItem",
             position: 3,
             name: treatment.name,
-            item: `https://elitedentalcentre.com/services/${id}`,
+            item: `https://elitedentalcentrepk.com/services/${id}`,
           },
         ],
       },

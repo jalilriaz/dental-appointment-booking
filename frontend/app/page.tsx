@@ -22,6 +22,7 @@ import {
   HelpOutlineOutlined,
   PaymentsOutlined,
   CreditCardOutlined,
+  PublicOutlined,
 } from "@mui/icons-material";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -48,12 +49,12 @@ export const metadata = {
     "best dentist islamabad",
   ],
   alternates: {
-    canonical: "https://elitedentalcentre.com",
+    canonical: "https://elitedentalcentrepk.com",
   },
   openGraph: {
     title: "Elite Dental Centre | Advanced Implantology & Cosmetic Dentistry",
     description: "Book painless dental treatments in Islamabad with licensed surgeons.",
-    url: "https://elitedentalcentre.com",
+    url: "https://elitedentalcentrepk.com",
     siteName: "Elite Dental Centre",
     locale: "en_US",
     type: "website",
@@ -126,10 +127,10 @@ export default async function LandingPage() {
     "@graph": [
       {
         "@type": "Dentist",
-        "@id": "https://elitedentalcentre.com/#clinic",
+        "@id": "https://elitedentalcentrepk.com/#clinic",
         name: "Elite Dental Centre",
-        image: "https://elitedentalcentre.com/images/services/dental_crown.png",
-        url: "https://elitedentalcentre.com",
+        image: "https://elitedentalcentrepk.com/images/services/dental_crown.png",
+        url: "https://elitedentalcentrepk.com",
         telephone: clinicInfo.phone,
         address: {
           "@type": "PostalAddress",
@@ -175,7 +176,7 @@ export default async function LandingPage() {
       },
       {
         "@type": "FAQPage",
-        "@id": "https://elitedentalcentre.com/#faq",
+        "@id": "https://elitedentalcentrepk.com/#faq",
         mainEntity: landingFaqs.map((f) => ({
           "@type": "Question",
           name: f.question,
@@ -495,19 +496,19 @@ export default async function LandingPage() {
               <div className="lg:col-span-5 relative">
                 <div className="relative h-[440px] sm:h-[480px] rounded-3xl overflow-hidden shadow-xl border border-slate-200 bg-slate-100">
                   <Image
-                    src="/images/dr_sheriyaar.jpg"
-                    alt="Dr. Sheriyaar - Chief Implantologist & Dental Surgeon"
+                    src="/dr_sheriyaar.webp"
+                    alt="Dr. Shehryar Akhtar - Dental Surgeon & Orthodontist"
                     fill
                     className="object-cover object-top"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B1528]/85 via-transparent to-transparent" />
                   <div className="absolute bottom-6 left-6 right-6 text-white">
                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-teal-300 bg-teal-950/80 px-2.5 py-1 rounded border border-teal-800">
-                      Chief Clinical Director
+                      Dental Surgeon & Orthodontist
                     </span>
-                    <h3 className="text-2xl font-black mt-2 text-white">Dr. Sheriyaar</h3>
+                    <h3 className="text-2xl font-black mt-2 text-white">Dr. Shehryar Akhtar</h3>
                     <p className="text-xs text-slate-300 font-medium">
-                      BDS, RDS, Fellowship in Oral Implantology (ICOI) · 15+ Years Clinical Practice
+                      BDS | MDS Orthodontist (Speciality Registrar) · Certification in Restorative Dentistry · 12+ Years Clinical Practice
                     </p>
                   </div>
                 </div>
@@ -531,26 +532,26 @@ export default async function LandingPage() {
                 <div className="grid sm:grid-cols-2 gap-4 pt-2">
                   <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
                     <h4 className="text-xs font-black uppercase tracking-wider text-[#0B1528]">Education & Credentials</h4>
-                    <p className="text-xs text-slate-600 mt-1">BDS, RDS (Pakistan Medical & Dental Council Registered)</p>
-                    <p className="text-xs text-teal-700 font-semibold mt-0.5">Fellow of International Congress of Oral Implantologists</p>
+                    <p className="text-xs text-slate-600 mt-1">BDS | MDS Orthodontist / Speciality Registrar (PMDC Registered)</p>
+                    <p className="text-xs text-teal-700 font-semibold mt-0.5">Certification in Restorative & Aesthetic Dentistry</p>
                   </div>
                   <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
                     <h4 className="text-xs font-black uppercase tracking-wider text-[#0B1528]">Specialty Focus</h4>
-                    <p className="text-xs text-slate-600 mt-1">Computer-guided titanium implants, aesthetic veneers & pain-free sedation.</p>
+                    <p className="text-xs text-slate-600 mt-1">Orthodontics, Clear Aligners, Guided Implants, Full Mouth Rehab & Aesthetic Restorations.</p>
                   </div>
                 </div>
 
                 <div className="pt-2 flex flex-wrap gap-4 items-center">
                   <a
                     href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent(
-                      "Hello Dr. Sheriyaar, I would like to consult with you regarding a dental treatment."
+                      "Hello Dr. Shehryar Akhtar, I would like to consult with you regarding a dental treatment."
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-95"
                   >
                     <WhatsApp sx={{ fontSize: 18 }} />
-                    <span>Consult Dr. Sheriyaar on WhatsApp</span>
+                    <span>Consult Dr. Shehryar on WhatsApp</span>
                   </a>
 
                   <Link
@@ -688,6 +689,85 @@ export default async function LandingPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 7B. OVERSEAS PATIENTS & DENTAL TOURISM CLINICAL DESK ── */}
+        <section className="py-20 bg-gradient-to-b from-slate-50 via-teal-50/20 to-white border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-3xl mx-auto mb-14">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 uppercase tracking-wider">
+                <PublicOutlined sx={{ fontSize: 16 }} />
+                <span>International Patient Care</span>
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-[#0B1528] mt-3 tracking-tight font-sans">
+                Visiting Islamabad from Overseas?
+              </h2>
+              <p className="text-slate-600 mt-3 text-base leading-relaxed">
+                Elite Dental Centre welcomes overseas Pakistanis and international visitors traveling from the UK, USA, Australia, and the Gulf. We provide pre-arrival digital assessments and expedited appointments tailored to your travel itinerary.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="p-7 rounded-2xl bg-white border border-slate-200 shadow-xs hover:shadow-md hover:border-teal-300 transition-all">
+                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-5 border border-teal-200/60 font-bold">
+                  01
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2 font-sans">
+                  Pre-Travel Digital Consultation
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Send your dental X-rays, photos, and medical history via WhatsApp before you fly. Dr. Shehryar personally reviews your case to advise feasibility, estimated duration, and clear PKR pricing.
+                </p>
+              </div>
+
+              <div className="p-7 rounded-2xl bg-white border border-slate-200 shadow-xs hover:shadow-md hover:border-teal-300 transition-all">
+                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-5 border border-teal-200/60 font-bold">
+                  02
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2 font-sans">
+                  Expedited Clinical Scheduling
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  We condense multi-session treatments (smile makeovers, implant crowns, clear aligners) into high-priority consecutive sessions so your care is completed comfortably during your trip.
+                </p>
+              </div>
+
+              <div className="p-7 rounded-2xl bg-white border border-slate-200 shadow-xs hover:shadow-md hover:border-teal-300 transition-all">
+                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-5 border border-teal-200/60 font-bold">
+                  03
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2 font-sans">
+                  Prime Central Location
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Located at Doctors Plaza in G-8 Markaz (next to Islamabad Diagnostic Centre), with rapid 25-minute highway access from Islamabad International Airport (ISB) and top hotels in F-6, F-7, and Blue Area.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-10 p-6 rounded-2xl bg-white border border-teal-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="space-y-1 text-center sm:text-left">
+                <h4 className="text-base font-bold text-slate-900">
+                  Ready to plan your dental visit before you arrive?
+                </h4>
+                <p className="text-xs text-slate-500">
+                  Direct WhatsApp consultation with Dr. Shehryar Akhtar&apos;s clinical reception.
+                </p>
+              </div>
+
+              <a
+                href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent(
+                  "Hello Elite Dental Centre, I am an international patient visiting Islamabad and would like to enquire about dental treatment."
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-95 shrink-0"
+              >
+                <WhatsApp sx={{ fontSize: 18 }} />
+                <span>Enquire on WhatsApp</span>
+              </a>
             </div>
           </div>
         </section>

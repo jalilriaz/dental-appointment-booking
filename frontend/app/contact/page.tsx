@@ -7,15 +7,15 @@ import prisma from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Contact & Location | Elite Dental Centre Islamabad (G-8 Markaz)",
   description:
-    "Visit Elite Dental Centre at Doctors Plaza, 1st Floor, Office #6, 6 Markaz Rd (next to IDC), G-8 Markaz, Islamabad. Book with Lead Dental Surgeon Dr. Sheriyaar, get same-day emergency relief, or call +92 314 5475528.",
+    "Visit Elite Dental Centre at Doctors Plaza, 1st Floor, Office #6, 6 Markaz Rd (next to IDC), G-8 Markaz, Islamabad. Book with Lead Dental Surgeon Dr. Shehryar Akhtar, get same-day emergency relief, or call +92 314 5475528.",
   alternates: {
-    canonical: "https://elitedental.pk/contact",
+    canonical: "https://elitedentalcentrepk.com/contact",
   },
   openGraph: {
     title: "Contact & Location | Elite Dental Centre Islamabad",
     description:
-      "Elite Dental Centre in G-8 Markaz, Islamabad. Doctors Plaza, 1st Floor, Office #6, next to IDC, elevator access, ample parking, and same-day dental emergency care with Dr. Sheriyaar.",
-    url: "https://elitedental.pk/contact",
+      "Elite Dental Centre in G-8 Markaz, Islamabad. Doctors Plaza, 1st Floor, Office #6, next to IDC, elevator access, ample parking, and same-day dental emergency care with Dr. Shehryar Akhtar.",
+    url: "https://elitedentalcentrepk.com/contact",
     type: "website",
   },
 };
@@ -86,8 +86,8 @@ export default async function ContactPage() {
       ],
       "founder": {
         "@type": "Physician",
-        "name": "Dr. Sheriyaar",
-        "jobTitle": "Lead Dental Surgeon & Restorative Specialist",
+        "name": "Dr. Shehryar Akhtar",
+        "jobTitle": "Dental Surgeon & Orthodontist (CEO, Elite Dental Centre)",
         "medicalSpecialty": "Dentistry"
       }
     },
@@ -108,7 +108,7 @@ export default async function ContactPage() {
           "name": "Do you provide same-day emergency dental appointments in Islamabad?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, Dr. Sheriyaar reserves daily priority slots for acute toothache, broken crowns, dental abscesses, or facial trauma. Please call our emergency hotline (+92 314 5475528) or WhatsApp us immediately for urgent triage."
+            "text": "Yes, Dr. Shehryar Akhtar reserves daily priority slots for acute toothache, broken crowns, dental abscesses, or facial trauma. Please call our emergency hotline (+92 314 5475528) or WhatsApp us immediately for urgent triage."
           }
         },
         {

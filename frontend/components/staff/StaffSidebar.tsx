@@ -23,7 +23,7 @@ const navSections = [
       { label: "Walk-In Booking", href: "/staff/book", icon: PersonAddAlt1Outlined },
       { label: "Appointments", href: "/staff/appointments", icon: CalendarMonthOutlined },
       { label: "Patients Directory", href: "/staff/patients", icon: PeopleAltOutlined },
-      { label: "Doctors on Duty", href: "/staff/doctors", icon: LocalHospitalOutlined },
+      { label: "Doctor on Duty", href: "/staff/doctors", icon: LocalHospitalOutlined },
     ],
   },
 ];
@@ -145,8 +145,8 @@ export default function StaffSidebar({ open, onClose }: { open: boolean; onClose
           <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center gap-2.5">
             <div className="relative size-8 rounded-lg overflow-hidden border border-teal-500/40 shrink-0">
               <Image
-                src="/images/dr_sheriyaar.jpg"
-                alt="Dr. Sheriyaar"
+                src="/dr_sheriyaar.webp"
+                alt="Dr. Shehryar Akhtar"
                 fill
                 className="object-cover object-top"
                 sizes="32px"
@@ -155,7 +155,7 @@ export default function StaffSidebar({ open, onClose }: { open: boolean; onClose
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1">
                 <span className="text-[11px] font-extrabold text-slate-900 truncate block">
-                  Dr. Sheriyaar
+                  Dr. Shehryar Akhtar
                 </span>
                 <VerifiedUserOutlined sx={{ fontSize: 11, color: "#0d9488" }} />
               </div>

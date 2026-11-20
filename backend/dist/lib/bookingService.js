@@ -12,6 +12,7 @@ const timezone_1 = require("@/lib/timezone");
 const security_1 = require("@/lib/security");
 const treatmentsData_1 = require("@/lib/treatmentsData");
 const email_1 = require("@/lib/email");
+const n8n_1 = require("@/lib/n8n");
 const utils_1 = require("@/lib/utils");
 const revalidatePath = (..._args) => { };
 /**
@@ -267,6 +268,25 @@ async function createAppointment(input) {
             }
             catch (emailErr) {
                 console.error("[BookingService] Email notification non-fatal error:", emailErr);
+            }
+            // Non-blocking WhatsApp confirmation via n8n webhook
+            try {
+                const recipientPhone = canonicalPhone || user.phone || guestPhone || phone;
+                if (recipientPhone) {
+                    await (0, n8n_1.dispatchN8nBookingWebhook)({
+                        phone: recipientPhone,
+                        patientName: user.name || patientName || guestName || "Valued Patient",
+                        treatmentName: treatment.name,
+                        doctorName: appointment.doctor?.name || "Dr. Sheriyaar",
+                        date: (0, utils_1.formatDate)(startTime),
+                        time: (0, utils_1.formatTime)(startTime),
+                        appointmentId: appointment.id,
+                        patientCode,
+                    });
+                }
+            }
+            catch (n8nErr) {
+                console.error("[BookingService] n8n WhatsApp notification non-fatal error:", n8nErr);
             }
         })();
         // 5. Revalidate views

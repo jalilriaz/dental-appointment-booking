@@ -17,30 +17,17 @@ export default async function WalkInPage() {
         redirect("/login");
     }
 
-    // Fetch active treatments and doctors from DB
-    const [treatments, doctors] = await Promise.all([
-        prisma.treatment.findMany({
-            where: { isActive: true },
-            orderBy: { name: "asc" },
-            select: {
-                id: true,
-                name: true,
-                price: true,
-                durationMin: true,
-            },
-        }),
-        prisma.doctor.findMany({
-            where: { isActive: true },
-            orderBy: [{ isLead: "desc" }, { name: "asc" }],
-            select: {
-                id: true,
-                name: true,
-                role: true,
-                operatory: true,
-                isLead: true,
-            },
-        }),
-    ]);
+    // Fetch active treatments from DB (attending doctor defaults implicitly to Dr. Sheriyaar Akhtar)
+    const treatments = await prisma.treatment.findMany({
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+        select: {
+            id: true,
+            name: true,
+            price: true,
+            durationMin: true,
+        },
+    });
 
     return (
         <div className="space-y-8">
@@ -59,7 +46,7 @@ export default async function WalkInPage() {
                 </div>
             </div>
 
-            <WalkInRegistration treatments={treatments} doctors={doctors} />
+            <WalkInRegistration treatments={treatments} />
         </div>
     );
 }

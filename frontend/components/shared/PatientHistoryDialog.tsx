@@ -1,7 +1,7 @@
 "use client";
 import { fetchApi } from "@/lib/api-client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 
 import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
@@ -19,6 +19,8 @@ import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
 import TagOutlinedIcon from "@mui/icons-material/TagOutlined";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import {
     Dialog,
     DialogContent,
@@ -27,7 +29,10 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatPKR } from "@/lib/utils";
+import SchedulePatientSessionDialog, { PlanBookingContext } from "@/components/shared/SchedulePatientSessionDialog";
+import CreateTreatmentPlan from "@/components/admin/patients/CreateTreatmentPlan";
 
 interface PatientHistory {
     patient: {
@@ -112,6 +117,32 @@ export default function PatientHistoryDialog({
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<"plans" | "appointments" | "payments">("plans");
 
+    // Modal Booking States
+    const [scheduleOpen, setScheduleOpen] = useState(false);
+    const [selectedPlanForBooking, setSelectedPlanForBooking] = useState<PlanBookingContext | null>(null);
+    const [availableTreatments, setAvailableTreatments] = useState<any[]>([]);
+
+    const fetchHistory = useCallback(async () => {
+        if (!patientId) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetchApi(`/api/patients/${patientId}/history`, { credentials: "include" });
+            if (!res.ok) throw new Error("Failed to fetch patient history");
+            const data = await res.json();
+            setHistory(data);
+            if (data.plans && data.plans.length > 0) {
+                setActiveTab("plans");
+            } else {
+                setActiveTab("appointments");
+            }
+        } catch (err: any) {
+            setError(err.message || "An error occurred");
+        } finally {
+            setLoading(false);
+        }
+    }, [patientId]);
+
     useEffect(() => {
         if (!open || !patientId) {
             setHistory(null);
@@ -119,28 +150,21 @@ export default function PatientHistoryDialog({
             return;
         }
 
-        const fetchHistory = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const res = await fetchApi(`/api/patients/${patientId}/history`, { credentials: "include" });
-                if (!res.ok) throw new Error("Failed to fetch patient history");
-                const data = await res.json();
-                setHistory(data);
-                if (data.plans && data.plans.length > 0) {
-                    setActiveTab("plans");
-                } else {
-                    setActiveTab("appointments");
-                }
-            } catch (err: any) {
-                setError(err.message || "An error occurred");
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchHistory();
-    }, [open, patientId]);
+    }, [open, patientId, fetchHistory]);
+
+    // Fetch active treatments for booking and treatment plan creation
+    useEffect(() => {
+        if (!open) return;
+        fetchApi("/api/treatments")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.treatments) {
+                    setAvailableTreatments(data.treatments);
+                }
+            })
+            .catch(() => {});
+    }, [open]);
 
     const completedVisits = history?.appointments.filter(a => a.status === "COMPLETED").length || 0;
     const activePlans = (history?.plans || []).filter(p => p.clinicalStatus === "IN_PROGRESS");
@@ -180,50 +204,81 @@ export default function PatientHistoryDialog({
                             </div>
                         </div>
 
-                        {/* Top Financial Stats */}
-                        <div className="flex items-center gap-2">
+                        {/* Top Financial Stats & Quick Book Action */}
+                        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                             <div className="px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-right shadow-2xs">
-                                <p className="text-[9.5px] text-emerald-800 uppercase tracking-wider font-extrabold">Total Revenue Collected</p>
+                                <p className="text-[9.5px] text-emerald-800 uppercase tracking-wider font-extrabold">Total Revenue</p>
                                 <p className="text-sm font-black text-emerald-700">{formatPKR(totalRevenue)}</p>
                             </div>
+                            <Button
+                                type="button"
+                                onClick={() => {
+                                    setSelectedPlanForBooking(null);
+                                    setScheduleOpen(true);
+                                }}
+                                className="bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs h-9 px-3.5 rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
+                            >
+                                <CalendarMonthOutlinedIcon sx={{ fontSize: 15 }} />
+                                <span>+ Book Visit</span>
+                            </Button>
                         </div>
                     </div>
 
-                    {/* Navigation Tabs */}
-                    <div className="flex items-center gap-2 pt-4 border-t border-slate-100 mt-3">
-                        <button
-                            onClick={() => setActiveTab("plans")}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                activeTab === "plans"
-                                    ? "bg-teal-600 text-white shadow-xs"
-                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                            }`}
-                        >
-                            <AutoAwesomeOutlinedIcon className="size-3.5" />
-                            Treatment Plans ({history?.plans?.length || 0})
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("appointments")}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                activeTab === "appointments"
-                                    ? "bg-teal-600 text-white shadow-xs"
-                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                            }`}
-                        >
-                            <CalendarMonthOutlinedIcon className="size-3.5" />
-                            Visits ({history?.appointments?.length || 0})
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("payments")}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                activeTab === "payments"
-                                    ? "bg-teal-600 text-white shadow-xs"
-                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                            }`}
-                        >
-                            <CreditCardOutlinedIcon className="size-3.5" />
-                            Payment Ledger ({history?.allPayments?.length || 0})
-                        </button>
+                    {/* Navigation Tabs & Secondary Actions */}
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-3 flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setActiveTab("plans")}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                    activeTab === "plans"
+                                        ? "bg-teal-600 text-white shadow-xs"
+                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                }`}
+                            >
+                                <AutoAwesomeOutlinedIcon className="size-3.5" />
+                                Treatment Plans ({history?.plans?.length || 0})
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("appointments")}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                    activeTab === "appointments"
+                                        ? "bg-teal-600 text-white shadow-xs"
+                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                }`}
+                            >
+                                <CalendarMonthOutlinedIcon className="size-3.5" />
+                                Visits ({history?.appointments?.length || 0})
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("payments")}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                    activeTab === "payments"
+                                        ? "bg-teal-600 text-white shadow-xs"
+                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                }`}
+                            >
+                                <CreditCardOutlinedIcon className="size-3.5" />
+                                Payment Ledger ({history?.allPayments?.length || 0})
+                            </button>
+                        </div>
+
+                        {history?.patient && (
+                            <CreateTreatmentPlan
+                                patientId={history.patient.id}
+                                availableTreatments={availableTreatments}
+                                onSuccess={fetchHistory}
+                                customTrigger={
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 px-3 rounded-lg border-teal-300 text-teal-800 hover:bg-teal-50 text-xs font-bold shadow-2xs flex items-center gap-1 cursor-pointer"
+                                    >
+                                        <AddOutlinedIcon sx={{ fontSize: 14 }} />
+                                        <span>+ New Treatment Plan</span>
+                                    </Button>
+                                }
+                            />
+                        )}
                     </div>
                 </DialogHeader>
 
@@ -244,9 +299,18 @@ export default function PatientHistoryDialog({
                             {activeTab === "plans" && (
                                 <div className="space-y-4">
                                     {(!history.plans || history.plans.length === 0) ? (
-                                        <div className="text-center py-12 text-slate-500 text-sm bg-white rounded-xl border border-slate-200 shadow-xs">
-                                            <AutoAwesomeOutlinedIcon className="size-8 text-slate-300 mx-auto mb-2" />
-                                            No multi-session treatment plans found for this patient.
+                                        <div className="text-center py-12 text-slate-500 text-sm bg-white rounded-xl border border-slate-200 shadow-xs space-y-3">
+                                            <AutoAwesomeOutlinedIcon className="size-8 text-slate-300 mx-auto" />
+                                            <p>No multi-session treatment plans found for this patient.</p>
+                                            {history?.patient && (
+                                                <div className="pt-1">
+                                                    <CreateTreatmentPlan
+                                                        patientId={history.patient.id}
+                                                        availableTreatments={availableTreatments}
+                                                        onSuccess={fetchHistory}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     ) : (
                                         history.plans.map((plan) => {
@@ -280,11 +344,31 @@ export default function PatientHistoryDialog({
                                                             </p>
                                                         </div>
 
-                                                        {/* Session Counter */}
-                                                        <div className="text-right">
+                                                        {/* Session Counter & Schedule Next Action */}
+                                                        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-end">
                                                             <span className="text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-lg">
                                                                 Session {plan.completedSessions} of {plan.totalSessions} Completed
                                                             </span>
+                                                            {plan.clinicalStatus === "IN_PROGRESS" && plan.completedSessions < plan.totalSessions && (
+                                                                <Button
+                                                                    type="button"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setSelectedPlanForBooking({
+                                                                            id: plan.id,
+                                                                            treatmentId: plan.treatment.id,
+                                                                            treatmentName: plan.treatment.name,
+                                                                            sessionNumber: (plan.appointments?.length || plan.completedSessions) + 1,
+                                                                            totalSessions: plan.totalSessions,
+                                                                        });
+                                                                        setScheduleOpen(true);
+                                                                    }}
+                                                                    className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-8 px-3 rounded-lg shadow-2xs transition-all active:scale-[0.98] flex items-center gap-1 cursor-pointer"
+                                                                >
+                                                                    <CalendarMonthOutlinedIcon sx={{ fontSize: 13 }} />
+                                                                    <span>+ Schedule Next Session</span>
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                     </div>
 
@@ -355,6 +439,21 @@ export default function PatientHistoryDialog({
                             {/* TAB 2: ALL VISITS */}
                             {activeTab === "appointments" && (
                                 <div className="space-y-3">
+                                    <div className="flex items-center justify-between pb-1">
+                                        <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">Clinical Encounter Timeline</p>
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            onClick={() => {
+                                                setSelectedPlanForBooking(null);
+                                                setScheduleOpen(true);
+                                            }}
+                                            className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-7 px-2.5 rounded-lg shadow-2xs transition-all active:scale-[0.98] flex items-center gap-1 cursor-pointer"
+                                        >
+                                            <CalendarMonthOutlinedIcon sx={{ fontSize: 13 }} />
+                                            <span>+ Book Visit</span>
+                                        </Button>
+                                    </div>
                                     {history.appointments.length === 0 ? (
                                         <div className="text-center py-12 text-slate-500 text-sm bg-white rounded-xl border border-slate-200 shadow-xs">
                                             No appointments found for this patient.
@@ -444,6 +543,17 @@ export default function PatientHistoryDialog({
                         </>
                     ) : null}
                 </div>
+
+                {history?.patient && (
+                    <SchedulePatientSessionDialog
+                        open={scheduleOpen}
+                        onOpenChange={setScheduleOpen}
+                        patient={history.patient}
+                        plan={selectedPlanForBooking}
+                        availableTreatments={availableTreatments}
+                        onSuccess={fetchHistory}
+                    />
+                )}
             </DialogContent>
         </Dialog>
     );

@@ -129,8 +129,8 @@ export default function AboutHero({ treatments }: AboutHeroProps) {
               {/* High-Definition Male Dentist Portrait in Doctor's Coat with Stethoscope */}
               <div className="relative w-[300px] sm:w-[340px] h-[420px] sm:h-[460px] rounded-[48px] overflow-hidden z-10 shadow-2xl border-4 border-white bg-white group">
                 <Image
-                  src="/images/dr_sheriyaar.jpg"
-                  alt="Dr. Sheriyaar - Lead Dental Surgeon in pristine clinical coat"
+                  src="/dr_sheriyaar.webp"
+                  alt="Dr. Shehryar Akhtar - Lead Dental Surgeon in pristine clinical coat"
                   fill
                   className="object-cover object-top group-hover:scale-105 transition-transform duration-700"
                   priority
@@ -142,11 +142,11 @@ export default function AboutHero({ treatments }: AboutHeroProps) {
                 <div className="absolute bottom-4 left-4 right-4 bg-slate-950/85 backdrop-blur-md rounded-2xl p-3 border border-slate-700/80 text-white shadow-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-black text-white">Dr. Sheriyaar</p>
-                      <p className="text-[10px] text-teal-300 font-medium">BDS, RDS • Lead Dental Specialist</p>
+                      <p className="text-xs font-black text-white">Dr. Shehryar Akhtar</p>
+                      <p className="text-[10px] text-teal-300 font-medium">BDS, MDS Orthodontist • Restorative Dentistry</p>
                     </div>
                     <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded-full">
-                      PMC Active
+                      PMDC Active
                     </span>
                   </div>
                 </div>

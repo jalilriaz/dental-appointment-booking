@@ -17,50 +17,50 @@ import { FeedbackItem } from "@/lib/types";
 const INITIAL_REVIEWS: FeedbackItem[] = [
   {
     id: "fb-1",
-    name: "Ayesha Malik",
+    name: "Hina Aman",
     rating: 5,
-    treatmentName: "Dental Implants",
-    date: "March 18, 2026",
+    treatmentName: "Orthodontics & Braces",
+    date: "October 14, 2026",
     source: "Google",
     comment:
-      "I was extremely anxious about getting an implant done, but Dr. Zeeshan and the team at Elite Dental made it completely seamless and painless. The 3D scan and pre-planning was top tier. Highly recommended to anyone looking for genuine surgical precision!",
+      "The treatment was handled very gently and explained clearly. The whole experience was comfortable, reassuring, and highly professional under Dr. Shehryar's care.",
     clinicResponse: {
       responder: "Elite Dental Centre",
-      date: "March 19, 2026",
+      date: "October 15, 2026",
       message:
-        "Thank you so much, Ayesha! We are thrilled to hear your implant procedure was smooth and comfortable. Keeping our patients relaxed and pain-free is our top priority.",
+        "Thank you so much, Hina! We are thrilled to hear your orthodontic experience was smooth and comfortable. Keeping our patients relaxed and pain-free is our top priority.",
     },
   },
   {
     id: "fb-2",
-    name: "Hamza Tariq",
+    name: "Ayesha Shahid",
     rating: 5,
-    treatmentName: "Root Canal Treatment",
-    date: "April 02, 2026",
+    treatmentName: "Cosmetic Restoration",
+    date: "October 28, 2026",
     source: "Google",
     comment:
-      "Painless single-sitting root canal! Absolutely incredible hygiene and state-of-the-art facility in F-7 Islamabad. The staff was courteous and followed up the next day to check on my recovery. Outstanding dental care.",
+      "I had a very positive experience at the clinic in G-8 Markaz. Dr. Shehryar took the time to answer all my questions and made me feel completely at ease throughout the treatment.",
     clinicResponse: {
       responder: "Elite Dental Centre",
-      date: "April 03, 2026",
+      date: "October 29, 2026",
       message:
-        "Hamza, hearing that your root canal was completely painless is fantastic. We appreciate you taking the time to share your positive experience!",
+        "Ayesha, hearing that your visit was comforting and reassuring means the world to our team. We appreciate your kind words!",
     },
   },
   {
     id: "fb-3",
-    name: "Dr. Bilal Rafiq",
+    name: "Hamza",
     rating: 5,
-    treatmentName: "Teeth Whitening",
-    date: "April 15, 2026",
-    source: "Verified Patient",
+    treatmentName: "Dental Implant Consultation",
+    date: "November 04, 2026",
+    source: "Google",
     comment:
-      "Came in for laser teeth whitening before my wedding. The results exceeded all my expectations — 4 shades brighter in just 45 minutes with zero sensitivity afterward. The clinic ambiance feels like a boutique hospital.",
+      "The doctor was professional, patient and very clear about the treatment process. Everything was explained before starting the procedure with clear transparent fee breakdowns.",
     clinicResponse: {
       responder: "Elite Dental Centre",
-      date: "April 15, 2026",
+      date: "November 05, 2026",
       message:
-        "Congratulations on your wedding, Dr. Bilal! It was our pleasure to brighten your smile for such a special milestone.",
+        "Thank you Hamza! Providing full transparency and clinical excellence is the foundation of our dental practice.",
     },
   },
   {
@@ -68,31 +68,31 @@ const INITIAL_REVIEWS: FeedbackItem[] = [
     name: "Mariam Sohail",
     rating: 5,
     treatmentName: "Clear Aligners",
-    date: "April 28, 2026",
+    date: "November 08, 2026",
     source: "Google",
     comment:
-      "Completed my 8-month Invisalign aligner treatment here. The digital simulation matched my final smile 100%. Transparent pricing, no hidden costs, and exceptionally gentle care throughout every checkup.",
+      "Completed my aligner checkup with Dr. Shehryar. The digital simulation matched my progress perfectly. Transparent pricing, no hidden costs, and exceptionally gentle care throughout every checkup.",
     clinicResponse: {
       responder: "Elite Dental Centre",
-      date: "April 29, 2026",
+      date: "November 09, 2026",
       message:
         "Mariam, your new smile looks radiant! Thank you for trusting Elite Dental with your orthodontic journey.",
     },
   },
   {
     id: "fb-5",
-    name: "Usman Ghani",
-    rating: 4,
-    treatmentName: "Routine Scaling & Polishing",
-    date: "May 01, 2026",
-    source: "Website",
+    name: "Zara",
+    rating: 5,
+    treatmentName: "Comprehensive Smile Care",
+    date: "November 12, 2026",
+    source: "Google",
     comment:
-      "Very thorough deep cleaning with ultrasonic scaler. The hygienist explained every step. The appointment started 10 minutes late due to an emergency trauma case, but the quality of care and sterile measures were exceptional.",
+      "A comfortable and pleasant experience from start to finish. I especially appreciated the friendly communication, clean facility next to IDC in G-8, and Dr. Shehryar's professional approach.",
     clinicResponse: {
       responder: "Elite Dental Centre",
-      date: "May 02, 2026",
+      date: "November 13, 2026",
       message:
-        "Thank you Usman for your valuable review! We apologize for the brief wait while we accommodated an emergency trauma patient, and we are glad the cleaning met your high standards.",
+        "Thank you Zara! We are committed to maintaining the highest hospital sterilization standards for all our patients.",
     },
   },
   {
@@ -100,13 +100,13 @@ const INITIAL_REVIEWS: FeedbackItem[] = [
     name: "Zainab Noor",
     rating: 5,
     treatmentName: "Cosmetic Veneers",
-    date: "May 03, 2026",
+    date: "November 16, 2026",
     source: "Google",
     comment:
-      "Got custom porcelain veneers crafted by the cosmetic specialist. The precision shade matching and artistic attention Dr. Sarah gave was phenomenal. Friends keep complimenting my natural smile!",
+      "Got custom porcelain veneers crafted by Dr. Shehryar. The precision shade matching and artistic attention he gave was phenomenal. Friends keep complimenting my natural smile!",
     clinicResponse: {
       responder: "Elite Dental Centre",
-      date: "May 03, 2026",
+      date: "November 16, 2026",
       message:
         "Zainab, it was an honor helping craft your dream smile. Keep smiling brightly!",
     },
