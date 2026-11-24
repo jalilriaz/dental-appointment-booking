@@ -82,7 +82,7 @@ function getPrecautionsForTreatment(treatmentName, customInstructions) {
     return DEFAULT_PRECAUTIONS.general;
 }
 function formatPrecautionsMessage(params) {
-    const doctor = params.doctorName || "Dr. Sheriyaar";
+    const doctor = params.doctorName || "Dr. Shehryar Akhtar";
     const bullets = params.precautions.map(p => `• ${p}`).join("\n");
     return `🦷 *Elite Dental Centre — Post-Treatment Care*
 

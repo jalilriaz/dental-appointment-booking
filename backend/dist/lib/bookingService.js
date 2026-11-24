@@ -277,7 +277,7 @@ async function createAppointment(input) {
                         phone: recipientPhone,
                         patientName: user.name || patientName || guestName || "Valued Patient",
                         treatmentName: treatment.name,
-                        doctorName: appointment.doctor?.name || "Dr. Sheriyaar",
+                        doctorName: appointment.doctor?.name || "Dr. Shehryar Akhtar",
                         date: (0, utils_1.formatDate)(startTime),
                         time: (0, utils_1.formatTime)(startTime),
                         appointmentId: appointment.id,

@@ -137,7 +137,6 @@ export default function Footer() {
             </h4>
             <div className="space-y-1 text-xs">
               <p className="text-teal-400 font-bold font-mono">{clinicInfo.workingHours}</p>
-              <p className="text-slate-500 text-[11px] pt-1">Sunday: Emergency appointments on-call</p>
             </div>
 
             <div className="pt-4 mt-4 border-t border-slate-800 space-y-2">

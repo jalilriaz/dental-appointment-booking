@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { clinicInfo } from "@/app/constants/mockData";
+import { getWhatsAppBookingUrl } from "@/lib/whatsapp";
 import NoticeBanner from "@/components/NoticeBanner";
 import {
   PhoneOutlined,
@@ -171,6 +172,7 @@ export default function Navbar() {
 
             {/* Direct CTAs with MUI Icons */}
             <div className="hidden md:flex items-center gap-1.5 xl:gap-2.5 shrink-0">
+              {/* WhatsApp Doctor button commented out per clinic workflow preference:
               <a
                 href={`https://wa.me/${settings.whatsapp || clinicInfo.whatsapp}?text=${encodeURIComponent(
                   "Hello Elite Dental, I would like to consult or schedule an appointment."
@@ -182,14 +184,17 @@ export default function Navbar() {
                 <WhatsApp sx={{ fontSize: 16, color: "#059669" }} />
                 <span>WhatsApp<span className="hidden xl:inline"> Doctor</span></span>
               </a>
+              */}
 
-              <Link
-                href="/#book"
-                className="whitespace-nowrap flex items-center gap-1.5 xl:gap-2 px-3 py-1.5 xl:px-4.5 xl:py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-slate-950 hover:bg-teal-700 shadow-md shadow-slate-950/20 hover:shadow-teal-600/30 transition-all duration-200 active:scale-95 shrink-0"
+              <a
+                href={getWhatsAppBookingUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="whitespace-nowrap flex items-center gap-1.5 xl:gap-2 px-3 py-1.5 xl:px-4.5 xl:py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-slate-950 hover:bg-teal-700 shadow-md shadow-slate-950/20 hover:shadow-teal-600/30 transition-all duration-200 active:scale-95 shrink-0 cursor-pointer"
               >
-                <CalendarMonthOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} />
+                <WhatsApp sx={{ fontSize: 16, color: "#2dd4bf" }} />
                 <span>Book Visit</span>
-              </Link>
+              </a>
 
               <Link
                 href="/login"
@@ -202,12 +207,15 @@ export default function Navbar() {
 
             {/* Mobile Toggle Button */}
             <div className="flex lg:hidden items-center gap-2">
-              <Link
-                href="/#book"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-slate-950"
+              <a
+                href={getWhatsAppBookingUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-slate-950 inline-flex items-center gap-1"
               >
-                Book
-              </Link>
+                <WhatsApp sx={{ fontSize: 13, color: "#2dd4bf" }} />
+                <span>Book</span>
+              </a>
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
                 className="p-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-100"
@@ -246,6 +254,7 @@ export default function Navbar() {
               })}
 
               <div className="pt-3 border-t border-slate-100 mt-2 flex flex-col gap-2">
+                {/* WhatsApp Clinic button commented out per clinic workflow preference:
                 <a
                   href={`https://wa.me/${settings.whatsapp || clinicInfo.whatsapp}`}
                   target="_blank"
@@ -255,14 +264,17 @@ export default function Navbar() {
                   <WhatsApp sx={{ fontSize: 18, color: "#059669" }} />
                   <span>WhatsApp Clinic</span>
                 </a>
+                */}
 
-                <Link
-                  href="/#book"
+                <a
+                  href={getWhatsAppBookingUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold text-white bg-slate-950"
                 >
-                  <CalendarMonthOutlined sx={{ fontSize: 18, color: "#2dd4bf" }} />
-                  <span>Book Instant Appointment</span>
-                </Link>
+                  <WhatsApp sx={{ fontSize: 18, color: "#2dd4bf" }} />
+                  <span>Book Appointment on WhatsApp</span>
+                </a>
 
                 <Link
                   href="/login"

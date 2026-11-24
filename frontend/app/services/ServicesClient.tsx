@@ -27,9 +27,11 @@ import {
   LocalAtmOutlined,
   SentimentSatisfiedAltOutlined,
   Close,
+  ArrowForwardOutlined,
 } from "@mui/icons-material";
 import { clinicInfo } from "@/app/constants/mockData";
-import { formatPKR, formatPriceRange, getTreatmentImage } from "@/lib/utils";
+import { getTreatmentImage } from "@/lib/utils";
+import { getWhatsAppBookingUrl, getWhatsAppDoctorQuestionUrl } from "@/lib/whatsapp";
 import BookingForm from "@/components/BookingForm";
 
 function ToothIcon({ className = "size-5" }: { className?: string }) {
@@ -207,7 +209,7 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            
+
             {/* Left Content Column */}
             <div className="lg:col-span-7 space-y-6">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold tracking-wider uppercase shadow-xs">
@@ -227,17 +229,18 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
 
               {/* Action Buttons Row */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => openBookingModal()}
+                <a
+                  href={getWhatsAppBookingUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="px-6 sm:px-8 py-3.5 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-teal-600/25 transition-all duration-300 hover:scale-105 cursor-pointer inline-flex items-center gap-2"
                 >
-                  <CalendarMonthOutlined sx={{ fontSize: 18 }} />
-                  <span>Make an Appointment</span>
-                </button>
+                  <WhatsApp sx={{ fontSize: 18 }} />
+                  <span>Book on WhatsApp</span>
+                </a>
 
                 <a
-                  href={`https://wa.me/${clinicInfo.phone.replace(/[^0-9]/g, "")}?text=Hello%2C%20I%20would%20like%20to%20inquire%20about%20dental%20treatments.`}
+                  href={getWhatsAppDoctorQuestionUrl("General Consultation")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-6 sm:px-8 py-3.5 rounded-full bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 font-extrabold text-sm sm:text-base shadow-xs hover:border-slate-300 transition-all duration-300 cursor-pointer inline-flex items-center gap-2"
@@ -284,11 +287,10 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
                     <button
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
-                        selectedCategory === cat.id
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${selectedCategory === cat.id
                           ? "bg-teal-600 text-white shadow-md shadow-teal-600/30 scale-105"
                           : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                      }`}
+                        }`}
                     >
                       {cat.label}
                     </button>
@@ -300,7 +302,7 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
             {/* Right Column: Hero Visual with Shaped Backdrop & Floating Badges */}
             <div className="lg:col-span-5 relative flex justify-center items-center">
               <div className="relative w-full max-w-[420px] sm:max-w-[460px] h-[480px] sm:h-[540px] flex items-center justify-center select-none">
-                
+
                 {/* Shaped Organic Curved Backdrop (Tooth / Heart Shape Aesthetic) */}
                 <div className="absolute inset-2 sm:inset-4 rounded-[64px] bg-gradient-to-br from-teal-100/90 via-teal-50/40 to-cyan-100/60 border border-teal-200/80 shadow-xl -rotate-2 pointer-events-none" />
 
@@ -441,31 +443,15 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
                     </p>
                   </div>
 
-                  <div className="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider">
-                          Fee Range
-                        </span>
-                        <span className="text-[9px] font-bold text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">
-                          Varies by case
-                        </span>
-                      </div>
-                      <span className="text-lg sm:text-xl font-black text-slate-950 font-sans tracking-tight">
-                        {formatPriceRange(treatment.price, treatment.maxPrice)}
-                      </span>
-                    </div>
-
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => openBookingModal(treatment.id)}
-                        className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-slate-950 hover:bg-teal-700 shadow-md shadow-slate-950/15 transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <span>Book</span>
-                        <ChevronRightOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} />
-                      </button>
-                    </div>
+                  <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-end">
+                    <Link
+                      href={`/services/${treatment.id}`}
+                      className="text-xs sm:text-sm font-bold text-teal-700 hover:text-teal-900 underline underline-offset-4 decoration-teal-600 transition-colors inline-flex items-center gap-1.5 py-1"
+                      title={`Learn more about ${treatment.name}`}
+                    >
+                      <span>Learn more</span>
+                      <ArrowForwardOutlined sx={{ fontSize: 14 }} />
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -498,11 +484,10 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
                 <button
                   key={symptom.id}
                   onClick={() => setActiveSymptomId(symptom.id)}
-                  className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-extrabold flex items-center gap-2.5 transition-all cursor-pointer shadow-xs ${
-                    isActive
+                  className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-extrabold flex items-center gap-2.5 transition-all cursor-pointer shadow-xs ${isActive
                       ? "bg-teal-600 text-white shadow-md shadow-teal-600/30 scale-105"
                       : "bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-slate-200"
-                  }`}
+                    }`}
                 >
                   <IconComp sx={{ fontSize: 18, color: isActive ? "#ffffff" : "#0d9488" }} />
                   <span>{symptom.title}</span>
@@ -547,24 +532,25 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
                   </div>
                   <div className="p-4 rounded-2xl bg-teal-50/60 border border-teal-200/60">
                     <span className="text-[11px] font-bold text-teal-800 uppercase tracking-wider block">
-                      Transparent Starting Fee
+                      Consultation &amp; Plan
                     </span>
-                    <p className="text-base font-black text-teal-950 mt-0.5">
-                      {activeSymptom.pricing}
+                    <p className="text-xs sm:text-sm font-black text-teal-950 mt-0.5">
+                      Tailored Quote by Dr. Shehryar Akhtar
                     </p>
                   </div>
                 </div>
 
                 {/* Direct Action Buttons */}
                 <div className="flex flex-wrap items-center gap-4 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => openBookingModal(activeSymptom.procedureId)}
+                  <a
+                    href={getWhatsAppBookingUrl(activeSymptom.recommended)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="px-6 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-teal-600/25 transition-transform active:scale-95 inline-flex items-center gap-2 cursor-pointer"
                   >
-                    <CalendarMonthOutlined sx={{ fontSize: 18 }} />
-                    <span>Book This Treatment</span>
-                  </button>
+                    <WhatsApp sx={{ fontSize: 18 }} />
+                    <span>Book on WhatsApp</span>
+                  </a>
 
                   <Link
                     href={`/services/${activeSymptom.procedureId}`}
@@ -605,9 +591,7 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
 
                 <div className="pt-2 border-t border-slate-800">
                   <a
-                    href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent(
-                      `Hello, I would like expert advice regarding: ${activeSymptom.title} (${activeSymptom.recommended}).`
-                    )}`}
+                    href={getWhatsAppDoctorQuestionUrl(activeSymptom.recommended)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-3 rounded-xl bg-teal-700/50 hover:bg-teal-600/70 border border-teal-500/40 text-teal-200 text-xs font-bold transition-all flex items-center justify-center gap-2"
@@ -941,18 +925,17 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
             Send us a WhatsApp message or schedule a quick diagnostic consultation with our surgical team.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-            <button
-              type="button"
-              onClick={() => openBookingModal()}
+            <a
+              href={getWhatsAppBookingUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-8 py-4 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-teal-600/30 transition-transform active:scale-95 inline-flex items-center gap-2 cursor-pointer"
             >
-              <CalendarMonthOutlined sx={{ fontSize: 18 }} />
-              <span>Book In-Person Exam</span>
-            </button>
+              <WhatsApp sx={{ fontSize: 18 }} />
+              <span>Book Appointment on WhatsApp</span>
+            </a>
             <a
-              href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent(
-                "Hello, I need guidance on choosing the right dental treatment."
-              )}`}
+              href={getWhatsAppDoctorQuestionUrl("General Consultation")}
               target="_blank"
               rel="noopener noreferrer"
               className="px-8 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-xs uppercase tracking-wider border border-slate-700 transition-colors inline-flex items-center gap-2"
@@ -989,7 +972,7 @@ export default function ServicesClient({ treatments }: { treatments: Treatment[]
                   </h3>
                   <p className="text-xs text-slate-500 font-medium">
                     {selectedTreatment
-                      ? `Fee Range: ${formatPriceRange(selectedTreatment.price, selectedTreatment.maxPrice)} (varies by case) • ${selectedTreatment.durationMin} mins appointment`
+                      ? `Clinical assessment with Dr. Shehryar Akhtar • ${selectedTreatment.durationMin} mins appointment`
                       : "Choose your preferred treatment and date"}
                   </p>
                 </div>

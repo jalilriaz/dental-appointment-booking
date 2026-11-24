@@ -12,7 +12,7 @@ export const clinicInfo = {
     sundayHours: "Sunday - Closed",
     mapUrl: "https://www.google.com/maps/search/?api=1&query=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad",
     directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad",
-    whatsapp: "923145475528",
+    whatsapp: "923085268994",
 };
 
 export const serviceHighlights = [

@@ -1,468 +1,433 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { decrypt } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import Image from "next/image";
-import {
-  PeopleAltOutlined,
-  EventAvailableOutlined,
-  AttachMoneyOutlined,
-  AccessTimeOutlined,
-  TrendingUpOutlined,
-  EventBusyOutlined,
-  CheckCircleOutlineOutlined,
-  PersonAddAlt1Outlined,
-  CalendarMonthOutlined,
-  AccountBalanceWalletOutlined,
-  ArrowForwardOutlined,
-  LocalHospitalOutlined,
-} from "@mui/icons-material";
-import Link from "next/link";
-import TodayAppointments from "@/components/shared/TodayAppointments";
-import AnimatedDashboard from "@/components/shared/AnimatedDashboard";
-import { formatPKR, formatDate, formatTime } from "@/lib/utils";
-import StatusBadge from "@/components/shared/StatusBadge";
+import AdminExecutiveDashboard, {
+  DashboardKPIs,
+  ChartDatasets,
+  ChartDataPoint,
+  QueuePatientAppointment,
+  UpcomingAppointmentItem,
+  StatusDistribution,
+  PopularTreatmentItem,
+} from "@/components/admin/AdminExecutiveDashboard";
 
-export default async function AdminDashboard() {
+export const dynamic = "force-dynamic";
+
+export default async function AdminDashboardPage() {
+  // ─── 1. Server Session & Admin Role Verification ───────────
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get("session")?.value;
+  let session: Record<string, unknown> | null = null;
+
+  if (sessionCookie) {
+    try {
+      session = await decrypt(sessionCookie);
+    } catch {
+      session = null;
+    }
+  }
+
+  // Strict server guard: Only ADMIN users can view this executive dashboard
+  if (!session || session.role !== "ADMIN") {
+    redirect("/login?callbackUrl=/admin");
+  }
+
+  // ─── 2. Date Boundaries (Asia/Karachi UTC+5 context) ──────
   const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const todayEnd = new Date(todayStart.getTime() + 86400000);
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
 
-  // Fetch all stats in parallel
+  const todayStart = new Date(currentYear, currentMonth, now.getDate(), 0, 0, 0, 0);
+  const todayEnd = new Date(currentYear, currentMonth, now.getDate(), 23, 59, 59, 999);
+
+  const monthStart = new Date(currentYear, currentMonth, 1, 0, 0, 0, 0);
+  const nextMonthStart = new Date(currentYear, currentMonth + 1, 1, 0, 0, 0, 0);
+  const prevMonthStart = new Date(currentYear, currentMonth - 1, 1, 0, 0, 0, 0);
+
+  // ─── 3. Parallel Database Queries ─────────────────────────
   const [
-    totalPatients,
-    totalAppointments,
-    appointmentsToday,
-    completedAppointments,
-    cancelledAppointments,
-    upcomingAppointments,
-    realizedRevenueAgg,
-    projectedRevenueAgg,
-    monthlyRealizedAgg,
-    todayAppts,
-    recentAppointments,
-    doctorsList,
+    // Revenue current month
+    revThisMonthAgg,
+    // Revenue previous month (for MoM trend)
+    revLastMonthAgg,
+    // Outstanding balance (all uncollected dues)
+    nonCancelledAppointments,
+    // Today's appointments for KPI
+    todayAppointmentsList,
+    // Total registered patients & new patients this month
+    totalPatientsCount,
+    newPatientsThisMonthCount,
+    // Status distribution
+    statusGroupCounts,
+    // All appointments for chart aggregations
+    allAppointmentsForCharts,
+    // Queue: today and recent active appointments
+    recentQueueAppointments,
+    // Upcoming schedule from today onwards
+    upcomingAppointmentsList,
+    // Popular treatments
+    allActiveTreatments,
+    // Doctor details for name & identity
+    leadDoctor,
   ] = await Promise.all([
-    prisma.user.count({ where: { role: "PATIENT" } }),
-    prisma.appointment.count(),
-    prisma.appointment.count({
+    // Realized revenue this month
+    prisma.appointment.aggregate({
+      _sum: { amountPaid: true },
       where: {
-        startTime: { gte: todayStart, lt: todayEnd },
-        status: { not: "CANCELLED" },
+        status: "COMPLETED",
+        startTime: { gte: monthStart, lt: nextMonthStart },
       },
     }),
-    prisma.appointment.count({ where: { status: "COMPLETED" } }),
-    prisma.appointment.count({ where: { status: "CANCELLED" } }),
-    prisma.appointment.count({
-      where: { startTime: { gte: now }, status: "SCHEDULED" },
-    }),
+
+    // Realized revenue last month
     prisma.appointment.aggregate({
       _sum: { amountPaid: true },
-      where: { status: "COMPLETED" },
+      where: {
+        status: "COMPLETED",
+        startTime: { gte: prevMonthStart, lt: monthStart },
+      },
     }),
-    prisma.appointment.aggregate({
-      _sum: { price: true },
-      where: { status: { in: ["SCHEDULED", "COMPLETED"] } },
+
+    // Non-cancelled appointments to calculate exact outstanding balance
+    prisma.appointment.findMany({
+      where: { status: { not: "CANCELLED" } },
+      select: {
+        price: true,
+        amountPaid: true,
+        discount: true,
+      },
     }),
-    prisma.appointment.aggregate({
-      _sum: { amountPaid: true },
-      where: { status: "COMPLETED", startTime: { gte: monthStart } },
-    }),
+
+    // Today's appointments count & status
     prisma.appointment.findMany({
       where: {
-        startTime: { gte: todayStart, lt: todayEnd },
-        status: { not: "CANCELLED" },
+        startTime: { gte: todayStart, lte: todayEnd },
       },
-      include: {
-        patient: { select: { name: true, phone: true, medicalAlerts: true } },
-        treatment: { select: { name: true, durationMin: true, price: true } },
+      select: {
+        status: true,
+      },
+    }),
+
+    // Total registered patient profiles
+    prisma.user.count({
+      where: { role: "PATIENT" },
+    }),
+
+    // New patients registered this month
+    prisma.user.count({
+      where: {
+        role: "PATIENT",
+        createdAt: { gte: monthStart },
+      },
+    }),
+
+    // Status breakdown (Completed, Scheduled, Cancelled, No-show)
+    prisma.appointment.groupBy({
+      by: ["status"],
+      _count: { id: true },
+    }),
+
+    // Full appointments dataset for weekly, monthly, and yearly time series
+    prisma.appointment.findMany({
+      select: {
+        startTime: true,
+        status: true,
+        amountPaid: true,
       },
       orderBy: { startTime: "asc" },
     }),
+
+    // Queue of recent active appointments for table
     prisma.appointment.findMany({
-      take: 8,
+      take: 30,
       orderBy: { startTime: "desc" },
       include: {
-        patient: { select: { name: true, phone: true } },
-        treatment: { select: { name: true, price: true, category: true } },
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            medicalAlerts: true,
+            _count: {
+              select: { appointments: true },
+            },
+          },
+        },
+        treatment: {
+          select: {
+            id: true,
+            name: true,
+            durationMin: true,
+            price: true,
+          },
+        },
       },
     }),
-    prisma.doctor.findMany({
+
+    // Upcoming appointments from today onwards
+    prisma.appointment.findMany({
+      where: {
+        startTime: { gte: todayStart },
+        status: { in: ["SCHEDULED", "RESCHEDULED"] },
+      },
+      orderBy: { startTime: "asc" },
+      take: 20,
+      include: {
+        patient: {
+          select: {
+            name: true,
+            phone: true,
+            _count: {
+              select: { appointments: true },
+            },
+          },
+        },
+        treatment: {
+          select: {
+            name: true,
+            durationMin: true,
+          },
+        },
+      },
+    }),
+
+    // Treatments for top treatments breakdown
+    prisma.treatment.findMany({
+      where: { isActive: true },
+      include: {
+        _count: {
+          select: { appointments: true },
+        },
+        appointments: {
+          select: {
+            amountPaid: true,
+            status: true,
+          },
+        },
+      },
+    }),
+
+    // Doctor profile for greeting & consistency
+    prisma.doctor.findFirst({
       where: { isActive: true },
       orderBy: [{ isLead: "desc" }, { createdAt: "asc" }],
+      select: { name: true },
     }),
   ]);
 
-  const realizedRevenue = realizedRevenueAgg._sum.amountPaid || 0;
-  const projectedRevenue = projectedRevenueAgg._sum.price || 0;
-  const monthRevenue = monthlyRealizedAgg._sum.amountPaid || 0;
+  // ─── 4. KPI Calculations ──────────────────────────────────
+  const revenueThisMonth = revThisMonthAgg._sum.amountPaid || 0;
+  const revenueLastMonth = revLastMonthAgg._sum.amountPaid || 0;
 
-  const serializedToday = todayAppts.map((a) => ({
-    id: a.id,
-    startTime: a.startTime.toISOString(),
-    endTime: a.endTime.toISOString(),
-    status: a.status,
-    amountPaid: a.amountPaid || 0,
-    patient: a.patient,
-    treatment: a.treatment,
+  let revenueTrendPct = 0;
+  if (revenueLastMonth > 0) {
+    revenueTrendPct = Math.round(
+      ((revenueThisMonth - revenueLastMonth) / revenueLastMonth) * 100
+    );
+  } else if (revenueThisMonth > 0) {
+    revenueTrendPct = 100;
+  }
+
+  const outstandingBalance = nonCancelledAppointments.reduce((sum, apt) => {
+    const uncollected = Math.max(
+      0,
+      apt.price - (apt.discount || 0) - (apt.amountPaid || 0)
+    );
+    return sum + uncollected;
+  }, 0);
+
+  const appointmentsTodayTotal = todayAppointmentsList.length;
+  const appointmentsTodayDone = todayAppointmentsList.filter(
+    (a) => a.status === "COMPLETED"
+  ).length;
+  const appointmentsTodayNoShow = todayAppointmentsList.filter(
+    (a) => a.status === "NO_SHOW"
+  ).length;
+
+  const kpis: DashboardKPIs = {
+    revenueThisMonth,
+    revenueLastMonth,
+    revenueTrendPct,
+    appointmentsTodayDone,
+    appointmentsTodayTotal,
+    appointmentsTodayNoShow,
+    totalPatients: totalPatientsCount,
+    newPatientsThisMonth: newPatientsThisMonthCount,
+    outstandingBalance,
+  };
+
+  // ─── 5. Time Series Datasets (Weekly, Monthly, Yearly) ─────
+  // Weekly: Last 7 days
+  const weeklyMap: Record<string, { label: string; dateStr: string; revenue: number; appointments: number }> = {};
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    const key = d.toISOString().split("T")[0];
+    const dayLabel = d.toLocaleDateString("en-US", { weekday: "short" });
+    weeklyMap[key] = {
+      label: dayLabel,
+      dateStr: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      revenue: 0,
+      appointments: 0,
+    };
+  }
+
+  // Monthly: 12 months of current year
+  const monthlyMap: Record<string, { label: string; revenue: number; appointments: number }> = {};
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  monthNames.forEach((mName, idx) => {
+    monthlyMap[String(idx)] = {
+      label: mName,
+      revenue: 0,
+      appointments: 0,
+    };
+  });
+
+  // Yearly: 2024 to current year
+  const yearlyMap: Record<string, { label: string; revenue: number; appointments: number }> = {
+    "2024": { label: "2024", revenue: 0, appointments: 0 },
+    "2025": { label: "2025", revenue: 0, appointments: 0 },
+    [String(currentYear)]: { label: String(currentYear), revenue: 0, appointments: 0 },
+  };
+
+  allAppointmentsForCharts.forEach((apt) => {
+    const aDate = new Date(apt.startTime);
+    const dateKey = aDate.toISOString().split("T")[0];
+    const yearKey = String(aDate.getFullYear());
+    const monthKey = String(aDate.getMonth());
+
+    // Weekly bucket
+    if (weeklyMap[dateKey]) {
+      weeklyMap[dateKey].appointments += 1;
+      if (apt.status === "COMPLETED") {
+        weeklyMap[dateKey].revenue += apt.amountPaid || 0;
+      }
+    }
+
+    // Monthly bucket (current year)
+    if (aDate.getFullYear() === currentYear && monthlyMap[monthKey]) {
+      monthlyMap[monthKey].appointments += 1;
+      if (apt.status === "COMPLETED") {
+        monthlyMap[monthKey].revenue += apt.amountPaid || 0;
+      }
+    }
+
+    // Yearly bucket
+    if (yearlyMap[yearKey]) {
+      yearlyMap[yearKey].appointments += 1;
+      if (apt.status === "COMPLETED") {
+        yearlyMap[yearKey].revenue += apt.amountPaid || 0;
+      }
+    }
+  });
+
+  const chartData: ChartDatasets = {
+    weekly: Object.values(weeklyMap),
+    monthly: Object.values(monthlyMap),
+    yearly: Object.values(yearlyMap),
+  };
+
+  // ─── 6. Status Distribution Breakdown ─────────────────────
+  let completedCount = 0;
+  let upcomingCount = 0;
+  let cancelledCount = 0;
+  let noShowCount = 0;
+  let totalVisits = 0;
+
+  statusGroupCounts.forEach((group) => {
+    const c = group._count.id;
+    totalVisits += c;
+    if (group.status === "COMPLETED") completedCount += c;
+    else if (group.status === "SCHEDULED" || group.status === "RESCHEDULED") upcomingCount += c;
+    else if (group.status === "CANCELLED") cancelledCount += c;
+    else if (group.status === "NO_SHOW") noShowCount += c;
+  });
+
+  const statusDistribution: StatusDistribution = {
+    completed: completedCount,
+    upcoming: upcomingCount,
+    cancelled: cancelledCount,
+    noShow: noShowCount,
+    total: totalVisits,
+  };
+
+  // ─── 7. Top Popular Treatments ────────────────────────────
+  const popularTreatments: PopularTreatmentItem[] = allActiveTreatments
+    .map((t) => {
+      const bookings = t._count.appointments;
+      const revenue = t.appointments.reduce((sum, a) => {
+        if (a.status === "COMPLETED") {
+          return sum + (a.amountPaid || 0);
+        }
+        return sum;
+      }, 0);
+      return {
+        name: t.name,
+        bookings,
+        revenue,
+        category: t.category,
+      };
+    })
+    .sort((a, b) => b.bookings - a.bookings)
+    .slice(0, 5);
+
+  // ─── 8. Serialized Queue Patients ─────────────────────────
+  const serializedQueue: QueuePatientAppointment[] = recentQueueAppointments.map((apt) => ({
+    id: apt.id,
+    startTime: apt.startTime.toISOString(),
+    endTime: apt.endTime.toISOString(),
+    status: apt.status,
+    amountPaid: apt.amountPaid || 0,
+    price: apt.price || 0,
+    discount: apt.discount || 0,
+    patient: apt.patient
+      ? {
+          id: apt.patient.id,
+          name: apt.patient.name,
+          phone: apt.patient.phone,
+          medicalAlerts: apt.patient.medicalAlerts,
+          isFirstVisit: (apt.patient._count?.appointments ?? 1) <= 1,
+        }
+      : null,
+    treatment: {
+      id: apt.treatment.id,
+      name: apt.treatment.name,
+      durationMin: apt.treatment.durationMin,
+      price: apt.treatment.price,
+    },
   }));
 
+  // ─── 9. Serialized Upcoming Schedule ──────────────────────
+  const serializedUpcoming: UpcomingAppointmentItem[] = upcomingAppointmentsList.map((apt) => ({
+    id: apt.id,
+    startTime: apt.startTime.toISOString(),
+    endTime: apt.endTime.toISOString(),
+    status: apt.status,
+    patient: apt.patient
+      ? {
+          name: apt.patient.name,
+          phone: apt.patient.phone,
+          isFirstVisit: (apt.patient._count?.appointments ?? 1) <= 1,
+        }
+      : null,
+    treatment: {
+      name: apt.treatment.name,
+      durationMin: apt.treatment.durationMin,
+    },
+  }));
+
+  const doctorName = leadDoctor?.name || "Dr. Sheriyaar";
+
   return (
-    <AnimatedDashboard className="space-y-6 sm:space-y-8">
-      {/* ──────────────────────────────────────────────────────────────────
-          1. EXECUTIVE HERO BANNER: Welcome + Quick Action Command Center
-          ────────────────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B1528] via-[#0F1E38] to-[#0B1528] text-white p-6 sm:p-8 lg:p-10 shadow-xl border border-slate-800/80">
-        {/* Subtle Ambient Background Gradients */}
-        <div className="absolute -top-24 -right-24 size-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 size-80 bg-teal-600/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-xs font-bold uppercase tracking-wider">
-              <LocalHospitalOutlined sx={{ fontSize: 14 }} />
-              <span>Center of Advanced Implantology & Cosmetic Dentistry</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight font-sans">
-              Clinical Operations Hub
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-              Live practice metrics, daily patient schedule, and procedural ledger for Dr. Shehryar Akhtar at G-8 Markaz Islamabad.
-            </p>
-          </div>
-
-          {/* Quick Action Toolbar */}
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
-            <Link
-              href="/admin/walk-in"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-xs shadow-lg shadow-teal-600/25 active:scale-95 transition-all cursor-pointer border border-teal-400/40"
-            >
-              <PersonAddAlt1Outlined sx={{ fontSize: 18 }} />
-              <span>+ New Walk-In Patient</span>
-            </Link>
-
-            <Link
-              href="/admin/appointments"
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/15 backdrop-blur-sm active:scale-95 transition-all cursor-pointer"
-            >
-              <CalendarMonthOutlined sx={{ fontSize: 18 }} />
-              <span>All Appointments</span>
-            </Link>
-
-            <Link
-              href="/admin/revenue"
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/15 backdrop-blur-sm active:scale-95 transition-all cursor-pointer"
-            >
-              <AccountBalanceWalletOutlined sx={{ fontSize: 18 }} />
-              <span>Ledger</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ──────────────────────────────────────────────────────────────────
-          2. PRIMARY FINANCIAL & OPERATIONAL KPIS (Top Tier Cards)
-          ────────────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {/* Card 1: Total Realized Revenue */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-              Total Realized Revenue
-            </span>
-            <div className="size-11 rounded-2xl bg-teal-50 border border-teal-200/80 flex items-center justify-center text-teal-700 shadow-2xs group-hover:scale-105 transition-transform">
-              <AttachMoneyOutlined sx={{ fontSize: 24 }} />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-sans">
-              {formatPKR(realizedRevenue)}
-            </p>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 pt-1">
-              <CheckCircleOutlineOutlined sx={{ fontSize: 14 }} />
-              <span>Collected & Reconciled</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: This Month's Revenue */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-              Current Month Intake
-            </span>
-            <div className="size-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700 shadow-2xs group-hover:scale-105 transition-transform">
-              <TrendingUpOutlined sx={{ fontSize: 24 }} />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-sans">
-              {formatPKR(monthRevenue)}
-            </p>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 pt-1">
-              <span>Month-to-date collections</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Today's Appointments */}
-        <Link
-          href="/admin/appointments?filter=today"
-          className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-teal-300 transition-all relative overflow-hidden group block cursor-pointer"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-              Today&apos;s Schedule
-            </span>
-            <div className="size-11 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700 shadow-2xs group-hover:scale-105 transition-transform">
-              <AccessTimeOutlined sx={{ fontSize: 24 }} />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-sans">
-              {appointmentsToday}
-            </p>
-            <div className="flex items-center gap-1 text-xs font-bold text-amber-800 pt-1">
-              <span>Patient visits scheduled today</span>
-              <ArrowForwardOutlined sx={{ fontSize: 13 }} />
-            </div>
-          </div>
-        </Link>
-
-        {/* Card 4: Total Registered Patients */}
-        <Link
-          href="/admin/patients"
-          className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-teal-300 transition-all relative overflow-hidden group block cursor-pointer"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-              Patient Community
-            </span>
-            <div className="size-11 rounded-2xl bg-sky-50 border border-sky-200/80 flex items-center justify-center text-sky-700 shadow-2xs group-hover:scale-105 transition-transform">
-              <PeopleAltOutlined sx={{ fontSize: 24 }} />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-sans">
-              {totalPatients}
-            </p>
-            <div className="flex items-center gap-1 text-xs font-bold text-sky-700 pt-1">
-              <span>Registered patient profiles</span>
-              <ArrowForwardOutlined sx={{ fontSize: 13 }} />
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      {/* ──────────────────────────────────────────────────────────────────
-          3. CLINICAL HEALTH & VOLUME BENCHMARKS (Secondary Stats Row)
-          ────────────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Link
-          href="/admin/appointments?status=COMPLETED"
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs flex items-center gap-3.5 hover:shadow-sm hover:border-teal-300 transition-all cursor-pointer group"
-        >
-          <div className="size-10 rounded-xl bg-teal-50 border border-teal-200/60 flex items-center justify-center text-teal-700 shrink-0">
-            <CheckCircleOutlineOutlined sx={{ fontSize: 20 }} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-lg font-black text-slate-900 leading-none">{completedAppointments}</p>
-            <p className="text-[11px] font-semibold text-slate-500 truncate mt-1">Completed Procedures</p>
-          </div>
-        </Link>
-
-        <Link
-          href="/admin/appointments?status=SCHEDULED"
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs flex items-center gap-3.5 hover:shadow-sm hover:border-teal-300 transition-all cursor-pointer group"
-        >
-          <div className="size-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700 shrink-0">
-            <EventAvailableOutlined sx={{ fontSize: 20 }} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-lg font-black text-slate-900 leading-none">{upcomingAppointments}</p>
-            <p className="text-[11px] font-semibold text-slate-500 truncate mt-1">Upcoming Future Slots</p>
-          </div>
-        </Link>
-
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs flex items-center gap-3.5">
-          <div className="size-10 rounded-xl bg-sky-50 border border-sky-200/60 flex items-center justify-center text-sky-700 shrink-0">
-            <TrendingUpOutlined sx={{ fontSize: 20 }} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-lg font-black text-slate-900 leading-none">{formatPKR(projectedRevenue)}</p>
-            <p className="text-[11px] font-semibold text-slate-500 truncate mt-1">Projected Total Pipeline</p>
-          </div>
-        </div>
-
-        <Link
-          href="/admin/appointments?status=CANCELLED"
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs flex items-center gap-3.5 hover:shadow-sm hover:border-rose-300 transition-all cursor-pointer group"
-        >
-          <div className="size-10 rounded-xl bg-rose-50 border border-rose-200/60 flex items-center justify-center text-rose-700 shrink-0">
-            <EventBusyOutlined sx={{ fontSize: 20 }} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-lg font-black text-slate-900 leading-none">{cancelledAppointments}</p>
-            <p className="text-[11px] font-semibold text-slate-500 truncate mt-1">Cancelled Bookings</p>
-          </div>
-        </Link>
-      </div>
-
-      {/* ──────────────────────────────────────────────────────────────────
-          3.5. ATTENDING DENTAL SURGEON
-          ────────────────────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-7">
-        <div className="flex items-center justify-between gap-4 mb-5">
-          <div className="flex items-center gap-2.5">
-            <div className="size-9 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center">
-              <LocalHospitalOutlined sx={{ fontSize: 20 }} />
-            </div>
-            <div>
-              <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
-                Attending Dental Surgeon
-              </h2>
-              <p className="text-xs text-slate-500 font-medium">
-                Lead practitioner on duty and active clinical consulting schedule.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/admin/settings#doctor-profile"
-            className="text-xs text-teal-700 hover:text-teal-800 font-bold inline-flex items-center gap-1 transition-colors px-3 py-1.5 rounded-lg hover:bg-teal-50 shrink-0"
-          >
-            <span>Edit in Settings</span>
-            <ArrowForwardOutlined sx={{ fontSize: 13 }} />
-          </Link>
-        </div>
-
-        <div className="max-w-md">
-          {doctorsList.filter(d => d.isLead || d.name.includes("Shehryar") || d.name.includes("Sheriyaar")).slice(0, 1).map((doc) => (
-            <div
-              key={doc.id}
-              className="p-5 rounded-2xl bg-gradient-to-br from-[#0B1528] via-[#0E2438] to-teal-950 border border-teal-500/40 hover:border-teal-400/80 text-white transition-all shadow-sm flex flex-col justify-between relative overflow-hidden group"
-            >
-              <div className="flex items-center gap-3.5 relative z-10">
-                <div className="relative size-14 rounded-xl overflow-hidden ring-2 ring-teal-400/70 shrink-0 bg-slate-800 shadow-md">
-                  <Image
-                    src={doc.image || "/dr_sheriyaar.webp"}
-                    alt={doc.name}
-                    fill
-                    className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-black text-white truncate">{doc.name}</p>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      ON DUTY
-                    </span>
-                  </div>
-                  <p className="text-xs font-bold text-teal-300 truncate mt-0.5">{doc.role || "Lead Dental Surgeon & Implantologist"}</p>
-                  <p className="text-[11px] text-slate-300 font-medium truncate mt-0.5">{doc.operatory || "Chair 1 · Main Surgical Suite"}</p>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-teal-500/30 flex items-center justify-between text-xs relative z-10">
-                <span className="font-semibold text-slate-300">Schedule: {doc.schedule.split(":")[1]?.trim() || doc.schedule || "12 PM – 8 PM"}</span>
-                <span className="font-extrabold text-teal-200">Consultation Fee: Rs. {doc.consultationFee?.toLocaleString() || "2,000"}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ──────────────────────────────────────────────────────────────────
-          4. TODAY'S REAL-TIME CLINICAL SCHEDULE
-          ────────────────────────────────────────────────────────────────── */}
-      <TodayAppointments initialAppointments={serializedToday} />
-
-      {/* ──────────────────────────────────────────────────────────────────
-          5. RECENT APPOINTMENTS CLINICAL LOG
-          ────────────────────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/50">
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
-              Recent Clinical Visits
-            </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Latest scheduled and attended treatments across all booking channels.
-            </p>
-          </div>
-          <Link
-            href="/admin/appointments"
-            className="text-xs text-teal-700 hover:text-teal-800 font-bold inline-flex items-center gap-1 transition-colors px-3 py-1.5 rounded-lg hover:bg-teal-50"
-          >
-            <span>View Full Log</span>
-            <ArrowForwardOutlined sx={{ fontSize: 14 }} />
-          </Link>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              <tr>
-                <th className="px-6 py-3.5 sm:px-8 whitespace-nowrap">Patient Name</th>
-                <th className="px-6 py-3.5 whitespace-nowrap">Procedure / Treatment</th>
-                <th className="px-6 py-3.5 whitespace-nowrap">Scheduled Timing</th>
-                <th className="px-6 py-3.5 whitespace-nowrap">Fee (PKR)</th>
-                <th className="px-6 py-3.5 text-right sm:pr-8 whitespace-nowrap">Clinical Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
-              {recentAppointments.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-500">
-                    <AccessTimeOutlined sx={{ fontSize: 32 }} className="text-slate-300 mx-auto mb-2" />
-                    <p className="text-sm font-bold text-slate-700">No Appointments Recorded</p>
-                    <p className="text-xs text-slate-400 mt-0.5">New bookings will appear here in chronological order.</p>
-                  </td>
-                </tr>
-              ) : (
-                recentAppointments.map((apt) => {
-                  const initial = (apt.patient?.name || "P").charAt(0).toUpperCase();
-
-                  return (
-                    <tr
-                      key={apt.id}
-                      className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
-                    >
-                      <td className="px-6 py-4 sm:px-8">
-                        <div className="flex items-center gap-3">
-                          <div className="size-9 rounded-full bg-teal-50 text-teal-800 border border-teal-200/80 flex items-center justify-center font-bold text-xs shrink-0 group-hover:border-teal-400 transition-colors">
-                            {initial}
-                          </div>
-                          <div>
-                            <span className="font-extrabold text-slate-900 block group-hover:text-teal-700 transition-colors">
-                              {apt.patient?.name || "Anonymous Patient"}
-                            </span>
-                            {apt.patient?.phone && (
-                              <span className="text-[11px] text-slate-400 font-medium">
-                                {apt.patient.phone}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-slate-800">
-                        {apt.treatment?.name}
-                      </td>
-                      <td className="px-6 py-4 text-xs font-semibold text-slate-600">
-                        <span>{formatDate(apt.startTime, "short")}</span>
-                        <span className="text-slate-400 ml-1">· {formatTime(apt.startTime)}</span>
-                      </td>
-                      <td className="px-6 py-4 font-extrabold text-teal-700 font-sans">
-                        {formatPKR(apt.treatment?.price || 0)}
-                      </td>
-                      <td className="px-6 py-4 text-right sm:pr-8">
-                        <StatusBadge status={apt.status} />
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </AnimatedDashboard>
+    <AdminExecutiveDashboard
+      doctorName={doctorName}
+      kpis={kpis}
+      chartData={chartData}
+      queueAppointments={serializedQueue}
+      upcomingAppointments={serializedUpcoming}
+      statusDistribution={statusDistribution}
+      popularTreatments={popularTreatments}
+    />
   );
 }

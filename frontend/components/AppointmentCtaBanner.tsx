@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { ArrowForward, Close, CalendarMonthOutlined, VerifiedOutlined } from "@mui/icons-material";
+import { ArrowForward, Close, CalendarMonthOutlined, VerifiedOutlined, WhatsApp } from "@mui/icons-material";
 import BookingForm from "@/components/BookingForm";
 import type { Treatment } from "@/lib/types";
+import { getWhatsAppBookingUrl } from "@/lib/whatsapp";
 
 interface AppointmentCtaBannerProps {
   treatments: Treatment[];
@@ -51,18 +52,20 @@ export default function AppointmentCtaBanner({ treatments }: AppointmentCtaBanne
                 needs.
               </p>
 
-              {/* Action Button: "Make a Schedule" with Dark Circular Arrow Icon */}
+              {/* Action Button: Direct WhatsApp Booking */}
               <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsDialogOpen(true)}
-                  className="group inline-flex items-center gap-4 bg-white text-slate-900 hover:bg-slate-100 font-extrabold text-sm sm:text-base pl-6 pr-2.5 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+                <a
+                  href={getWhatsAppBookingUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-3 bg-white text-slate-900 hover:bg-teal-50 font-extrabold text-sm sm:text-base pl-6 pr-2.5 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
                 >
-                  <span>Make a Schedule</span>
+                  <WhatsApp sx={{ fontSize: 22, color: "#059669" }} />
+                  <span>Book Appointment on WhatsApp</span>
                   <div className="size-9 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:translate-x-1 transition-transform">
                     <ArrowForward sx={{ fontSize: 18 }} />
                   </div>
-                </button>
+                </a>
               </div>
 
               {/* Trust Badges */}

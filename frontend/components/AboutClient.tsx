@@ -22,6 +22,7 @@ import {
   CameraAltOutlined,
 } from "@mui/icons-material";
 import { clinicInfo } from "@/app/constants/mockData";
+import { getWhatsAppBookingUrl } from "@/lib/whatsapp";
 import BookingForm from "@/components/BookingForm";
 import type { Treatment } from "@/lib/types";
 
@@ -252,14 +253,15 @@ export default function AboutClient({ treatments }: AboutClientProps) {
 
               {/* Action Buttons */}
               <div className="pt-3 flex flex-wrap items-center gap-4">
-                <button
-                  type="button"
-                  onClick={openBooking}
+                <a
+                  href={getWhatsAppBookingUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="px-7 py-3.5 rounded-xl bg-slate-950 hover:bg-teal-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-slate-950/15 transition-all inline-flex items-center gap-2 cursor-pointer"
                 >
-                  <CalendarMonthOutlined sx={{ fontSize: 18 }} />
-                  <span>Book Consultation with Dr. Shehryar</span>
-                </button>
+                  <WhatsApp sx={{ fontSize: 18, color: "#2dd4bf" }} />
+                  <span>Book Consultation on WhatsApp</span>
+                </a>
 
                 <a
                   href={`tel:${clinicInfo.phone}`}
@@ -373,13 +375,16 @@ export default function AboutClient({ treatments }: AboutClientProps) {
                     <span className="text-[10px] text-slate-400 uppercase font-bold block">Location</span>
                     <span className="text-xs font-bold text-slate-800">G-8 Markaz Islamabad</span>
                   </div>
-                  <Link
-                    href="/#book"
+                  <a
+                    href={getWhatsAppBookingUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs uppercase tracking-wider transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
+                    <WhatsApp sx={{ fontSize: 16 }} />
                     <span>Schedule Visit</span>
                     <ChevronRightOutlined sx={{ fontSize: 16 }} />
-                  </Link>
+                  </a>
                 </div>
               </div>
 

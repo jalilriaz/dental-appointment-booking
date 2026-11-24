@@ -33,6 +33,7 @@ import SmileShowcase from "@/components/SmileShowcase";
 import FaqSection from "@/components/FaqSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import { formatPKR, getTreatmentImage } from "@/lib/utils";
+import { getWhatsAppBookingUrl } from "@/lib/whatsapp";
 
 export const metadata = {
   title: "Elite Dental Centre | Islamabad's Premier Cosmetic & Implant Clinic",
@@ -305,10 +306,13 @@ export default async function LandingPage() {
 
                 <div className="pt-2 flex flex-wrap gap-4 items-center w-full sm:w-auto">
                   <a
-                    href="#book"
+                    href={getWhatsAppBookingUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#0B1528] hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-slate-950/20 hover:shadow-teal-700/30 transition-all duration-200 active:scale-95 w-full sm:w-auto"
                   >
-                    <span>Book Procedure</span>
+                    <WhatsApp sx={{ fontSize: 17, color: "#2dd4bf" }} />
+                    <span>Book on WhatsApp</span>
                     <ChevronRightOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} />
                   </a>
 
@@ -403,7 +407,7 @@ export default async function LandingPage() {
                   Comprehensive Dental Care Under One Roof
                 </h2>
                 <p className="text-slate-600 mt-2 text-base max-w-xl font-normal">
-                  Upfront transparent estimates with zero hidden charges. Every procedure is performed under strict sterilization standards.
+                  Personalized clinical care tailored to your unique smile by Dr. Shehryar Akhtar. Every procedure is performed under hospital-grade sterilization standards.
                 </p>
               </div>
               <Link
@@ -445,21 +449,14 @@ export default async function LandingPage() {
                       </p>
                     </div>
 
-                    <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-                          Standard Fee
-                        </span>
-                        <span className="font-black text-[#0B1528] text-base font-sans">
-                          {formatPKR(t.price)}
-                        </span>
-                      </div>
+                    <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-end">
                       <Link
                         href={`/services/${t.id}`}
-                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200/80 transition-colors inline-flex items-center gap-1"
+                        className="text-xs font-bold text-teal-700 hover:text-teal-900 underline underline-offset-4 decoration-teal-600 transition-colors inline-flex items-center gap-1.5 py-1"
+                        title={`Learn more about ${t.name}`}
                       >
-                        <span>Details</span>
-                        <ChevronRightOutlined sx={{ fontSize: 14 }} />
+                        <span>Learn more</span>
+                        <ArrowForwardOutlined sx={{ fontSize: 13 }} />
                       </Link>
                     </div>
                   </div>

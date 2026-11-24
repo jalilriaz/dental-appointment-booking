@@ -157,7 +157,7 @@ export default function WalkInBookingForm({
                 {/* Submit Action */}
                 <button
                     type="submit"
-                    disabled={booking || isSundayChecker(bookingForm.date) || !bookingForm.time}
+                    disabled={booking || !bookingForm.date || !bookingForm.time || (Boolean(bookingForm.date) && isSundayChecker(bookingForm.date))}
                     className="w-full py-3.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-teal-600/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
                 >
                     {booking ? (

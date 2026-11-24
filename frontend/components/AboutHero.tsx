@@ -10,8 +10,10 @@ import {
   AutoAwesomeOutlined,
   VerifiedOutlined,
   PhoneInTalkOutlined,
+  WhatsApp,
 } from "@mui/icons-material";
 import { clinicInfo } from "@/app/constants/mockData";
+import { getWhatsAppBookingUrl } from "@/lib/whatsapp";
 import BookingForm from "@/components/BookingForm";
 import type { Treatment } from "@/lib/types";
 
@@ -53,7 +55,7 @@ export default function AboutHero({ treatments }: AboutHeroProps) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          
+
           {/* Left Column: Bold Typography & Action CTAs (Matching Reference Image) */}
           <div className="lg:col-span-7 space-y-6 sm:space-y-8">
             <div>
@@ -75,14 +77,15 @@ export default function AboutHero({ treatments }: AboutHeroProps) {
 
             {/* Action Buttons Row with Curled Hand-Drawn Doodle Arrow */}
             <div className="relative pt-2 flex flex-wrap items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setIsDialogOpen(true)}
+              <a
+                href={getWhatsAppBookingUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-8 sm:px-9 py-4 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm sm:text-base shadow-xl shadow-teal-600/30 transition-all duration-300 hover:scale-105 cursor-pointer inline-flex items-center gap-2"
               >
-                <CalendarMonthOutlined sx={{ fontSize: 18 }} />
-                <span>Book Appointment</span>
-              </button>
+                <WhatsApp sx={{ fontSize: 20 }} />
+                <span>Book on WhatsApp</span>
+              </a>
 
               <Link
                 href="/services"
@@ -122,7 +125,7 @@ export default function AboutHero({ treatments }: AboutHeroProps) {
           {/* Right Column: Friendly Smiling Male Dentist with Floating Feature Badges */}
           <div className="lg:col-span-5 relative flex justify-center items-center pt-6 lg:pt-0">
             <div className="relative w-full max-w-[380px] sm:max-w-[420px] h-[460px] sm:h-[500px] flex items-center justify-center select-none">
-              
+
               {/* Soft Shaped Gradient Backdrop Frame */}
               <div className="absolute inset-2 sm:inset-4 rounded-[56px] bg-gradient-to-br from-teal-100/90 via-teal-50/40 to-cyan-100/60 border border-teal-200/80 shadow-2xl -rotate-1 pointer-events-none" />
 
@@ -145,9 +148,9 @@ export default function AboutHero({ treatments }: AboutHeroProps) {
                       <p className="text-xs font-black text-white">Dr. Shehryar Akhtar</p>
                       <p className="text-[10px] text-teal-300 font-medium">BDS, MDS Orthodontist • Restorative Dentistry</p>
                     </div>
-                    <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded-full">
+                    {/* <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded-full">
                       PMDC Active
-                    </span>
+                    </span> */}
                   </div>
                 </div>
               </div>

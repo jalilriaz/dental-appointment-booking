@@ -18,15 +18,16 @@ import {
   ThumbUpAltOutlined,
   LocalOfferOutlined,
   ChevronRightOutlined,
+  ArrowForward,
 } from "@mui/icons-material";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FaqSection from "@/components/FaqSection";
-import BookingForm from "@/components/BookingForm";
 import { clinicInfo } from "@/app/constants/mockData";
 import Link from "next/link";
 import Image from "next/image";
-import { formatPKR, formatPriceRange, getTreatmentImage } from "@/lib/utils";
+import { getTreatmentImage } from "@/lib/utils";
+import { getWhatsAppBookingUrl, getWhatsAppDoctorQuestionUrl } from "@/lib/whatsapp";
 import { getTreatmentExpectations } from "@/lib/treatmentDetails";
 
 export async function generateMetadata({
@@ -99,8 +100,6 @@ export default async function ServiceDetailPage({
           .join(" "),
         offers: {
           "@type": "Offer",
-          price: treatment.price,
-          priceCurrency: "PKR",
           availability: "https://schema.org/InStock",
           url: `https://elitedentalcentrepk.com/services/${id}`,
         },
@@ -262,41 +261,28 @@ export default async function ServiceDetailPage({
                   </p>
                 </div>
 
-                {/* Price & Immediate Action Box */}
+                {/* Clinical Consultation & Immediate WhatsApp Action Box */}
                 <div className="p-6 sm:p-7 rounded-3xl border border-slate-200 bg-[#F8FAFC] shadow-sm space-y-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-                    <div>
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">
-                        Estimated Fee Range
-                      </span>
-                      <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-3xl sm:text-4xl font-black text-[#0B1528] font-sans">
-                          {formatPriceRange(treatment.price, (treatment as any).maxPrice)}
-                        </span>
-                        <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
-                          Varies by Case
-                        </span>
-                      </div>
-                      <span className="text-xs text-slate-500 block mt-1">
-                        Includes sterilization kit, diagnostics & postoperative follow-up
+                  <div className="border-b border-slate-200/80 pb-5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">
+                        Clinical Consultation &amp; Assessment
                       </span>
                     </div>
-
-                    <a
-                      href="#book-slot"
-                      className="px-6 py-3.5 rounded-full bg-[#0B1528] hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2"
-                    >
-                      <CalendarMonthOutlined sx={{ fontSize: 16, color: "#2dd4bf" }} />
-                      <span>Book Procedure</span>
-                    </a>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-2xl sm:text-3xl font-black text-[#0B1528] font-sans">
+                        Personalized Care Plan
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-500 block mt-1">
+                      Comprehensive diagnostic evaluation &amp; tailored treatment quote by Dr. Shehryar Akhtar
+                    </span>
                   </div>
 
                   {/* WhatsApp Quick Doctor Consultation */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <a
-                      href={`https://wa.me/${clinicInfo.whatsapp}?text=${encodeURIComponent(
-                        `Hello Doctor, I have questions regarding ${treatment.name} (PKR ${treatment.price}). Could you advise?`
-                      )}`}
+                      href={getWhatsAppDoctorQuestionUrl(treatment.name)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-4 py-2.5 rounded-xl font-bold transition-colors w-full sm:w-auto justify-center"
@@ -489,7 +475,7 @@ export default async function ServiceDetailPage({
                 </div>
                 <div>
                   <h3 className="text-lg font-extrabold text-teal-950">
-                    Dr. Jalil Riaz&apos;s Specific Clinical Notes for {treatment.name}
+                    Dr. Shehryar Akhtar&apos;s Specific Clinical Notes for {treatment.name}
                   </h3>
                   <div className="mt-3 text-sm text-slate-800 leading-relaxed bg-white/90 p-4 rounded-2xl border border-teal-200/50 shadow-2xs">
                     {treatment.instructions}
@@ -547,24 +533,108 @@ export default async function ServiceDetailPage({
         </div>
 
         {/* 7. INSTANT APPOINTMENT SCHEDULING (Anchor for #book-slot) */}
-        <section id="book-slot" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 scroll-mt-20">
-          <div className="text-center mb-10">
-            <span className="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-              Instant Reservation
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1528] mt-3 tracking-tight">
-              Reserve Your Slot for {treatment.name}
-            </h2>
-            <p className="text-slate-600 mt-2 text-sm">
-              Select your date and time slot below. Receive instant confirmation via SMS and WhatsApp.
-            </p>
-          </div>
+        <section id="book-slot" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 scroll-mt-20">
+          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden p-8 sm:p-12 relative">
+            <div className="grid lg:grid-cols-12 gap-8 items-center">
+              
+              {/* Left Column: Doctor Profile & Clinical Reassurance */}
+              <div className="lg:col-span-7 space-y-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold uppercase tracking-wider mb-3">
+                    <VerifiedOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                    <span>Direct Doctor Care · No Handoffs</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0B1528] tracking-tight">
+                    Schedule Your Consultation for {treatment.name}
+                  </h2>
+                  <p className="text-slate-600 mt-3 text-sm sm:text-base leading-relaxed max-w-xl">
+                    Every procedure is personally evaluated and performed by Dr. Shehryar Akhtar. Receive a customized diagnosis, verified chair availability, and compassionate care.
+                  </p>
+                </div>
 
-          <div className="p-6 sm:p-8 rounded-3xl border border-slate-200 bg-white shadow-xl">
-            <BookingForm
-              treatments={allTreatments}
-              defaultTreatmentId={treatment.id}
-            />
+                {/* Doctor Credential Snippet */}
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 max-w-xl">
+                  <div className="relative size-14 rounded-2xl overflow-hidden ring-2 ring-teal-500/30 shrink-0 bg-slate-900">
+                    <Image
+                      src="/dr_sheriyaar.webp"
+                      alt="Dr. Shehryar Akhtar"
+                      fill
+                      className="object-cover object-top"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-black text-slate-900 truncate">Dr. Shehryar Akhtar</p>
+                    <p className="text-xs text-teal-700 font-semibold truncate">
+                      BDS | MDS Orthodontist (Speciality Registrar) · PMDC Reg: 14820-D
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Mon – Sat: 12:00 PM – 8:00 PM · Doctors Plaza, G-8 Markaz
+                    </p>
+                  </div>
+                </div>
+
+                {/* WhatsApp Action Buttons */}
+                <div className="pt-2 flex flex-wrap items-center gap-4">
+                  <a
+                    href={getWhatsAppBookingUrl(treatment.name)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-[#0B1528] hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-slate-950/15 hover:shadow-teal-700/25 transition-all duration-200 active:scale-95 cursor-pointer"
+                  >
+                    <WhatsApp sx={{ fontSize: 20, color: "#2dd4bf" }} />
+                    <span>Book on WhatsApp</span>
+                    <ArrowForward sx={{ fontSize: 16 }} />
+                  </a>
+
+                  <a
+                    href={getWhatsAppDoctorQuestionUrl(treatment.name)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 hover:border-slate-300 font-bold text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs cursor-pointer"
+                  >
+                    <WhatsApp sx={{ fontSize: 18, color: "#059669" }} />
+                    <span>Ask a Question</span>
+                  </a>
+                </div>
+
+                {/* Trust Highlights */}
+                <div className="flex flex-wrap items-center gap-5 pt-2 text-xs font-semibold text-slate-500">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircleOutlined sx={{ fontSize: 16, color: "#0d9488" }} />
+                    No advance payment required
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircleOutlined sx={{ fontSize: 16, color: "#0d9488" }} />
+                    100% Doctor-performed
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircleOutlined sx={{ fontSize: 16, color: "#0d9488" }} />
+                    Fast response on WhatsApp
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Column: Operatory / Clinic Photography */}
+              <div className="lg:col-span-5 relative flex justify-center lg:justify-end">
+                <div className="relative w-full max-w-sm sm:max-w-md h-72 sm:h-80 lg:h-96 rounded-3xl overflow-hidden border border-slate-200/90 shadow-xl bg-slate-100 group">
+                  <Image
+                    src="/my_clinic_11.webp"
+                    alt={`Elite Dental Centre operatory for ${treatment.name}`}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent pointer-events-none" />
+                  
+                  <div className="absolute bottom-4 left-4 right-4 text-white p-3 rounded-2xl bg-slate-950/80 backdrop-blur-md border border-slate-700/60">
+                    <p className="text-xs font-black text-white">Elite Dental &amp; Aesthetic Centre</p>
+                    <p className="text-[11px] text-teal-300 font-medium">
+                      Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz, Islamabad
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
         </section>
 

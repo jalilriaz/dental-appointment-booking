@@ -11,31 +11,48 @@ exports.getKarachiTodayStr = getKarachiTodayStr;
 exports.KARACHI_TZ = "Asia/Karachi";
 /**
  * Returns whether a given date or "YYYY-MM-DD" string falls on Sunday in Asia/Karachi.
+ * Safely handles null, undefined, empty strings, and invalid date inputs without throwing.
  */
 function isSundayInKarachi(dateOrStr) {
+    if (!dateOrStr)
+        return false;
     let dateObj;
     if (typeof dateOrStr === "string") {
-        if (/^\d{4}-\d{2}-\d{2}$/.test(dateOrStr)) {
+        const trimmed = dateOrStr.trim();
+        if (!trimmed)
+            return false;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
             // For a YYYY-MM-DD string, construct noon in PKT to avoid any boundary bleed
-            dateObj = new Date(`${dateOrStr}T12:00:00+05:00`);
+            dateObj = new Date(`${trimmed}T12:00:00+05:00`);
         }
         else {
-            dateObj = new Date(dateOrStr);
+            dateObj = new Date(trimmed);
         }
     }
     else {
         dateObj = dateOrStr;
     }
-    const formatter = new Intl.DateTimeFormat("en-US", {
-        timeZone: exports.KARACHI_TZ,
-        weekday: "short",
-    });
-    return formatter.format(dateObj) === "Sun";
+    if (!dateObj || isNaN(dateObj.getTime())) {
+        return false;
+    }
+    try {
+        const formatter = new Intl.DateTimeFormat("en-US", {
+            timeZone: exports.KARACHI_TZ,
+            weekday: "short",
+        });
+        return formatter.format(dateObj) === "Sun";
+    }
+    catch {
+        return false;
+    }
 }
 /**
  * Parses YYYY-MM-DD and HH:mm strings into a Date object representing that exact time in Asia/Karachi.
  */
 function parseKarachiDateTime(dateStr, timeStr) {
+    if (!dateStr || !timeStr) {
+        return new Date(NaN);
+    }
     // Normalise time to HH:mm
     const trimmed = timeStr.trim();
     let hourStr = "00";
@@ -57,15 +74,20 @@ function parseKarachiDateTime(dateStr, timeStr) {
         minStr = (parts[1] || "00").padStart(2, "0");
     }
     // ISO string with +05:00 offset
-    return new Date(`${dateStr}T${hourStr}:${minStr}:00+05:00`);
+    return new Date(`${dateStr.trim()}T${hourStr}:${minStr}:00+05:00`);
 }
 /**
  * Given a "YYYY-MM-DD" date string, returns the exact UTC start and end of that day in Asia/Karachi.
  * In PKT: 00:00:00 to 23:59:59.999
  */
 function getKarachiDayBoundaries(dateStr) {
-    const startOfDay = new Date(`${dateStr}T00:00:00.000+05:00`);
-    const endOfDay = new Date(`${dateStr}T23:59:59.999+05:00`);
+    if (!dateStr) {
+        const now = new Date();
+        return { startOfDay: now, endOfDay: now };
+    }
+    const cleanDate = dateStr.trim();
+    const startOfDay = new Date(`${cleanDate}T00:00:00.000+05:00`);
+    const endOfDay = new Date(`${cleanDate}T23:59:59.999+05:00`);
     return { startOfDay, endOfDay };
 }
 /**

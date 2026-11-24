@@ -37,7 +37,7 @@ import {
 
 import { TimeSlotSelector, TimeSlot } from "@/components/ui/time-slot-selector"
 import { DatePicker } from "@/components/ui/date-picker"
-import { formatPKR, formatPriceRange } from "@/lib/utils"
+// Price formatters removed for public patient consultation-based workflow
 import type { Treatment } from "@/lib/types"
 import { fetchApi } from "@/lib/api-client"
 
@@ -514,12 +514,10 @@ export default function BookingForm({
                                   </div>
                                   <div className="text-right shrink-0">
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                                      Transparent Fee
+                                      Duration
                                     </span>
-                                    <span className="text-sm sm:text-base font-black text-teal-700">
-                                      {t.maxPrice && t.maxPrice > t.price
-                                        ? formatPriceRange(t.price, t.maxPrice)
-                                        : formatPKR(t.price)}
+                                    <span className="text-xs sm:text-sm font-black text-teal-700">
+                                      {t.durationMin} mins
                                     </span>
                                   </div>
                                 </div>
@@ -552,13 +550,9 @@ export default function BookingForm({
                 {selectedTreatment?.name}
               </h3>
               <p className="text-xs text-slate-600 mt-0.5 font-medium">
-                {selectedTreatment?.durationMin} min •{" "}
+                {selectedTreatment?.durationMin} mins clinical appointment •{" "}
                 <span className="font-bold text-teal-700">
-                  {selectedTreatment
-                    ? selectedTreatment.maxPrice && selectedTreatment.maxPrice > selectedTreatment.price
-                      ? formatPriceRange(selectedTreatment.price, selectedTreatment.maxPrice)
-                      : formatPKR(selectedTreatment.price)
-                    : ""}
+                  Quote upon clinical consultation
                 </span>
               </p>
             </div>

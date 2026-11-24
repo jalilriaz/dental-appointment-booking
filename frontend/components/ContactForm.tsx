@@ -199,7 +199,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                 <span>Chat on WhatsApp</span>
               </a>
               <p className="text-[11px] text-center text-slate-400 font-medium mt-2.5">
-                Typical reply time: 5 - 15 minutes
+                Typical reply time: Within 5 minutes
               </p>
             </div>
           </div>
@@ -210,11 +210,10 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wider uppercase border ${
-                    isOpenNow
-                      ? "bg-teal-50 text-teal-800 border-teal-200/80"
-                      : "bg-slate-100 text-slate-700 border-slate-200"
-                  }`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wider uppercase border ${isOpenNow
+                    ? "bg-teal-50 text-teal-800 border-teal-200/80"
+                    : "bg-slate-100 text-slate-700 border-slate-200"
+                    }`}
                 >
                   <span className={`size-2 rounded-full ${isOpenNow ? "bg-teal-500 animate-pulse" : "bg-slate-400"}`} />
                   {isOpenNow ? "Clinic Open Now" : "Currently Closed"}
@@ -447,11 +446,10 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                             key={item.id}
                             type="button"
                             onClick={() => setSelectedSymptom(item.label)}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border ${
-                              isSelected
-                                ? "bg-teal-600 text-white border-teal-600 shadow-sm shadow-teal-600/30 scale-102"
-                                : "bg-slate-50 text-slate-700 border-slate-200 hover:border-teal-300 hover:bg-teal-50/40"
-                            }`}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border ${isSelected
+                              ? "bg-teal-600 text-white border-teal-600 shadow-sm shadow-teal-600/30 scale-102"
+                              : "bg-slate-50 text-slate-700 border-slate-200 hover:border-teal-300 hover:bg-teal-50/40"
+                              }`}
                           >
                             <span>{item.label}</span>
                           </button>
@@ -469,11 +467,10 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                       <button
                         type="button"
                         onClick={() => setUrgency("urgent")}
-                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
-                          urgency === "urgent"
-                            ? "border-rose-500 bg-rose-50/60 text-rose-900 font-bold shadow-xs"
-                            : "border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-300 font-medium"
-                        }`}
+                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${urgency === "urgent"
+                          ? "border-rose-500 bg-rose-50/60 text-rose-900 font-bold shadow-xs"
+                          : "border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-300 font-medium"
+                          }`}
                       >
                         <span className="text-xs block">Immediate / Today</span>
                         <span className="text-[10px] text-slate-500 block mt-0.5">Emergency slot</span>
@@ -482,11 +479,10 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                       <button
                         type="button"
                         onClick={() => setUrgency("soon")}
-                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
-                          urgency === "soon"
-                            ? "border-teal-600 bg-teal-50/60 text-teal-900 font-bold shadow-xs"
-                            : "border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-300 font-medium"
-                        }`}
+                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${urgency === "soon"
+                          ? "border-teal-600 bg-teal-50/60 text-teal-900 font-bold shadow-xs"
+                          : "border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-300 font-medium"
+                          }`}
                       >
                         <span className="text-xs block">Within 48 Hours</span>
                         <span className="text-[10px] text-slate-500 block mt-0.5">Next available</span>
@@ -495,11 +491,10 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                       <button
                         type="button"
                         onClick={() => setUrgency("flexible")}
-                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
-                          urgency === "flexible"
-                            ? "border-teal-600 bg-teal-50/60 text-teal-900 font-bold shadow-xs"
-                            : "border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-300 font-medium"
-                        }`}
+                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${urgency === "flexible"
+                          ? "border-teal-600 bg-teal-50/60 text-teal-900 font-bold shadow-xs"
+                          : "border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-300 font-medium"
+                          }`}
                       >
                         <span className="text-xs block">Flexible</span>
                         <span className="text-[10px] text-slate-500 block mt-0.5">Planning ahead</span>
