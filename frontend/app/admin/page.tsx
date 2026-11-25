@@ -122,7 +122,7 @@ export default async function AdminDashboardPage() {
       },
     }),
 
-    // Status breakdown (Completed, Scheduled, Cancelled, No-show)
+    // Status breakdown (Completed, Scheduled, Cancelled, Not Visited)
     prisma.appointment.groupBy({
       by: ["status"],
       _count: { id: true },
@@ -242,7 +242,7 @@ export default async function AdminDashboardPage() {
     (a) => a.status === "COMPLETED"
   ).length;
   const appointmentsTodayNoShow = todayAppointmentsList.filter(
-    (a) => a.status === "NO_SHOW"
+    (a) => a.status === "Not_Visited"
   ).length;
 
   const kpis: DashboardKPIs = {
@@ -341,7 +341,7 @@ export default async function AdminDashboardPage() {
     if (group.status === "COMPLETED") completedCount += c;
     else if (group.status === "SCHEDULED" || group.status === "RESCHEDULED") upcomingCount += c;
     else if (group.status === "CANCELLED") cancelledCount += c;
-    else if (group.status === "NO_SHOW") noShowCount += c;
+    else if (group.status === "Not_Visited") noShowCount += c;
   });
 
   const statusDistribution: StatusDistribution = {
@@ -383,12 +383,12 @@ export default async function AdminDashboardPage() {
     discount: apt.discount || 0,
     patient: apt.patient
       ? {
-          id: apt.patient.id,
-          name: apt.patient.name,
-          phone: apt.patient.phone,
-          medicalAlerts: apt.patient.medicalAlerts,
-          isFirstVisit: (apt.patient._count?.appointments ?? 1) <= 1,
-        }
+        id: apt.patient.id,
+        name: apt.patient.name,
+        phone: apt.patient.phone,
+        medicalAlerts: apt.patient.medicalAlerts,
+        isFirstVisit: (apt.patient._count?.appointments ?? 1) <= 1,
+      }
       : null,
     treatment: {
       id: apt.treatment.id,
@@ -406,10 +406,10 @@ export default async function AdminDashboardPage() {
     status: apt.status,
     patient: apt.patient
       ? {
-          name: apt.patient.name,
-          phone: apt.patient.phone,
-          isFirstVisit: (apt.patient._count?.appointments ?? 1) <= 1,
-        }
+        name: apt.patient.name,
+        phone: apt.patient.phone,
+        isFirstVisit: (apt.patient._count?.appointments ?? 1) <= 1,
+      }
       : null,
     treatment: {
       name: apt.treatment.name,

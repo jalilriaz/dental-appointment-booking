@@ -179,7 +179,7 @@ router.get('/today', auth_middleware_1.requireAuth, (0, auth_middleware_1.requir
                         phone: true,
                         medicalAlerts: true,
                         appointments: {
-                            where: { status: 'NO_SHOW' },
+                            where: { status: 'Not_Visited' },
                             select: { id: true },
                         },
                     },
@@ -362,7 +362,7 @@ router.patch('/:id/status', auth_middleware_1.requireAuth, (0, auth_middleware_1
     try {
         const { id } = req.params;
         const { status, amountPaid, price, discount } = req.body;
-        const validStatuses = ['SCHEDULED', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'RESCHEDULED'];
+        const validStatuses = ['SCHEDULED', 'COMPLETED', 'CANCELLED', 'Not_Visited', 'RESCHEDULED'];
         if (!status || !validStatuses.includes(status)) {
             return res.status(400).json({
                 error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
@@ -398,13 +398,13 @@ router.patch('/:id/status', auth_middleware_1.requireAuth, (0, auth_middleware_1
                 patient: { select: { name: true } },
             },
         });
-        if (status === 'NO_SHOW' && existingAppointment.status !== 'NO_SHOW') {
+        if (status === 'Not_Visited' && existingAppointment.status !== 'Not_Visited') {
             await prisma_1.default.user.update({
                 where: { id: existingAppointment.patientId },
                 data: { noShowCount: { increment: 1 } },
             });
         }
-        else if (existingAppointment.status === 'NO_SHOW' && status !== 'NO_SHOW') {
+        else if (existingAppointment.status === 'Not_Visited' && status !== 'Not_Visited') {
             await prisma_1.default.user.update({
                 where: { id: existingAppointment.patientId },
                 data: { noShowCount: { decrement: 1 } },
@@ -413,7 +413,7 @@ router.patch('/:id/status', auth_middleware_1.requireAuth, (0, auth_middleware_1
         if (appointment.googleEventId) {
             (async () => {
                 try {
-                    if (status === 'CANCELLED' || status === 'NO_SHOW') {
+                    if (status === 'CANCELLED' || status === 'Not_Visited') {
                         await (0, googleCalendar_1.deleteCalendarEvent)(appointment.googleEventId);
                     }
                     else if (status === 'COMPLETED') {

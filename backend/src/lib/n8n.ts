@@ -9,11 +9,14 @@ export interface BookingWebhookPayload {
     time: string;
     appointmentId: string;
     patientCode?: number | null;
+    bookedBy?: string;
+    sessionLabel?: string | null;
+    isMultiSession?: boolean;
 }
 
 /**
  * Dispatches an automated WhatsApp confirmation event to n8n webhook
- * whenever an appointment is booked on the website portal.
+ * whenever an appointment is booked on the website or clinic desk portal.
  */
 export async function dispatchN8nBookingWebhook(payload: BookingWebhookPayload): Promise<{ success: boolean; error?: string }> {
     try {
@@ -29,12 +32,19 @@ export async function dispatchN8nBookingWebhook(payload: BookingWebhookPayload):
             sanitizedPhone = "92" + sanitizedPhone.substring(1);
         }
 
+        const isDeskBooking =
+            payload.bookedBy === "WALK_IN" ||
+            payload.bookedBy === "STAFF" ||
+            payload.bookedBy === "RECEPTIONIST" ||
+            payload.bookedBy === "ADMIN";
+
         // 3. Construct professional, formatted WhatsApp message
         const formattedMessage =
             `Assalam-o-Alaikum *${payload.patientName}*,\n\n` +
             `Your dental appointment at *${clinicName}* has been successfully booked! 🎉\n\n` +
             `📋 *Appointment Details:*\n` +
             `• *Treatment:* ${payload.treatmentName}\n` +
+            (payload.sessionLabel ? `• *Treatment Session:* ${payload.sessionLabel}\n` : "") +
             `• *Attending Doctor:* ${payload.doctorName || "Dr. Sheriyaar"}\n` +
             `• *Date:* ${payload.date}\n` +
             `• *Time:* ${payload.time}\n` +
@@ -44,7 +54,7 @@ export async function dispatchN8nBookingWebhook(payload: BookingWebhookPayload):
             `Please arrive 10 minutes prior to your time slot. If you ever need to adjust your visit, simply reply *RESCHEDULE* or *CANCEL* directly to this WhatsApp chat.`;
 
         const fullPayload = {
-            event: "NEW_WEBSITE_BOOKING",
+            event: isDeskBooking ? "NEW_WALKIN_BOOKING" : "NEW_WEBSITE_BOOKING",
             timestamp: new Date().toISOString(),
             phone: sanitizedPhone,
             message: formattedMessage,
@@ -55,6 +65,9 @@ export async function dispatchN8nBookingWebhook(payload: BookingWebhookPayload):
             date: payload.date,
             time: payload.time,
             patientCode: payload.patientCode,
+            bookedBy: payload.bookedBy || "WEBSITE",
+            sessionLabel: payload.sessionLabel || null,
+            isMultiSession: Boolean(payload.isMultiSession),
             clinicName,
             clinicAddress,
             clinicPhones,

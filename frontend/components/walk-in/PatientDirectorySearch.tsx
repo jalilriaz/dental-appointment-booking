@@ -9,7 +9,6 @@ import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
 import DirectionsWalkOutlinedIcon from "@mui/icons-material/DirectionsWalkOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
@@ -202,15 +201,6 @@ export default function PatientDirectorySearch({
                                                         )}
                                                     </div>
                                                 </div>
-
-                                                {patient.medicalAlerts && (
-                                                    <div
-                                                        className="size-7 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center shrink-0"
-                                                        title={patient.medicalAlerts}
-                                                    >
-                                                        <SecurityOutlinedIcon sx={{ fontSize: 14, color: "#DC2626" }} />
-                                                    </div>
-                                                )}
                                             </div>
 
                                             {/* Card Body: Phone, Visits, Channels */}

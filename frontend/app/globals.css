@@ -366,7 +366,7 @@ input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
   border: 1px solid #fee2e2;
 }
 
-.badge-no-show {
+.badge-Not Visited {
   background: #fffbeb;
   color: #b45309;
   border: 1px solid #fef3c7;

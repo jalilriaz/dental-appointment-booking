@@ -35,6 +35,37 @@ async function resolveTreatment(treatmentId?: string) {
 
 const router = Router();
 
+function buildAppointmentSearchOr(rawQuery: string): any[] {
+    const query = rawQuery.trim();
+    const orConditions: any[] = [
+        { id: { contains: query, mode: 'insensitive' } },
+        { guestName: { contains: query, mode: 'insensitive' } },
+        { guestPhone: { contains: query, mode: 'insensitive' } },
+        { patient: { name: { contains: query, mode: 'insensitive' } } },
+        { patient: { phone: { contains: query, mode: 'insensitive' } } },
+        { treatment: { name: { contains: query, mode: 'insensitive' } } },
+    ];
+
+    const digitsOnly = query.replace(/\D/g, '');
+    if (digitsOnly.length >= 4) {
+        let localNumber = digitsOnly;
+        if (localNumber.startsWith('92') && localNumber.length > 2) {
+            localNumber = localNumber.slice(2);
+        } else if (localNumber.startsWith('0') && localNumber.length > 1) {
+            localNumber = localNumber.slice(1);
+        }
+        orConditions.push({ guestPhone: { contains: localNumber } });
+        orConditions.push({ patient: { phone: { contains: localNumber } } });
+    }
+
+    const numericQuery = parseInt(query.replace(/^#/, ''), 10);
+    if (!isNaN(numericQuery) && numericQuery > 0 && numericQuery <= 2147483647 && query.length <= 9) {
+        orConditions.push({ patient: { patientCode: numericQuery } });
+    }
+
+    return orConditions;
+}
+
 const bookingSchema = z.object({
     treatmentId: z.string().min(1, 'Treatment ID is required'),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
@@ -208,12 +239,18 @@ router.get('/today', requireAuth, requireRole('ADMIN', 'STAFF'), async (_req: Re
                         id: true,
                         name: true,
                         phone: true,
+                        patientCode: true,
+                        gender: true,
+                        dateOfBirth: true,
                         medicalAlerts: true,
                         appointments: {
-                            where: { status: 'NO_SHOW' },
+                            where: { status: 'Not_Visited' },
                             select: { id: true },
                         },
                     },
+                },
+                doctor: {
+                    select: { id: true, name: true, role: true, operatory: true },
                 },
                 treatment: {
                     select: { name: true, durationMin: true, price: true, isMultiSession: true, defaultSessions: true },
@@ -246,23 +283,27 @@ router.get('/today', requireAuth, requireRole('ADMIN', 'STAFF'), async (_req: Re
             notes: a.notes,
             patient: a.patient
                 ? {
-                      id: a.patient.id,
-                      name: a.patient.name,
-                      phone: a.patient.phone,
-                      medicalAlerts: a.patient.medicalAlerts,
-                      noShowCount: a.patient.appointments.length,
-                  }
+                    id: a.patient.id,
+                    name: a.patient.name,
+                    phone: a.patient.phone,
+                    patientCode: a.patient.patientCode,
+                    gender: a.patient.gender,
+                    dateOfBirth: a.patient.dateOfBirth ? a.patient.dateOfBirth.toISOString() : null,
+                    medicalAlerts: a.patient.medicalAlerts,
+                    noShowCount: a.patient.appointments.length,
+                }
                 : null,
+            doctor: a.doctor,
             treatment: a.treatment,
             patientTreatment: a.patientTreatment
                 ? {
-                      id: a.patientTreatment.id,
-                      totalCost: a.patientTreatment.totalCost,
-                      totalSessions: a.patientTreatment.totalSessions,
-                      clinicalStatus: a.patientTreatment.clinicalStatus,
-                      financialStatus: a.patientTreatment.financialStatus,
-                      payments: a.patientTreatment.payments,
-                  }
+                    id: a.patientTreatment.id,
+                    totalCost: a.patientTreatment.totalCost,
+                    totalSessions: a.patientTreatment.totalSessions,
+                    clinicalStatus: a.patientTreatment.clinicalStatus,
+                    financialStatus: a.patientTreatment.financialStatus,
+                    payments: a.patientTreatment.payments,
+                }
                 : null,
             sessionNumber: a.sessionNumber,
             sessionLabel: a.sessionLabel,
@@ -276,17 +317,100 @@ router.get('/today', requireAuth, requireRole('ADMIN', 'STAFF'), async (_req: Re
     }
 });
 
+// GET /api/appointments/search - Unified DB search for both Staff and Admin top search bar
+router.get('/search', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: Request, res: Response) => {
+    try {
+        const query = ((req.query.q as string) || '').trim();
+        if (query.length < 2) {
+            return res.json({ patients: [], appointments: [] });
+        }
+
+        const patientOr: any[] = [
+            { name: { contains: query, mode: 'insensitive' } },
+            { phone: { contains: query, mode: 'insensitive' } },
+            { email: { contains: query, mode: 'insensitive' } },
+        ];
+
+        const digitsOnly = query.replace(/\D/g, '');
+        if (digitsOnly.length >= 4) {
+            let localNumber = digitsOnly;
+            if (localNumber.startsWith('92') && localNumber.length > 2) {
+                localNumber = localNumber.slice(2);
+            } else if (localNumber.startsWith('0') && localNumber.length > 1) {
+                localNumber = localNumber.slice(1);
+            }
+            patientOr.push({ phone: { contains: localNumber } });
+        }
+
+        const numericQuery = parseInt(query.replace(/^#/, ''), 10);
+        if (!isNaN(numericQuery) && numericQuery > 0 && numericQuery <= 2147483647 && query.length <= 9) {
+            patientOr.push({ patientCode: numericQuery });
+        }
+
+        const [patients, appointments] = await Promise.all([
+            prisma.user.findMany({
+                where: {
+                    role: 'PATIENT',
+                    OR: patientOr,
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                    patientCode: true,
+                },
+                take: 5,
+                orderBy: { createdAt: 'desc' },
+            }),
+            prisma.appointment.findMany({
+                where: {
+                    OR: buildAppointmentSearchOr(query),
+                },
+                select: {
+                    id: true,
+                    startTime: true,
+                    status: true,
+                    guestName: true,
+                    guestPhone: true,
+                    patient: {
+                        select: {
+                            id: true,
+                            name: true,
+                            phone: true,
+                            patientCode: true,
+                        },
+                    },
+                    treatment: {
+                        select: { name: true },
+                    },
+                },
+                take: 6,
+                orderBy: { startTime: 'desc' },
+            }),
+        ]);
+
+        return res.json({ patients, appointments });
+    } catch (error) {
+        logger.error({ err: error }, 'Unified appointment/patient search failed');
+        return res.status(500).json({ error: 'Failed to search records' });
+    }
+});
+
 // GET /api/appointments
 router.get('/', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: Request, res: Response) => {
     try {
-        const { status, dateFrom, dateTo } = req.query as {
+        const { status, dateFrom, dateTo, search } = req.query as {
             status?: string;
             dateFrom?: string;
             dateTo?: string;
+            search?: string;
         };
 
         const where: any = {};
         if (status) where.status = status;
+        if (search && search.trim()) {
+            where.OR = buildAppointmentSearchOr(search);
+        }
         if (dateFrom || dateTo) {
             where.startTime = {};
             if (dateFrom) where.startTime.gte = new Date(dateFrom);
@@ -409,7 +533,7 @@ router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), async (r
         const { id } = req.params;
         const { status, amountPaid, price, discount } = req.body;
 
-        const validStatuses = ['SCHEDULED', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'RESCHEDULED'];
+        const validStatuses = ['SCHEDULED', 'COMPLETED', 'CANCELLED', 'Not_Visited', 'RESCHEDULED'];
         if (!status || !validStatuses.includes(status)) {
             return res.status(400).json({
                 error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
@@ -451,12 +575,12 @@ router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), async (r
             },
         });
 
-        if (status === 'NO_SHOW' && existingAppointment.status !== 'NO_SHOW') {
+        if (status === 'Not_Visited' && existingAppointment.status !== 'Not_Visited') {
             await prisma.user.update({
                 where: { id: existingAppointment.patientId },
                 data: { noShowCount: { increment: 1 } } as any,
             });
-        } else if (existingAppointment.status === 'NO_SHOW' && status !== 'NO_SHOW') {
+        } else if (existingAppointment.status === 'Not_Visited' && status !== 'Not_Visited') {
             await prisma.user.update({
                 where: { id: existingAppointment.patientId },
                 data: { noShowCount: { decrement: 1 } } as any,
@@ -466,7 +590,7 @@ router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), async (r
         if (appointment.googleEventId) {
             (async () => {
                 try {
-                    if (status === 'CANCELLED' || status === 'NO_SHOW') {
+                    if (status === 'CANCELLED' || status === 'Not_Visited') {
                         await deleteCalendarEvent(appointment.googleEventId!);
                     } else if (status === 'COMPLETED') {
                         await updateCalendarEvent({

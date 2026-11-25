@@ -59,7 +59,7 @@ router.get('/dashboard', auth_middleware_1.requireAuth, async (_req, res) => {
                 select: { startTime: true, status: true },
             }),
             prisma_1.default.appointment.count({ where: { status: 'COMPLETED' } }),
-            prisma_1.default.appointment.count({ where: { status: 'NO_SHOW' } }),
+            prisma_1.default.appointment.count({ where: { status: 'Not_Visited' } }),
         ]);
         const todayTotal = todayAppointments.length;
         const remainingToday = todayAppointments.filter((a) => new Date(a.startTime) >= now && a.status === 'SCHEDULED').length;

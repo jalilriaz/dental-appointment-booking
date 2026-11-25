@@ -218,7 +218,7 @@ export default function AdminExecutiveDashboard({
         d.getDate() === today.getDate() &&
         d.getMonth() === today.getMonth() &&
         d.getFullYear() === today.getFullYear();
-      
+
       const diffFromToday = Math.round(
         (d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
       );
@@ -261,21 +261,21 @@ export default function AdminExecutiveDashboard({
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "NO_SHOW" }),
+        body: JSON.stringify({ status: "Not_Visited" }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        toast.error("Failed to mark as no-show", { description: data.error });
+        toast.error("Failed to Not Visited", { description: data.error });
         return;
       }
 
       setQueue((prev) =>
         prev.map((item) =>
-          item.id === aptId ? { ...item, status: "NO_SHOW" } : item
+          item.id === aptId ? { ...item, status: "Not_Visited" } : item
         )
       );
-      toast.success("Appointment updated to No-show");
+      toast.success("Appointment updated to Not Visited");
       router.refresh();
     } catch {
       toast.error("Network error while updating appointment");
@@ -355,10 +355,10 @@ export default function AdminExecutiveDashboard({
         prev.map((item) =>
           item.id === checkoutApt.id
             ? {
-                ...item,
-                status: "COMPLETED",
-                amountPaid: (item.amountPaid || 0) + amountPaid,
-              }
+              ...item,
+              status: "COMPLETED",
+              amountPaid: (item.amountPaid || 0) + amountPaid,
+            }
             : item
         )
       );
@@ -374,7 +374,7 @@ export default function AdminExecutiveDashboard({
     return [
       { name: "Completed", value: statusDistribution.completed, color: "#10b981" },
       { name: "Upcoming", value: statusDistribution.upcoming, color: "#0d9488" },
-      { name: "No-show", value: statusDistribution.noShow, color: "#f59e0b" },
+      { name: "Not Visited", value: statusDistribution.noShow, color: "#f59e0b" },
       { name: "Cancelled", value: statusDistribution.cancelled, color: "#f43f5e" },
     ].filter((d) => d.value > 0);
   }, [statusDistribution]);
@@ -509,16 +509,15 @@ export default function AdminExecutiveDashboard({
                 <div
                   className="bg-teal-600 h-1.5 rounded-full transition-all duration-500"
                   style={{
-                    width: `${
-                      kpis.appointmentsTodayTotal > 0
-                        ? Math.min(
-                            100,
-                            Math.round(
-                              (kpis.appointmentsTodayDone / kpis.appointmentsTodayTotal) * 100
-                            )
-                          )
-                        : 0
-                    }%`,
+                    width: `${kpis.appointmentsTodayTotal > 0
+                      ? Math.min(
+                        100,
+                        Math.round(
+                          (kpis.appointmentsTodayDone / kpis.appointmentsTodayTotal) * 100
+                        )
+                      )
+                      : 0
+                      }%`,
                   }}
                 />
               </div>
@@ -900,9 +899,9 @@ export default function AdminExecutiveDashboard({
                                     onClick={() => handleNoShow(apt.id)}
                                     disabled={loadingActionId === apt.id}
                                     className="px-2 py-1 rounded-lg text-[11px] font-bold text-amber-700 hover:bg-amber-50 border border-amber-200 transition-colors cursor-pointer"
-                                    title="Mark appointment as no-show"
+                                    title="Mark appointment as Not Visited"
                                   >
-                                    No-show
+                                    Not Visited
                                   </button>
                                 </>
                               )}
@@ -914,10 +913,10 @@ export default function AdminExecutiveDashboard({
                                 </span>
                               )}
 
-                              {apt.status === "NO_SHOW" && (
+                              {apt.status === "Not_Visited" && (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800">
                                   <PersonOffOutlined sx={{ fontSize: 13 }} />
-                                  <span>No show</span>
+                                  <span>Not Visited</span>
                                 </span>
                               )}
 
@@ -1035,8 +1034,8 @@ export default function AdminExecutiveDashboard({
                         isSelected
                           ? "bg-[#0B1528] text-white shadow-xs ring-2 ring-teal-500/30 font-bold"
                           : day.isToday
-                          ? "bg-teal-50 text-teal-800 border border-teal-200/80 font-bold"
-                          : "hover:bg-slate-100 text-slate-600 border border-slate-100 font-medium"
+                            ? "bg-teal-50 text-teal-800 border border-teal-200/80 font-bold"
+                            : "hover:bg-slate-100 text-slate-600 border border-slate-100 font-medium"
                       )}
                     >
                       <span className="text-[10px] font-bold block uppercase tracking-tight">
@@ -1261,7 +1260,7 @@ export default function AdminExecutiveDashboard({
               </div>
             </div>
 
-            {/* Legend & Benchmarks (Visits completed vs no-shows) */}
+            {/* Legend & Benchmarks (Visits completed vs Not Visiteds) */}
             <div className="sm:col-span-7 space-y-3">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:gap-1.5">
                 {/* Completed */}
@@ -1292,11 +1291,11 @@ export default function AdminExecutiveDashboard({
                   </span>
                 </div>
 
-                {/* No-show */}
+                {/* Not Visited */}
                 <div className="flex items-center justify-between text-xs p-1.5 rounded-lg bg-slate-50/70 border border-slate-100">
                   <span className="flex items-center gap-1.5 text-slate-600 font-semibold truncate">
                     <span className="size-2 rounded-full bg-amber-500 shrink-0" />
-                    <span>No-show</span>
+                    <span>Not Visited</span>
                   </span>
                   <span className="font-extrabold text-slate-900 font-sans ml-2 shrink-0">
                     {statusDistribution.noShow}{" "}
@@ -1321,7 +1320,7 @@ export default function AdminExecutiveDashboard({
                 </div>
               </div>
 
-              {/* Completed vs No-Show Comparison Box */}
+              {/* Completed vs Not Visited Comparison Box */}
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1.5">
                 <div className="flex items-center justify-between font-bold">
                   <span className="text-slate-700">Completed vs Missed visits</span>
@@ -1333,30 +1332,28 @@ export default function AdminExecutiveDashboard({
                   <div
                     className="bg-emerald-500 h-1.5 transition-all"
                     style={{
-                      width: `${
-                        statusDistribution.completed + statusDistribution.noShow > 0
-                          ? (statusDistribution.completed /
-                              (statusDistribution.completed + statusDistribution.noShow)) *
-                            100
-                          : 0
-                      }%`,
+                      width: `${statusDistribution.completed + statusDistribution.noShow > 0
+                        ? (statusDistribution.completed /
+                          (statusDistribution.completed + statusDistribution.noShow)) *
+                        100
+                        : 0
+                        }%`,
                     }}
                   />
                   <div
                     className="bg-amber-400 h-1.5 transition-all"
                     style={{
-                      width: `${
-                        statusDistribution.completed + statusDistribution.noShow > 0
-                          ? (statusDistribution.noShow /
-                              (statusDistribution.completed + statusDistribution.noShow)) *
-                            100
-                          : 0
-                      }%`,
+                      width: `${statusDistribution.completed + statusDistribution.noShow > 0
+                        ? (statusDistribution.noShow /
+                          (statusDistribution.completed + statusDistribution.noShow)) *
+                        100
+                        : 0
+                        }%`,
                     }}
                   />
                 </div>
                 <p className="text-[10px] text-slate-500">
-                  Green indicates attended visits, amber indicates patient no-shows.
+                  Green indicates attended visits, amber indicates patient Not Visiteds.
                 </p>
               </div>
             </div>

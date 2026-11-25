@@ -87,7 +87,7 @@ export const ApptStatus: {
   RESCHEDULED: 'RESCHEDULED',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
-  NO_SHOW: 'NO_SHOW'
+  Not_Visited: 'Not_Visited'
 };
 
 export type ApptStatus = (typeof ApptStatus)[keyof typeof ApptStatus]

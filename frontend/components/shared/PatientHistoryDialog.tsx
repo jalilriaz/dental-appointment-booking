@@ -163,7 +163,7 @@ export default function PatientHistoryDialog({
                     setAvailableTreatments(data.treatments);
                 }
             })
-            .catch(() => {});
+            .catch(() => { });
     }, [open]);
 
     const completedVisits = history?.appointments.filter(a => a.status === "COMPLETED").length || 0;
@@ -206,7 +206,7 @@ export default function PatientHistoryDialog({
 
                         {/* Top Financial Stats & Quick Book Action */}
                         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                            <div className="px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-right shadow-2xs">
+                            <div className="px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-left shadow-2xs">
                                 <p className="text-[9.5px] text-emerald-800 uppercase tracking-wider font-extrabold">Total Revenue</p>
                                 <p className="text-sm font-black text-emerald-700">{formatPKR(totalRevenue)}</p>
                             </div>
@@ -229,33 +229,30 @@ export default function PatientHistoryDialog({
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setActiveTab("plans")}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                    activeTab === "plans"
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "plans"
                                         ? "bg-teal-600 text-white shadow-xs"
                                         : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                                }`}
+                                    }`}
                             >
                                 <AutoAwesomeOutlinedIcon className="size-3.5" />
                                 Treatment Plans ({history?.plans?.length || 0})
                             </button>
                             <button
                                 onClick={() => setActiveTab("appointments")}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                    activeTab === "appointments"
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "appointments"
                                         ? "bg-teal-600 text-white shadow-xs"
                                         : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                                }`}
+                                    }`}
                             >
                                 <CalendarMonthOutlinedIcon className="size-3.5" />
                                 Visits ({history?.appointments?.length || 0})
                             </button>
                             <button
                                 onClick={() => setActiveTab("payments")}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                    activeTab === "payments"
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "payments"
                                         ? "bg-teal-600 text-white shadow-xs"
                                         : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                                }`}
+                                    }`}
                             >
                                 <CreditCardOutlinedIcon className="size-3.5" />
                                 Payment Ledger ({history?.allPayments?.length || 0})
@@ -324,18 +321,16 @@ export default function PatientHistoryDialog({
                                                         <div>
                                                             <div className="flex items-center gap-2">
                                                                 <h4 className="text-base font-bold text-slate-900">{plan.treatment.name}</h4>
-                                                                <Badge variant="outline" className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
-                                                                    plan.clinicalStatus === "COMPLETED"
+                                                                <Badge variant="outline" className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${plan.clinicalStatus === "COMPLETED"
                                                                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                                                         : "bg-blue-50 text-blue-700 border-blue-200"
-                                                                }`}>
+                                                                    }`}>
                                                                     {plan.clinicalStatus.replace("_", " ")}
                                                                 </Badge>
-                                                                <Badge variant="outline" className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
-                                                                    isPaid
+                                                                <Badge variant="outline" className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${isPaid
                                                                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                                                         : "bg-amber-50 text-amber-800 border-amber-200"
-                                                                }`}>
+                                                                    }`}>
                                                                     {isPaid ? "Fully Paid" : "Partial Payment"}
                                                                 </Badge>
                                                             </div>
@@ -416,11 +411,10 @@ export default function PatientHistoryDialog({
                                                                             <span className="text-slate-500">
                                                                                 {format(new Date(apt.startTime), "MMM d, yyyy h:mm a")}
                                                                             </span>
-                                                                            <Badge variant="outline" className={`text-[9px] uppercase px-1.5 py-0 font-bold rounded ${
-                                                                                apt.status === "COMPLETED" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                                                                                apt.status === "SCHEDULED" ? "bg-blue-50 text-blue-700 border-blue-200" :
-                                                                                "bg-slate-100 text-slate-600 border-slate-200"
-                                                                            }`}>
+                                                                            <Badge variant="outline" className={`text-[9px] uppercase px-1.5 py-0 font-bold rounded ${apt.status === "COMPLETED" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                                                                                    apt.status === "SCHEDULED" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                                                                                        "bg-slate-100 text-slate-600 border-slate-200"
+                                                                                }`}>
                                                                                 {apt.status}
                                                                             </Badge>
                                                                         </div>
@@ -463,10 +457,10 @@ export default function PatientHistoryDialog({
                                             {history.appointments.map((apt) => {
                                                 const statusColor =
                                                     apt.status === "COMPLETED" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                                                    apt.status === "SCHEDULED" ? "bg-blue-50 text-blue-700 border-blue-200" :
-                                                    apt.status === "CANCELLED" ? "bg-red-50 text-red-700 border-red-200" :
-                                                    apt.status === "NO_SHOW" ? "bg-amber-50 text-amber-700 border-amber-200" :
-                                                    "bg-slate-100 text-slate-600 border-slate-200";
+                                                        apt.status === "SCHEDULED" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                                                            apt.status === "CANCELLED" ? "bg-red-50 text-red-700 border-red-200" :
+                                                                apt.status === "Not_Visited" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                                                                    "bg-slate-100 text-slate-600 border-slate-200";
 
                                                 return (
                                                     <div key={apt.id} className="relative">

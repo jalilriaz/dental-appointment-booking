@@ -16,10 +16,13 @@ import {
   WarningAmberOutlined,
   HistoryOutlined,
   WhatsApp,
+  ReceiptLongOutlined,
 } from "@mui/icons-material";
 import PatientHistoryDialog from "@/components/shared/PatientHistoryDialog";
 import CheckoutDialog from "@/components/shared/CheckoutDialog";
 import SendPrecautionsModal from "@/components/shared/SendPrecautionsModal";
+import ReceiptDialog from "@/components/admin/ReceiptDialog";
+import { buildAppointmentReceiptData } from "@/lib/receipt";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -41,10 +44,41 @@ interface TodayAppointment {
   status: string;
   amountPaid?: number;
   price?: number;
+  paymentMethod?: string;
   guestName?: string | null;
   guestPhone?: string | null;
-  patient: { id?: string; name: string | null; phone: string | null; medicalAlerts?: string | null } | null;
-  treatment: { name: string; durationMin: number; price: number };
+  sessionNumber?: number | null;
+  sessionLabel?: string | null;
+  patient: {
+    id?: string;
+    name: string | null;
+    phone: string | null;
+    patientCode?: number | null;
+    gender?: string | null;
+    dateOfBirth?: string | null;
+    medicalAlerts?: string | null;
+  } | null;
+  doctor?: {
+    id?: string;
+    name?: string | null;
+    role?: string;
+    operatory?: string;
+  } | null;
+  treatment: {
+    name: string;
+    durationMin: number;
+    price: number;
+    isMultiSession?: boolean;
+    defaultSessions?: number;
+  };
+  patientTreatment?: {
+    id: string;
+    totalCost: number;
+    totalSessions: number;
+    clinicalStatus: string;
+    financialStatus: string;
+    payments?: { date?: string; method?: string; amount: number }[];
+  } | null;
   discount?: number;
 }
 
@@ -63,6 +97,7 @@ export default function TodayAppointments({
   const [confirmAction, setConfirmAction] = useState<{ id: string; status: string; label: string } | null>(null);
   const [historyPatientId, setHistoryPatientId] = useState<string | null>(null);
   const [precautionsApt, setPrecautionsApt] = useState<TodayAppointment | null>(null);
+  const [receiptApt, setReceiptApt] = useState<TodayAppointment | null>(null);
 
   // Poll for updates every 30 seconds
   const { data: appointments = initialAppointments, refetch } = useQuery({
@@ -111,8 +146,54 @@ export default function TodayAppointments({
           description: `Payment of Rs. ${(amountPaid ?? 0).toLocaleString()} recorded.`,
         });
 
-        if (checkoutApt) {
-          setPrecautionsApt(checkoutApt);
+        const targetApt = options?.sourceApt as TodayAppointment | undefined;
+        if (targetApt) {
+          const collected = amountPaid ?? 0;
+          const updatedPlan = targetApt.patientTreatment
+            ? {
+              ...targetApt.patientTreatment,
+              payments: [
+                ...(targetApt.patientTreatment.payments || []),
+                ...(collected > 0
+                  ? [
+                    {
+                      date: new Date().toISOString(),
+                      method: options?.paymentMethod || "CASH",
+                      amount: collected,
+                    },
+                  ]
+                  : []),
+              ],
+            }
+            : options?.packageCost
+              ? {
+                id: "new-plan",
+                totalCost: options.packageCost,
+                totalSessions: options.totalSessions || 1,
+                clinicalStatus: "IN_PROGRESS",
+                financialStatus: collected >= options.packageCost ? "FULLY_PAID" : "PARTIAL",
+                payments:
+                  collected > 0
+                    ? [
+                      {
+                        date: new Date().toISOString(),
+                        method: options?.paymentMethod || "CASH",
+                        amount: collected,
+                      },
+                    ]
+                    : [],
+              }
+              : null;
+
+          setReceiptApt({
+            ...targetApt,
+            status: "COMPLETED",
+            amountPaid: collected,
+            price: price ?? targetApt.price ?? targetApt.treatment.price,
+            discount: discount ?? 0,
+            paymentMethod: options?.paymentMethod || "CASH",
+            patientTreatment: updatedPlan,
+          });
         }
       } else {
         const res = await fetchApi(`/api/appointments/${id}/status`, {
@@ -185,9 +266,8 @@ export default function TodayAppointments({
               return (
                 <div
                   key={apt.id}
-                  className={`px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all ${
-                    apt.status === "COMPLETED" ? "bg-emerald-50/40" : "hover:bg-slate-50/80"
-                  }`}
+                  className={`px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all ${apt.status === "COMPLETED" ? "bg-emerald-50/40" : "hover:bg-slate-50/80"
+                    }`}
                 >
                   {/* Time */}
                   <div className="w-16 shrink-0 text-center hidden sm:block">
@@ -199,17 +279,16 @@ export default function TodayAppointments({
 
                   {/* Divider */}
                   <div
-                    className={`hidden sm:block w-1 h-12 rounded-full shrink-0 ${
-                      apt.status === "COMPLETED"
-                        ? "bg-emerald-500"
-                        : apt.status === "CANCELLED"
+                    className={`hidden sm:block w-1 h-12 rounded-full shrink-0 ${apt.status === "COMPLETED"
+                      ? "bg-emerald-500"
+                      : apt.status === "CANCELLED"
                         ? "bg-rose-400"
-                        : apt.status === "NO_SHOW"
-                        ? "bg-amber-400"
-                        : isPast
-                        ? "bg-amber-500"
-                        : "bg-teal-600"
-                    }`}
+                        : apt.status === "Not_Visited"
+                          ? "bg-amber-400"
+                          : isPast
+                            ? "bg-amber-500"
+                            : "bg-teal-600"
+                      }`}
                   />
 
                   {/* Mobile time badge */}
@@ -228,21 +307,13 @@ export default function TodayAppointments({
                         {(apt.patient as any)?.noShowCount > 0 && (
                           <span
                             className="inline-flex items-center gap-1 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200"
-                            title={`${(apt.patient as any)?.noShowCount} previous No-Shows`}
+                            title={`${(apt.patient as any)?.noShowCount} previous Not Visiteds`}
                           >
                             <WarningAmberOutlined sx={{ fontSize: 12 }} />
-                            {(apt.patient as any)?.noShowCount} No-Show
+                            {(apt.patient as any)?.noShowCount} Not Visited
                           </span>
                         )}
                       </p>
-                      {apt.patient?.medicalAlerts && (
-                        <span
-                          className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200 shrink-0"
-                          title={apt.patient.medicalAlerts}
-                        >
-                          Medical Alert
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-xs text-slate-600 truncate">
@@ -264,9 +335,8 @@ export default function TodayAppointments({
 
                   {/* Status Badge */}
                   <span
-                    className={`px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 ${
-                      statusColors[apt.status] || "bg-slate-100 text-slate-700"
-                    }`}
+                    className={`px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 ${statusColors[apt.status] || "bg-slate-100 text-slate-700"
+                      }`}
                   >
                     {conf.label}
                   </span>
@@ -300,11 +370,11 @@ export default function TodayAppointments({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setConfirmAction({ id: apt.id, status: "NO_SHOW", label: "No Show" })}
+                          onClick={() => setConfirmAction({ id: apt.id, status: "Not_Visited", label: "Not Visited" })}
                           className="h-8 text-xs gap-1 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 active:scale-95 transition-all cursor-pointer"
                         >
                           <PersonOffOutlined sx={{ fontSize: 15 }} />
-                          No Show
+                          Not Visited
                         </Button>
                         <Button
                           size="sm"
@@ -316,7 +386,17 @@ export default function TodayAppointments({
                         </Button>
                       </>
                     ) : apt.status === "COMPLETED" ? (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setReceiptApt(apt)}
+                          className="h-8 text-xs gap-1 text-teal-800 border-teal-200 bg-teal-50 hover:bg-teal-100 active:scale-95 transition-all cursor-pointer"
+                          title="View & Print Receipt"
+                        >
+                          <ReceiptLongOutlined sx={{ fontSize: 15, color: "#0d9488" }} />
+                          Receipt
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
@@ -327,9 +407,6 @@ export default function TodayAppointments({
                           <WhatsApp sx={{ fontSize: 15, color: "#059669" }} />
                           Precautions
                         </Button>
-                        <span className="text-xs text-emerald-700 font-bold hidden sm:flex items-center gap-1">
-                          <CheckCircleOutlineOutlined sx={{ fontSize: 15 }} /> Done
-                        </span>
                       </div>
                     ) : null}
                   </div>
@@ -353,12 +430,12 @@ export default function TodayAppointments({
               <WarningAmberOutlined sx={{ fontSize: 24, color: "#e11d48" }} />
             </div>
             <AlertDialogTitle className="text-center font-extrabold text-[#0B1528]">
-              {confirmAction?.status === "CANCELLED" ? "Cancel Appointment" : "Mark as No Show"}
+              {confirmAction?.status === "CANCELLED" ? "Cancel Appointment" : "Mark as Not Visited"}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-center text-slate-600">
               {confirmAction?.status === "CANCELLED"
                 ? "Are you sure you want to cancel this appointment? The patient will need to book again."
-                : "Mark this patient as a no-show? This helps track attendance patterns."}
+                : "Mark this patient as a Not Visited? This helps track attendance patterns."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center gap-3">
@@ -376,7 +453,7 @@ export default function TodayAppointments({
                   : "bg-amber-600 hover:bg-amber-700 text-white border-0 cursor-pointer"
               }
             >
-              {confirmAction?.status === "CANCELLED" ? "Yes, Cancel It" : "Confirm No Show"}
+              {confirmAction?.status === "CANCELLED" ? "Yes, Cancel It" : "Confirm Not Visited"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -390,10 +467,22 @@ export default function TodayAppointments({
         onClose={() => setCheckoutApt(null)}
         onConfirm={(amount, price, discount, options) => {
           if (checkoutApt) {
-            updateStatus(checkoutApt.id, "COMPLETED", amount, price, discount, options);
+            const targetApt = checkoutApt;
             setCheckoutApt(null);
+            updateStatus(targetApt.id, "COMPLETED", amount, price, discount, {
+              ...options,
+              sourceApt: targetApt,
+            });
           }
         }}
+      />
+
+      <ReceiptDialog
+        open={!!receiptApt}
+        onOpenChange={(open) => {
+          if (!open) setReceiptApt(null);
+        }}
+        data={receiptApt ? buildAppointmentReceiptData(receiptApt) : null}
       />
 
       <PatientHistoryDialog

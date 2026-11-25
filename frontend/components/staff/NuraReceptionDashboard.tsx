@@ -24,18 +24,17 @@ import {
   WhatsApp,
   ArrowForwardOutlined,
   TrendingUpOutlined,
-  LocalHospitalOutlined,
   WbTwilightOutlined,
   AutoAwesomeOutlined,
   MoreVertOutlined,
   EventAvailableOutlined,
-  MedicalServicesOutlined,
   PeopleAltOutlined,
   AutorenewOutlined,
 } from "@mui/icons-material";
 import { Button } from "@/components/ui/button";
 import { formatPKR, formatTime, formatDate } from "@/lib/utils";
 import TodayAppointments from "@/components/shared/TodayAppointments";
+import StaffBookAppointmentModal from "@/components/staff/StaffBookAppointmentModal";
 
 interface PatientInfo {
   id?: string;
@@ -55,14 +54,14 @@ interface AppointmentItem {
   patient: PatientInfo | null;
   treatment: { name: string; durationMin: number; price: number };
 }
- 
+
 interface DailyTrendItem {
   day: string;
   count: number;
   completed: number;
 }
 
-interface HourlySlotItem { 
+interface HourlySlotItem {
   hour: string;
   count: number;
   active: boolean;
@@ -149,6 +148,7 @@ function CircularGauge({
 }
 
 export default function NuraReceptionDashboard(props: NuraDashboardProps) {
+  const [bookModalOpen, setBookModalOpen] = useState(false);
   // Live Telemetry via Express Backend API (polls every 15s for real-time responsiveness)
   const { data = props, isFetching, refetch } = useQuery<NuraDashboardProps>({
     queryKey: ["staff-reception-dashboard"],
@@ -172,23 +172,7 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
     tomorrowAppointments = props.tomorrowAppointments,
     weeklyTrend = props.weeklyTrend,
     hourlyDistribution = props.hourlyDistribution,
-    doctors = props.doctors,
   } = (data || props) as NuraDashboardProps;
-
-  const displayDoctors =
-    doctors && doctors.length > 0
-      ? doctors
-      : [
-          {
-            id: "doc-shehryar",
-            name: "Dr. Shehryar Akhtar",
-            role: "Lead Dental Surgeon",
-            operatory: "Chair 1 · Surgical Suite",
-            schedule: "12:00 PM – 8:00 PM",
-            isLead: true,
-            image: "/dr_sheriyaar.webp",
-          },
-        ];
 
   const now = new Date();
   const [selectedView, setSelectedView] = useState<"queue" | "schedule">("queue");
@@ -199,6 +183,59 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
   ) || todayAppointments.find((apt: AppointmentItem) => apt.status === "SCHEDULED");
 
   const recentTreated = todayAppointments.filter((a: AppointmentItem) => a.status === "COMPLETED");
+
+  const metricTiles = [
+    {
+      label: "Today",
+      badge: "Active Shift",
+      badgeClass: "bg-sky-50 text-sky-700 border-sky-200/80",
+      dotClass: "bg-sky-500",
+      value: todayTotal,
+      unit: "Slots",
+      subtitle: "Appointments booked",
+      extraClass: "",
+    },
+    {
+      label: "Remaining",
+      badge: "In Queue",
+      badgeClass: "bg-amber-50 text-amber-700 border-amber-200/80",
+      dotClass: "bg-amber-500",
+      value: remainingToday,
+      unit: "Waiting",
+      subtitle: "Scheduled for today",
+      extraClass: "",
+    },
+    {
+      label: "Completed",
+      badge: "Checked Out",
+      badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/80",
+      dotClass: "bg-emerald-500",
+      value: todayCompleted,
+      unit: "Seen",
+      subtitle: "Reconciled today",
+      extraClass: "",
+    },
+    {
+      label: "Tomorrow",
+      badge: "Confirmed",
+      badgeClass: "bg-teal-50 text-teal-700 border-teal-200/80",
+      dotClass: "bg-teal-500",
+      value: tomorrowTotal,
+      unit: "Advance",
+      subtitle: "On the schedule",
+      extraClass: "",
+    },
+    {
+      label: "Patients",
+      badge: "Community",
+      badgeClass: "bg-slate-100 text-slate-700 border-slate-200/90",
+      dotClass: "bg-slate-400",
+      value: totalPatients,
+      unit: "Total",
+      subtitle: "Registered profiles",
+      extraClass: "col-span-2 sm:col-span-1",
+    },
+  ];
 
   return (
     <div className="space-y-6 sm:space-y-8 font-sans">
@@ -232,13 +269,14 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
 
         {/* Action Pills */}
         <div className="flex items-center gap-3">
-          <Link
-            href="/staff/book"
+          <button
+            type="button"
+            onClick={() => setBookModalOpen(true)}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs shadow-md shadow-teal-600/20 active:scale-95 transition-all cursor-pointer"
           >
             <PersonAddAlt1Outlined sx={{ fontSize: 18 }} />
             <span>+ Book Patient</span>
-          </Link>
+          </button>
           <Link
             href="/staff/appointments"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-slate-200/90 shadow-2xs active:scale-95 transition-all cursor-pointer"
@@ -252,101 +290,32 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
       {/* ──────────────────────────────────────────────────────────────────
           2. NURA-STYLE TOP METRIC TILES WITH STATUS PILLS
           ────────────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
-        {/* Metric 1: Today */}
-        <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all relative">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Today
-            </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-sky-50 text-sky-700 border border-sky-200/60">
-              Active Shift
-            </span>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-3.5">
+        {metricTiles.map((tile) => (
+          <div
+            key={tile.label}
+            className={`bg-white rounded-3xl p-4 xl:p-5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between ${tile.extraClass}`}
+          >
+            <div className="flex items-center justify-between gap-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
+                {tile.label}
+              </span>
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap shrink-0 leading-tight ${tile.badgeClass}`}
+              >
+                <span className={`size-1.5 rounded-full shrink-0 ${tile.dotClass}`} />
+                <span>{tile.badge}</span>
+              </span>
+            </div>
+            <div className="mt-3">
+              <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                {tile.value}
+              </span>
+              <span className="text-xs font-semibold text-slate-400 ml-1.5">{tile.unit}</span>
+            </div>
+            <p className="text-[11px] text-slate-500 font-medium mt-1">{tile.subtitle}</p>
           </div>
-          <div className="mt-3">
-            <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              {todayTotal}
-            </span>
-            <span className="text-xs font-semibold text-slate-400 ml-1.5">Slots</span>
-          </div>
-          <p className="text-[11px] text-slate-500 font-medium mt-1">Appointments booked</p>
-        </div>
-
-        {/* Metric 2: Remaining */}
-        <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all relative">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Remaining
-            </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200/60">
-              In Queue
-            </span>
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              {remainingToday}
-            </span>
-            <span className="text-xs font-semibold text-slate-400 ml-1.5">Waiting</span>
-          </div>
-          <p className="text-[11px] text-slate-500 font-medium mt-1">Scheduled for today</p>
-        </div>
-
-        {/* Metric 3: Done */}
-        <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all relative">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Completed
-            </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-              Checked Out
-            </span>
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              {todayCompleted}
-            </span>
-            <span className="text-xs font-semibold text-slate-400 ml-1.5">Seen</span>
-          </div>
-          <p className="text-[11px] text-slate-500 font-medium mt-1">Reconciled today</p>
-        </div>
-
-        {/* Metric 4: Tomorrow */}
-        <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all relative">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Tomorrow
-            </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-50 text-teal-700 border border-teal-200/60">
-              Confirmed
-            </span>
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              {tomorrowTotal}
-            </span>
-            <span className="text-xs font-semibold text-slate-400 ml-1.5">Advance</span>
-          </div>
-          <p className="text-[11px] text-slate-500 font-medium mt-1">On the schedule</p>
-        </div>
-
-        {/* Metric 5: Total Patients */}
-        <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all relative col-span-2 sm:col-span-1">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Patients
-            </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-700 border border-slate-200">
-              Community
-            </span>
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              {totalPatients}
-            </span>
-            <span className="text-xs font-semibold text-slate-400 ml-1.5">Total</span>
-          </div>
-          <p className="text-[11px] text-slate-500 font-medium mt-1">Registered profiles</p>
-        </div>
+        ))}
       </div>
 
       {/* ──────────────────────────────────────────────────────────────────
@@ -535,7 +504,7 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <CircularGauge percentage={attendanceRate} label="Attendance Rate" sublabel="Low no-shows" color="#0D9488" />
+          <CircularGauge percentage={attendanceRate} label="Attendance Rate" sublabel="Low Not Visiteds" color="#0D9488" />
           <CircularGauge percentage={88} label="Operatory Load" sublabel="Slot capacity" color="#0284C7" />
           <CircularGauge percentage={96} label="Checkout Health" sublabel="Reconciled fees" color="#10B981" />
           <CircularGauge percentage={84} label="Patient Retention" sublabel="Multi-session care" color="#F59E0B" />
@@ -664,101 +633,6 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
             </div>
           </div>
 
-          {/* Doctors on Duty / Live Operatories - Soft Clinical Mint Secondary Background */}
-          <div className="rounded-3xl bg-teal-50/70 border border-teal-200/90 shadow-2xs overflow-hidden relative">
-            <div className="px-6 py-4 border-b border-teal-200/70 bg-teal-100/50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MedicalServicesOutlined sx={{ fontSize: 18, color: "#0D9488" }} />
-                <h3 className="text-sm font-extrabold text-teal-950 tracking-tight">Doctors on Duty</h3>
-              </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-white text-emerald-800 border border-teal-200/80 shadow-2xs">
-                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>{displayDoctors.length} {displayDoctors.length === 1 ? "Active On-Site" : "Active Specialists"}</span>
-              </div>
-            </div>
-
-            <div className="p-5 sm:p-6 space-y-3.5">
-              {displayDoctors.map((doc) => {
-                if (doc.isLead) {
-                  return (
-                    <div
-                      key={doc.id}
-                      className="p-4 rounded-2xl bg-white border border-teal-300/80 shadow-xs relative overflow-hidden group hover:border-teal-400 transition-all"
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <div className="relative size-14 rounded-2xl overflow-hidden ring-2 ring-teal-500/30 shadow-md shrink-0 bg-slate-100">
-                          <Image
-                            src={doc.image || "/dr_sheriyaar.webp"}
-                            alt={doc.name}
-                            fill
-                            className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-black text-slate-900 tracking-tight">
-                              {doc.name}
-                            </p>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-black bg-teal-600 text-white uppercase tracking-wider shrink-0 shadow-2xs">
-                              Lead Surgeon
-                            </span>
-                          </div>
-                          <p className="text-xs font-bold text-teal-800 truncate mt-0.5">
-                            {doc.operatory}
-                          </p>
-                          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-600 font-semibold">
-                            <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                            <span>{doc.schedule}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div
-                    key={doc.id}
-                    className="p-3.5 rounded-2xl bg-white/80 border border-teal-200/70 hover:border-teal-400 hover:bg-white transition-all shadow-2xs"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-xl bg-teal-100 text-teal-900 border border-teal-200/80 font-extrabold text-xs flex items-center justify-center shrink-0">
-                        {doc.name.replace("Dr. ", "").charAt(0)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1">
-                          <p className="text-xs font-black text-slate-900 truncate">
-                            {doc.name}
-                          </p>
-                          <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                            In Operatory
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-teal-900/80 font-semibold">
-                          {doc.operatory}
-                        </p>
-                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-                          {doc.schedule}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              <Button
-                asChild
-                variant="outline"
-                className="w-full h-10 rounded-xl border border-teal-300/90 bg-white hover:bg-teal-600 hover:text-white text-xs font-extrabold text-teal-800 transition-all shadow-2xs cursor-pointer flex items-center justify-center"
-              >
-                <Link href="/staff/doctors">
-                  <span>View Full Specialist Roster</span>
-                  <ArrowForwardOutlined sx={{ fontSize: 13, ml: 1 }} />
-                </Link>
-              </Button>
-            </div>
-          </div>
-
           {/* Quick Desk Actions */}
           <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xs overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
@@ -766,13 +640,12 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
             </div>
             <div className="p-6 space-y-2.5">
               <Button
-                asChild
+                type="button"
+                onClick={() => setBookModalOpen(true)}
                 className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-2xl justify-start h-11 transition-all active:scale-[0.98] shadow-xs cursor-pointer"
               >
-                <Link href="/staff/book">
-                  <PersonAddAlt1Outlined sx={{ fontSize: 18, mr: 1.5 }} />
-                  Book New Walk-In
-                </Link>
+                <PersonAddAlt1Outlined sx={{ fontSize: 18, mr: 1.5 }} />
+                Book New Walk-In
               </Button>
               <Button
                 asChild
@@ -800,6 +673,12 @@ export default function NuraReceptionDashboard(props: NuraDashboardProps) {
           </div>
         </div>
       </div>
+
+      <StaffBookAppointmentModal
+        open={bookModalOpen}
+        onOpenChange={setBookModalOpen}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }

@@ -341,7 +341,7 @@ async function main() {
       const durationMin = treatment.durationMin || 45;
       const endTime = new Date(startTime.getTime() + durationMin * 60000);
 
-      // Status distribution for past: 91% COMPLETED, 5% NO_SHOW, 4% CANCELLED
+      // Status distribution for past: 91% COMPLETED, 5% Not_Visited, 4% CANCELLED
       const rand = (apptIndex * 17) % 100;
       let status = 'COMPLETED';
       let discount = (rand < 10) ? Math.round(treatment.price * 0.1) : 0;
@@ -350,7 +350,7 @@ async function main() {
       // Partial payment realistic distribution: 20% partial payments (with remaining balance)
       let amountPaid = netTotal;
       if (rand >= 91 && rand < 96) {
-        status = 'NO_SHOW';
+        status = 'Not_Visited';
         amountPaid = 0;
       } else if (rand >= 96) {
         status = 'CANCELLED';
@@ -771,7 +771,7 @@ async function main() {
   console.log(`🦷 Total Clinical Treatments:   ${finalApptCount}`);
   console.log(`📅 Scheduled (Next 40 Days):    ${scheduledCount}`);
   console.log(`✅ Completed (Historical/Today): ${completedCount}`);
-  console.log(`❌ Cancelled / No-Shows:        ${cancelledCount}`);
+  console.log(`❌ Cancelled / Not Visiteds:        ${cancelledCount}`);
   console.log(`💰 Realized Clinical Revenue:   Rs. ${(revenueAgg._sum.amountPaid || 0).toLocaleString()}`);
   console.log('========================================================\n');
   console.log('Credentials:');

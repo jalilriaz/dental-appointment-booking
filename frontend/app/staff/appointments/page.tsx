@@ -7,11 +7,16 @@ import AppointmentsTable from "@/components/appointments/AppointmentsTable";
 import { Suspense } from "react";
 import Link from "next/link";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
-import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import StaffBookAppointmentButton from "@/components/staff/StaffBookAppointmentButton";
 
 import { startOfDay, endOfDay } from "date-fns";
+import { buildAppointmentSearchOr } from "@/lib/appointment-search";
 
-export default async function StaffAppointmentsPage({ searchParams }: { searchParams: Promise<{ status?: string; filter?: string }> }) {
+export default async function StaffAppointmentsPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ status?: string; filter?: string; search?: string }>;
+}) {
     const cookie = (await cookies()).get("session")?.value;
     if (!cookie) redirect("/login?callbackUrl=/staff/appointments");
 
@@ -25,8 +30,12 @@ export default async function StaffAppointmentsPage({ searchParams }: { searchPa
         redirect("/login");
     }
 
-    const { status, filter } = await searchParams;
+    const { status, filter, search } = await searchParams;
     const where: any = {};
+
+    if (search && search.trim()) {
+        where.OR = buildAppointmentSearchOr(search);
+    }
 
     if (status) {
         where.status = status;
@@ -56,7 +65,7 @@ export default async function StaffAppointmentsPage({ searchParams }: { searchPa
     const appointments = await prisma.appointment.findMany({
         where,
         include: {
-            patient: { select: { id: true, name: true, email: true, phone: true } },
+            patient: { select: { id: true, name: true, email: true, phone: true, patientCode: true } },
             treatment: { select: { id: true, name: true, price: true, durationMin: true } },
             doctor: { select: { id: true, name: true, role: true, operatory: true, isLead: true } },
             patientTreatment: {
@@ -111,17 +120,15 @@ export default async function StaffAppointmentsPage({ searchParams }: { searchPa
                     <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">All Appointments</h1>
                     <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">Manage schedule, operatory allocations, and view patient details.</p>
                 </div>
-                <Link
-                    href="/staff/book"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs sm:text-sm font-bold rounded-2xl shadow-xs transition-premium active:scale-95"
-                >
-                    <CalendarTodayOutlinedIcon sx={{ fontSize: 16 }} />
-                    <span>Book for Patient</span>
-                </Link>
+                <StaffBookAppointmentButton label="Book for Patient" />
             </div>
 
             <Suspense fallback={<AppointmentsSkeleton />}>
-                <AppointmentsTable appointments={serialized} userRole={session.role as string} />
+                <AppointmentsTable
+                    appointments={serialized}
+                    userRole={session.role as string}
+                    initialSearch={search || ""}
+                />
             </Suspense>
         </div>
     );

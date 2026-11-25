@@ -7,17 +7,22 @@ import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlin
 
 import { startOfDay, endOfDay } from "date-fns"
 import { expirePastAppointments } from "@/lib/appointment-status"
+import { buildAppointmentSearchOr } from "@/lib/appointment-search"
 
 export default async function AdminAppointmentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; filter?: string }>
+  searchParams: Promise<{ status?: string; filter?: string; search?: string }>
 }) {
   // Auto catch-up: expire any past unattended appointments before rendering table
   await expirePastAppointments()
 
-  const { status, filter } = await searchParams
+  const { status, filter, search } = await searchParams
   const where: any = {}
+
+  if (search && search.trim()) {
+    where.OR = buildAppointmentSearchOr(search)
+  }
 
   if (status) {
     where.status = status
@@ -111,7 +116,7 @@ export default async function AdminAppointmentsPage({
         </Link>
       </div>
       <Suspense fallback={<AppointmentsSkeleton />}>
-        <AppointmentsTable appointments={serialized} />
+        <AppointmentsTable appointments={serialized} initialSearch={search || ""} />
       </Suspense>
     </div>
   )

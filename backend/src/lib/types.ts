@@ -182,7 +182,7 @@ export interface TimeSlot {
 // ─── Status ──────────────────────────────────────────────
 
 /** All possible appointment statuses — matches Prisma `ApptStatus` enum. */
-export type ApptStatus = "SCHEDULED" | "RESCHEDULED" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+export type ApptStatus = "SCHEDULED" | "RESCHEDULED" | "COMPLETED" | "CANCELLED" | "Not_Visited";
 
 /** Rich status metadata for rendering badges, labels, etc. */
 export interface StatusConfig {

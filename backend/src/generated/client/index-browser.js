@@ -321,7 +321,7 @@ exports.ApptStatus = exports.$Enums.ApptStatus = {
   RESCHEDULED: 'RESCHEDULED',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
-  NO_SHOW: 'NO_SHOW'
+  Not_Visited: 'Not_Visited'
 };
 
 exports.BookingSource = exports.$Enums.BookingSource = {

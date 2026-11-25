@@ -216,7 +216,7 @@ export async function checkoutAppointment(
                 include: {
                     payments: true,
                     appointments: {
-                        where: { status: { notIn: ["CANCELLED", "NO_SHOW"] } },
+                        where: { status: { notIn: ["CANCELLED", "Not_Visited"] } },
                     },
                 },
             });

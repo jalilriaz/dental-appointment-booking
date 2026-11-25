@@ -28,7 +28,7 @@ enum ApptStatus {
   RESCHEDULED
   COMPLETED
   CANCELLED
-  NO_SHOW
+  Not_Visited
 }
 
 enum BookingSource {

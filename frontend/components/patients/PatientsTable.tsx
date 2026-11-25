@@ -10,7 +10,6 @@ import {
     ChevronRightOutlined,
     CalendarMonthOutlined,
     PersonOutlineOutlined,
-    WarningAmberOutlined,
     AutoAwesomeOutlined,
     MedicalServicesOutlined,
     BadgeOutlined,
@@ -61,7 +60,7 @@ export interface PatientRow {
     } | null;
 }
 
-type FilterMode = "ALL" | "ACTIVE_PLANS" | "MEDICAL_ALERTS" | "WITH_VISITS";
+type FilterMode = "ALL" | "ACTIVE_PLANS" | "WITH_VISITS";
 type SortOption = "NAME_ASC" | "NAME_DESC" | "RECENT_VISIT" | "MOST_VISITS" | "CODE_ASC";
 
 export default function PatientsTable({
@@ -92,10 +91,9 @@ export default function PatientsTable({
     const kpiMetrics = useMemo(() => {
         const total = records.length;
         const activePlans = records.filter((p) => Boolean(p.activePlan)).length;
-        const medicalAlerts = records.filter((p) => Boolean(p.medicalAlerts)).length;
         const withVisits = records.filter((p) => p.appointmentCount > 0).length;
 
-        return { total, activePlans, medicalAlerts, withVisits };
+        return { total, activePlans, withVisits };
     }, [records]);
 
     // ─── Age Helper ───
@@ -112,7 +110,6 @@ export default function PatientsTable({
             .filter((p) => {
                 // Quick Category Filters
                 if (filterMode === "ACTIVE_PLANS" && !p.activePlan) return false;
-                if (filterMode === "MEDICAL_ALERTS" && !p.medicalAlerts) return false;
                 if (filterMode === "WITH_VISITS" && p.appointmentCount === 0) return false;
 
                 // Search Query Matching
@@ -123,10 +120,9 @@ export default function PatientsTable({
                 const phoneMatch = (p.phone || "").toLowerCase().includes(query);
                 const emailMatch = (p.email || "").toLowerCase().includes(query);
                 const codeMatch = p.patientCode ? String(p.patientCode).includes(query) : false;
-                const alertMatch = (p.medicalAlerts || "").toLowerCase().includes(query);
                 const planMatch = (p.activePlan?.treatmentName || "").toLowerCase().includes(query);
 
-                return nameMatch || phoneMatch || emailMatch || codeMatch || alertMatch || planMatch;
+                return nameMatch || phoneMatch || emailMatch || codeMatch || planMatch;
             })
             .sort((a, b) => {
                 switch (sortBy) {
@@ -201,8 +197,8 @@ export default function PatientsTable({
                 </div>
             </div>
 
-            {/* ─── Top 4 Metric KPI Cards (1-Click Filters) ─── */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            {/* ─── Top 3 Metric KPI Cards (1-Click Filters) ─── */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
                 {/* 1. Total Patients */}
                 <button
                     type="button"
@@ -257,34 +253,7 @@ export default function PatientsTable({
                     </p>
                 </button>
 
-                {/* 3. Flagged Medical Alerts */}
-                <button
-                    type="button"
-                    onClick={() => handleFilterModeChange("MEDICAL_ALERTS")}
-                    className={`p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all text-left cursor-pointer group ${
-                        filterMode === "MEDICAL_ALERTS"
-                            ? "bg-amber-50/80 border-amber-400 ring-2 ring-amber-500/20 shadow-xs"
-                            : "bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs"
-                    }`}
-                >
-                    <div className="flex items-center justify-between">
-                        <span className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-800 group-hover:text-amber-950 transition-colors">
-                            Medical Alerts
-                        </span>
-                        <div className="size-7 sm:size-8 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/80 flex items-center justify-center">
-                            <WarningAmberOutlined sx={{ fontSize: 16 }} />
-                        </div>
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-black text-[#0B1528] tracking-tight mt-1.5 sm:mt-2">
-                        {kpiMetrics.medicalAlerts}
-                    </p>
-                    <p className="text-[10.5px] sm:text-[11px] font-bold text-amber-700 mt-1 flex items-center gap-1.5">
-                        <span className="size-1.5 rounded-full bg-amber-600" />
-                        <span>Allergies &amp; precautions</span>
-                    </p>
-                </button>
-
-                {/* 4. Active Patients with Visits */}
+                {/* 3. Active Patients with Visits */}
                 <button
                     type="button"
                     onClick={() => handleFilterModeChange("WITH_VISITS")}
@@ -405,18 +374,6 @@ export default function PatientsTable({
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleFilterModeChange("MEDICAL_ALERTS")}
-                        className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                            filterMode === "MEDICAL_ALERTS"
-                                ? "bg-amber-600 text-white shadow-2xs"
-                                : "bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80"
-                        }`}
-                    >
-                        <WarningAmberOutlined sx={{ fontSize: 13 }} />
-                        <span>Medical Alerts ({kpiMetrics.medicalAlerts})</span>
-                    </button>
-                    <button
-                        type="button"
                         onClick={() => handleFilterModeChange("WITH_VISITS")}
                         className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                             filterMode === "WITH_VISITS"
@@ -514,14 +471,6 @@ export default function PatientsTable({
                                             </Link>
                                         </div>
                                     </div>
-
-                                    {/* Medical Alert Pill if present */}
-                                    {p.medicalAlerts && (
-                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-300 font-bold text-[11px] shadow-2xs w-full">
-                                            <WarningAmberOutlined sx={{ fontSize: 13 }} className="text-amber-600 shrink-0" />
-                                            <span className="truncate">{p.medicalAlerts}</span>
-                                        </div>
-                                    )}
 
                                     {/* Contact & WhatsApp */}
                                     {p.phone && (
@@ -654,14 +603,6 @@ export default function PatientsTable({
                                                             </span>
                                                         )}
                                                     </div>
-
-                                                    {/* Medical Alert Warning Pill (Shown ONLY if flagged, otherwise hidden) */}
-                                                    {p.medicalAlerts && (
-                                                        <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 font-extrabold text-[10px] shadow-2xs max-w-full">
-                                                            <WarningAmberOutlined sx={{ fontSize: 12 }} className="text-amber-600 shrink-0" />
-                                                            <span className="truncate max-w-[170px]">{p.medicalAlerts}</span>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </td>
 

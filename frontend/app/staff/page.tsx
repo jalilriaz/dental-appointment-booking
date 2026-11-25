@@ -39,8 +39,30 @@ export default async function StaffDashboard() {
     prisma.appointment.findMany({
       where: { startTime: { gte: todayStart, lt: todayEnd }, status: { not: "CANCELLED" } },
       include: {
-        patient: { select: { id: true, name: true, phone: true, email: true, medicalAlerts: true } },
-        treatment: { select: { name: true, durationMin: true, price: true } },
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            email: true,
+            patientCode: true,
+            gender: true,
+            dateOfBirth: true,
+            medicalAlerts: true,
+          },
+        },
+        doctor: { select: { id: true, name: true, role: true, operatory: true } },
+        treatment: { select: { name: true, durationMin: true, price: true, isMultiSession: true, defaultSessions: true } },
+        patientTreatment: {
+          select: {
+            id: true,
+            totalCost: true,
+            totalSessions: true,
+            clinicalStatus: true,
+            financialStatus: true,
+            payments: { select: { amount: true, date: true, method: true } },
+          },
+        },
       },
       orderBy: { startTime: "asc" },
     }),
@@ -61,7 +83,7 @@ export default async function StaffDashboard() {
       select: { startTime: true, status: true },
     }),
     prisma.appointment.count({ where: { status: "COMPLETED" } }),
-    prisma.appointment.count({ where: { status: "NO_SHOW" } }),
+    prisma.appointment.count({ where: { status: "Not_Visited" } }),
     prisma.doctor.findMany({
       where: { isActive: true },
       orderBy: [{ isLead: "desc" }, { createdAt: "asc" }],
@@ -144,9 +166,29 @@ export default async function StaffDashboard() {
     endTime: a.endTime.toISOString(),
     status: a.status,
     amountPaid: a.amountPaid || 0,
-    price: a.price || a.treatment.price,
-    patient: a.patient,
+    price: a.price ?? a.treatment.price,
+    discount: a.discount || 0,
+    guestName: a.guestName,
+    guestPhone: a.guestPhone,
+    sessionNumber: a.sessionNumber,
+    sessionLabel: a.sessionLabel,
+    doctor: a.doctor,
+    patient: a.patient
+      ? {
+        ...a.patient,
+        dateOfBirth: a.patient.dateOfBirth ? a.patient.dateOfBirth.toISOString() : null,
+      }
+      : null,
     treatment: a.treatment,
+    patientTreatment: a.patientTreatment
+      ? {
+        ...a.patientTreatment,
+        payments: a.patientTreatment.payments.map((p) => ({
+          ...p,
+          date: p.date.toISOString(),
+        })),
+      }
+      : null,
   }));
 
   const serializedTomorrow = tomorrowAppointments.map((a) => ({

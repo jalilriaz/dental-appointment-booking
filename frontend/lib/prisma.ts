@@ -6,12 +6,12 @@ const prismaClientSingleton = () => {
 };
 
 declare global {
-    var prismaGlobalFix5: undefined | ReturnType<typeof prismaClientSingleton>;
+    var prismaGlobalFix6: undefined | ReturnType<typeof prismaClientSingleton>;
 }
 
-const prisma = globalThis.prismaGlobalFix5 ?? prismaClientSingleton();
+const prisma = globalThis.prismaGlobalFix6 ?? prismaClientSingleton();
 
 export default prisma;
 
-if (process.env.NODE_ENV !== "production") globalThis.prismaGlobalFix5 = prisma;
+if (process.env.NODE_ENV !== "production") globalThis.prismaGlobalFix6 = prisma;
 

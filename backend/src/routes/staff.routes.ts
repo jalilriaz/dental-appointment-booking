@@ -45,8 +45,30 @@ router.get('/dashboard', requireAuth, async (_req: Request, res: Response) => {
             prisma.appointment.findMany({
                 where: { startTime: { gte: todayStart, lt: todayEnd }, status: { not: 'CANCELLED' } },
                 include: {
-                    patient: { select: { id: true, name: true, phone: true, email: true, medicalAlerts: true } },
-                    treatment: { select: { name: true, durationMin: true, price: true } },
+                    patient: {
+                        select: {
+                            id: true,
+                            name: true,
+                            phone: true,
+                            email: true,
+                            patientCode: true,
+                            gender: true,
+                            dateOfBirth: true,
+                            medicalAlerts: true,
+                        },
+                    },
+                    doctor: { select: { id: true, name: true, role: true, operatory: true } },
+                    treatment: { select: { name: true, durationMin: true, price: true, isMultiSession: true, defaultSessions: true } },
+                    patientTreatment: {
+                        select: {
+                            id: true,
+                            totalCost: true,
+                            totalSessions: true,
+                            clinicalStatus: true,
+                            financialStatus: true,
+                            payments: { select: { amount: true, date: true, method: true } },
+                        },
+                    },
                 },
                 orderBy: { startTime: 'asc' },
             }),
@@ -67,7 +89,7 @@ router.get('/dashboard', requireAuth, async (_req: Request, res: Response) => {
                 select: { startTime: true, status: true },
             }),
             prisma.appointment.count({ where: { status: 'COMPLETED' } }),
-            prisma.appointment.count({ where: { status: 'NO_SHOW' } }),
+            prisma.appointment.count({ where: { status: 'Not_Visited' } }),
         ]);
 
         const todayTotal = todayAppointments.length;

@@ -23,7 +23,7 @@ This plan implements an all-in-one, high-density, single-screen command center f
   - All greetings, fallbacks, and profiles will consistently use **`Dr. Sheriyaar`**.
 - **REMOVED AS REQUESTED**:
   - Removed circular telemetry gauges, Operatory Chair Load timeline, and Attending Surgeon on Duty badge.
-  - Removed standalone "Visits completed vs no-shows" KPI card (integrated directly into the status donut legend).
+  - Removed standalone "Visits completed vs Not Visiteds" KPI card (integrated directly into the status donut legend).
 - **DATA SECURITY**:
   - Financial numbers (Revenue, Outstanding Balance) are strictly guarded on the server (`session.role === "ADMIN"`).
   - All numbers are derived from live Prisma database records.
@@ -54,12 +54,12 @@ This plan implements an all-in-one, high-density, single-screen command center f
 │    - Search input + "+ Add patient" button                        │    - Time pill, patient avatar, procedure tag,    │
 │    - Columns: Patient (name, phone, tag), Treatment, Date,        │      and "New patient" badge where applicable      │
 │      Time, Duration (mins), Status badge, Quick Actions           │                                                    │
-│    - Actions: Mark arrived / In-chair, Complete, No-show         │                                                    │
+│    - Actions: Mark arrived / In-chair, Complete, Not Visited         │                                                    │
 │    - Pagination controls (< 1 2 3 >)                              │                                                    │
 ├───────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────┤
 │ BOTTOM ROW (50% / 50% split):                                                                                          │
 │ 1. APPOINTMENT STATUS DONUT CHART                                 2. POPULAR TREATMENTS BAR CHART                      │
-│    - Donut showing: Completed, Upcoming, Cancelled, No-show       - Top 5 dental treatments by booking volume          │
+│    - Donut showing: Completed, Upcoming, Cancelled, Not Visited       - Top 5 dental treatments by booking volume          │
 │    - Legend with counts & percentages (Done vs Missed visits)     - Clean teal horizontal bars with count & revenue    │
 └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -76,7 +76,7 @@ This plan implements an all-in-one, high-density, single-screen command center f
   - Previous month realized revenue for trend calculation (`+X% vs last month`).
   - Outstanding balance calculation (`SUM(price - discount - amountPaid)` where `price > amountPaid + discount` and `status != "CANCELLED"`).
 - [ ] **Task 1.3: Appointments & Patient Counts**
-  - Today's appointment total, completed count, and no-show count.
+  - Today's appointment total, completed count, and Not Visited count.
   - Total registered patients (`role: "PATIENT"`) and new patients registered this month vs previous month.
 - [ ] **Task 1.4: Chart Datasets**
   - Weekly (last 7 days / 8 weeks), Monthly (12 months of current year), and Yearly breakdown with Revenue (PKR) and Appointment counts.
@@ -84,7 +84,7 @@ This plan implements an all-in-one, high-density, single-screen command center f
   - Fetch today's and recent active appointments with patient contact, medical alerts, isFirstVisit, treatment name, durationMin, and status.
   - Fetch upcoming appointments from today onwards for the week strip date picker.
 - [ ] **Task 1.6: Status Distribution & Popular Treatments**
-  - Exact counts for `COMPLETED`, `SCHEDULED` (upcoming), `CANCELLED`, and `NO_SHOW`.
+  - Exact counts for `COMPLETED`, `SCHEDULED` (upcoming), `CANCELLED`, and `Not_Visited`.
   - Top 5 treatments by bookings with total count and revenue.
 
 ---
@@ -106,12 +106,12 @@ This plan implements an all-in-one, high-density, single-screen command center f
   - Recharts single-color teal area chart with hover tooltips and metric/range toggles.
 - [ ] **Task 2.4: Current Patients Queue Table**
   - Search box + "+ Add patient" + pagination.
-  - Columns: Patient info, Treatment, Date, Time, Duration (mins), Status badge, Quick Actions (`Mark arrived`, `Complete`, `No-show`).
+  - Columns: Patient info, Treatment, Date, Time, Duration (mins), Status badge, Quick Actions (`Mark arrived`, `Complete`, `Not Visited`).
 - [ ] **Task 2.5: Right Column: Upcoming Appointments with Week Strip**
   - Mon–Sun interactive date strip picker.
   - Grouped cards: Today, Tomorrow, Later this week with procedure tags and "New patient" tags.
 - [ ] **Task 2.6: Bottom Row: Status Donut & Popular Treatments**
-  - Donut chart with status legend (completed, upcoming, cancelled, no-show).
+  - Donut chart with status legend (completed, upcoming, cancelled, Not Visited).
   - Popular treatments bar chart.
 
 ---

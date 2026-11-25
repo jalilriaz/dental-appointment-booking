@@ -19,7 +19,6 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
 import ChevronLeftOutlinedIcon from "@mui/icons-material/ChevronLeftOutlined";
 import ChevronRightOutlinedIcon from "@mui/icons-material/ChevronRightOutlined";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
@@ -51,6 +50,7 @@ import ReceiptDialog from "@/components/admin/ReceiptDialog";
 import PatientHistoryDialog from "@/components/shared/PatientHistoryDialog";
 import CheckoutDialog from "@/components/shared/CheckoutDialog";
 import SendPrecautionsModal from "@/components/shared/SendPrecautionsModal";
+import { buildAppointmentReceiptData } from "@/lib/receipt";
 import StatusBadge from "@/components/shared/StatusBadge";
 import AppointmentsCalendar from "@/components/admin/AppointmentsCalendar";
 import {
@@ -85,10 +85,12 @@ import RescheduleDialog from "./RescheduleDialog";
 
 export default function AppointmentsTable({
     appointments: initialAppointments,
-    userRole = "ADMIN"
+    userRole = "ADMIN",
+    initialSearch = "",
 }: {
     appointments: Appointment[],
-    userRole?: string
+    userRole?: string,
+    initialSearch?: string,
 }) {
     const router = useRouter();
     const [appointments, setAppointments] = useState(initialAppointments);
@@ -98,13 +100,23 @@ export default function AppointmentsTable({
     useEffect(() => {
         setAppointments(initialAppointments);
     }, [initialAppointments]);
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState(initialSearch);
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
     const [treatmentFilter, setTreatmentFilter] = useState("");
     const [page, setPage] = useState(1);
-    const [timelineFilter, setTimelineFilter] = useState<"all_active" | "today" | "tomorrow" | "upcoming" | "past" | "all">("all_active");
+    const [timelineFilter, setTimelineFilter] = useState<"all_active" | "today" | "tomorrow" | "upcoming" | "past" | "all">(
+        initialSearch ? "all" : "all_active"
+    );
+
+    useEffect(() => {
+        setSearch(initialSearch);
+        if (initialSearch) {
+            setTimelineFilter("all");
+        }
+        setPage(1);
+    }, [initialSearch]);
     const [perPage, setPerPage] = useState(25);
     const [detailId, setDetailId] = useState<string | null>(null);
     const [rescheduleApt, setRescheduleApt] = useState<Appointment | null>(null);
@@ -152,7 +164,7 @@ export default function AppointmentsTable({
             }
             if (a.status === "COMPLETED") {
                 completed++;
-            } else if (a.status === "CANCELLED" || a.status === "NO_SHOW") {
+            } else if (a.status === "CANCELLED" || a.status === "Not_Visited") {
                 cancelled++;
             }
         }
@@ -205,12 +217,15 @@ export default function AppointmentsTable({
 
     const filtered = useMemo(() => {
         return appointments.filter((a) => {
+            const q = search.toLowerCase();
             const matchSearch = !search ||
-                a.guestName?.toLowerCase().includes(search.toLowerCase()) ||
-                a.patient?.name?.toLowerCase().includes(search.toLowerCase()) ||
-                a.treatment.name.toLowerCase().includes(search.toLowerCase()) ||
-                a.guestPhone?.toLowerCase().includes(search.toLowerCase()) ||
-                a.patient?.phone?.toLowerCase().includes(search.toLowerCase());
+                a.id.toLowerCase().includes(q) ||
+                a.guestName?.toLowerCase().includes(q) ||
+                a.patient?.name?.toLowerCase().includes(q) ||
+                a.treatment.name.toLowerCase().includes(q) ||
+                a.guestPhone?.toLowerCase().includes(q) ||
+                a.patient?.phone?.toLowerCase().includes(q) ||
+                (a.patient?.patientCode !== undefined && a.patient?.patientCode !== null && String(a.patient.patientCode).includes(search.replace(/^#/, "").trim()));
             const matchStatus = statusFilter.length === 0 || statusFilter.includes(a.status);
             const aptDate = new Date(a.startTime);
             const matchDateFrom = !dateFrom || aptDate >= new Date(dateFrom + "T00:00:00");
@@ -438,11 +453,11 @@ export default function AppointmentsTable({
                 {/* Cancelled / Missed Appointments */}
                 <div
                     onClick={() => {
-                        setStatusFilter(["CANCELLED", "NO_SHOW"]);
+                        setStatusFilter(["CANCELLED", "Not_Visited"]);
                         setTimelineFilter("all");
                         setPage(1);
                     }}
-                    className={`p-5 rounded-3xl border transition-all cursor-pointer ${statusFilter.includes("CANCELLED") || statusFilter.includes("NO_SHOW")
+                    className={`p-5 rounded-3xl border transition-all cursor-pointer ${statusFilter.includes("CANCELLED") || statusFilter.includes("Not_Visited")
                         ? "bg-rose-50/60 border-rose-500 ring-2 ring-rose-500/20 shadow-xs"
                         : "bg-white border-slate-200/80 hover:border-rose-300 shadow-2xs hover:shadow-xs"
                         }`}
@@ -627,14 +642,14 @@ export default function AppointmentsTable({
                         <span className="text-[11px] text-slate-500 uppercase tracking-wider font-extrabold flex items-center gap-1">
                             <FilterListOutlinedIcon sx={{ fontSize: 13 }} className="text-teal-600" /> Status:
                         </span>
-                        {["SCHEDULED", "RESCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"].map((s) => {
+                        {["SCHEDULED", "RESCHEDULED", "COMPLETED", "CANCELLED", "Not_Visited"].map((s) => {
                             const isSelected = statusFilter.includes(s);
                             let activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
                             if (s === "SCHEDULED") activeBadge = "bg-sky-50 text-sky-800 border-sky-300 font-bold";
                             if (s === "RESCHEDULED") activeBadge = "bg-teal-50 text-teal-800 border-teal-300 font-bold";
                             if (s === "COMPLETED") activeBadge = "bg-emerald-50 text-emerald-800 border-emerald-300 font-bold";
                             if (s === "CANCELLED") activeBadge = "bg-rose-50 text-rose-800 border-rose-300 font-bold";
-                            if (s === "NO_SHOW") activeBadge = "bg-amber-50 text-amber-800 border-amber-300 font-bold";
+                            if (s === "Not_Visited") activeBadge = "bg-amber-50 text-amber-800 border-amber-300 font-bold";
 
                             return (
                                 <button
@@ -645,7 +660,7 @@ export default function AppointmentsTable({
                                         : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 border-slate-200/60 font-medium"
                                         }`}
                                 >
-                                    {s === "NO_SHOW" ? "Missed" : s.replace("_", " ")}
+                                    {s === "Not_Visited" ? "Missed" : s.replace("_", " ")}
                                 </button>
                             );
                         })}
@@ -740,7 +755,10 @@ export default function AppointmentsTable({
                                             </div>
                                         )}
 
-                                        <div className="p-4 space-y-3 bg-white hover:bg-slate-50/60 transition-colors">
+                                        <div
+                                            onClick={() => setDetailId(apt.id)}
+                                            className="p-4 space-y-3 bg-white hover:bg-teal-50/40 transition-colors cursor-pointer"
+                                        >
                                             {/* Patient & Status */}
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="min-w-0 flex-1">
@@ -751,7 +769,7 @@ export default function AppointmentsTable({
                                                         {(apt.patient?.noShowCount ?? 0) > 0 && (
                                                             <span className="inline-flex items-center gap-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-700 border border-red-200">
                                                                 <WarningAmberOutlinedIcon sx={{ fontSize: 12 }} />
-                                                                {apt.patient?.noShowCount} No-Show
+                                                                {apt.patient?.noShowCount} Not Visited
                                                             </span>
                                                         )}
                                                     </div>
@@ -794,15 +812,11 @@ export default function AppointmentsTable({
                                             </div>
 
                                             {/* Action Bar */}
-                                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 flex-wrap">
+                                            <div
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 flex-wrap"
+                                            >
                                                 <div className="flex items-center gap-1.5">
-                                                    <button
-                                                        onClick={() => setDetailId(apt.id)}
-                                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white hover:bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
-                                                    >
-                                                        <VisibilityOutlinedIcon sx={{ fontSize: 13 }} />
-                                                        <span>View</span>
-                                                    </button>
 
                                                     {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
                                                         <>
@@ -858,9 +872,9 @@ export default function AppointmentsTable({
                                                                 <RefreshOutlinedIcon sx={{ fontSize: 15 }} />
                                                             </button>
                                                             <button
-                                                                onClick={() => handleStatusChange(apt.id, "NO_SHOW")}
+                                                                onClick={() => handleStatusChange(apt.id, "Not_Visited")}
                                                                 className="p-1.5 rounded-xl hover:bg-amber-50 text-amber-600 border border-amber-200 transition-colors cursor-pointer"
-                                                                title="Mark as No Show"
+                                                                title="Mark as Not Visited"
                                                             >
                                                                 <PersonOffOutlinedIcon sx={{ fontSize: 15 }} />
                                                             </button>
@@ -885,15 +899,15 @@ export default function AppointmentsTable({
 
                     {/* 2. Desktop & Tablet Table View (Hidden on mobile < md) */}
                     <div className="hidden md:block overflow-x-auto scrollbar-thin">
-                        <table className="w-full text-sm min-w-[960px] border-collapse">
+                        <table className="w-full text-sm border-collapse">
                             <thead className="bg-slate-50/95 border-b border-slate-200/90">
                                 <tr>
-                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap min-w-[260px]">Patient Name &amp; Contact</th>
-                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap min-w-[280px]">Department / Treatment</th>
-                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap min-w-[160px]">Appointment Date</th>
-                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap min-w-[150px]">Appointment Time</th>
-                                    <th className="text-left px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap min-w-[110px]">Status</th>
-                                    <th className="text-right px-4 py-3.5 text-xs font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap min-w-[140px]">Action</th>
+                                    <th className="text-left pl-4 pr-2.5 py-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap w-[180px]">Patient &amp; Contact</th>
+                                    <th className="text-left px-2.5 py-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap">Department / Treatment</th>
+                                    <th className="text-left px-2.5 py-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap">Appt Date</th>
+                                    <th className="text-left px-2.5 py-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap">Appt Time</th>
+                                    <th className="text-left px-2.5 py-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+                                    <th className="text-right pl-2.5 pr-4 py-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100/90">
@@ -951,43 +965,53 @@ export default function AppointmentsTable({
                                                     </td>
                                                 </tr>
                                             )}
-                                            <tr className="hover:bg-slate-50/80 transition-premium">
-                                                {/* 1. Patient Name & Phone (Single Line) */}
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-bold text-slate-900 text-xs sm:text-sm">
-                                                            {apt.guestName || apt.patient?.name || "Unknown"}
-                                                        </span>
-                                                        {(apt.patient?.noShowCount ?? 0) > 0 && (
-                                                            <span className="inline-flex items-center gap-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-700 border border-red-200" title={`${apt.patient?.noShowCount} previous No-Shows`}>
-                                                                <WarningAmberOutlinedIcon className="size-3" />
-                                                                {apt.patient?.noShowCount} No-Show
+                                            <tr
+                                                onClick={() => setDetailId(apt.id)}
+                                                className="hover:bg-teal-50/40 transition-premium cursor-pointer"
+                                            >
+                                                {/* 1. Patient Name & Phone (Compact Left Column) */}
+                                                <td className="pl-4 pr-2.5 py-2.5 whitespace-nowrap max-w-[185px]">
+                                                    <div className="flex flex-col min-w-0">
+                                                        <div className="flex items-center gap-1.5 min-w-0">
+                                                            <span
+                                                                className="font-bold text-slate-900 text-xs sm:text-sm truncate"
+                                                                title={apt.guestName || apt.patient?.name || "Unknown"}
+                                                            >
+                                                                {apt.guestName || apt.patient?.name || "Unknown"}
                                                             </span>
-                                                        )}
-                                                        <span className="text-[11px] text-slate-400 font-medium">· {apt.guestPhone || apt.patient?.phone}</span>
+                                                            {(apt.patient?.noShowCount ?? 0) > 0 && (
+                                                                <span className="inline-flex items-center gap-0.5 rounded bg-red-50 px-1 py-0.5 text-[9px] font-bold text-red-700 border border-red-200 shrink-0" title={`${apt.patient?.noShowCount} previous Not Visiteds`}>
+                                                                    <WarningAmberOutlinedIcon className="size-2.5" />
+                                                                    {apt.patient?.noShowCount}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-[11px] text-slate-400 font-medium truncate">
+                                                            {apt.guestPhone || apt.patient?.phone || "No phone"}
+                                                        </span>
                                                     </div>
                                                 </td>
 
-                                                {/* 2. Department, Treatment & Price (Single Line) */}
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-bold text-slate-900 text-xs sm:text-sm" title={apt.treatment.name}>
+                                                {/* 2. Department, Treatment & Price (Shifted Left) */}
+                                                <td className="px-2.5 py-2.5 whitespace-nowrap">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="font-bold text-slate-900 text-xs sm:text-sm max-w-[175px] truncate" title={apt.treatment.name}>
                                                             {apt.treatment.name}
                                                         </span>
-                                                        <span className="text-[10px] text-teal-800 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                                                        <span className="text-[10px] text-teal-800 font-bold bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200 shrink-0">
                                                             {formatPKR(apt.price || apt.treatment.price)}
                                                         </span>
                                                         {apt.sessionNumber ? (
-                                                            <span className="inline-flex items-center text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 border border-blue-200/90 shadow-2xs">
+                                                            <span className="inline-flex items-center text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 border border-blue-200/90 shadow-2xs shrink-0">
                                                                 S{apt.sessionNumber}{apt.patientTreatment?.totalSessions ? `/${apt.patientTreatment.totalSessions}` : ""}
                                                             </span>
                                                         ) : null}
                                                     </div>
                                                 </td>
 
-                                                {/* 4. Appointment Date (Single Line) */}
-                                                <td className="px-4 py-3 whitespace-nowrap text-xs font-semibold text-slate-700">
-                                                    <div className="flex items-center gap-1.5">
+                                                {/* 4. Appointment Date (Shifted Left) */}
+                                                <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-semibold text-slate-700">
+                                                    <div className="flex items-center gap-1">
                                                         <span>{formatDate(start)}</span>
                                                         {bucket === "today" && (
                                                             <span className="text-[9px] text-emerald-800 font-extrabold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
@@ -1003,10 +1027,10 @@ export default function AppointmentsTable({
                                                 </td>
 
                                                 {/* 5. Appointment Time & Duration (Single Line) */}
-                                                <td className="px-4 py-3 whitespace-nowrap text-slate-700">
-                                                    <div className="flex items-center gap-1.5">
+                                                <td className="px-2.5 py-2.5 whitespace-nowrap text-slate-700">
+                                                    <div className="flex items-center gap-1">
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-teal-50/90 border border-teal-200/90 text-teal-950 font-black text-xs shadow-2xs">
-                                                            <AccessTimeOutlinedIcon sx={{ fontSize: 13 }} className="text-teal-700" />
+                                                            <AccessTimeOutlinedIcon sx={{ fontSize: 12 }} className="text-teal-700" />
                                                             {formatTime(start)}
                                                         </span>
                                                         <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
@@ -1016,22 +1040,16 @@ export default function AppointmentsTable({
                                                 </td>
 
                                                 {/* 6. Status (Single Line) */}
-                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                <td className="px-2.5 py-2.5 whitespace-nowrap">
                                                     <StatusBadge status={apt.status} />
                                                 </td>
 
                                                 {/* 7. Action Controls (Strict Single-Line Horizontal Row) */}
-                                                <td className="px-4 py-3 whitespace-nowrap text-right">
-                                                    <div className="inline-flex items-center justify-end gap-1.5">
-                                                        {/* Primary View Button */}
-                                                        <button
-                                                            onClick={() => setDetailId(apt.id)}
-                                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white hover:bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
-                                                            title="View Encounter Dossier"
-                                                        >
-                                                            <VisibilityOutlinedIcon sx={{ fontSize: 13 }} />
-                                                            <span>View</span>
-                                                        </button>
+                                                <td className="pl-2.5 pr-4 py-2.5 whitespace-nowrap text-right">
+                                                    <div
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="inline-flex items-center justify-end gap-1.5"
+                                                    >
 
                                                         {(apt.status === "SCHEDULED" || apt.status === "RESCHEDULED") && (
                                                             <>
@@ -1086,9 +1104,9 @@ export default function AppointmentsTable({
                                                                     <RefreshOutlinedIcon sx={{ fontSize: 15 }} />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => handleStatusChange(apt.id, "NO_SHOW")}
+                                                                    onClick={() => handleStatusChange(apt.id, "Not_Visited")}
                                                                     className="p-1 rounded-lg hover:bg-amber-50 text-amber-600 transition-colors cursor-pointer"
-                                                                    title="Mark as No Show"
+                                                                    title="Mark as Not Visited"
                                                                 >
                                                                     <PersonOffOutlinedIcon sx={{ fontSize: 15 }} />
                                                                 </button>
@@ -1254,7 +1272,7 @@ export default function AppointmentsTable({
                         <AlertDialogTitle className="text-center text-slate-900">Retroactive Check Out Warning</AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-slate-600">
                             This appointment was scheduled for a past date (<strong className="text-slate-900">{adminConfirmPastApt && formatDate(adminConfirmPastApt.startTime)}</strong>).
-                            Are you absolutely sure this patient visited on that date but was not checked out in the system? Unattended appointments should be marked as "No Show" instead.
+                            Are you absolutely sure this patient visited on that date but was not checked out in the system? Unattended appointments should be marked as "Not Visited" instead.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="sm:justify-center gap-3">
@@ -1295,18 +1313,59 @@ export default function AppointmentsTable({
                             if (!result.success) {
                                 toast.error("Checkout Failed", { description: result.error });
                             } else {
+                                const updatedApt: Appointment = {
+                                    ...targetApt,
+                                    status: "COMPLETED",
+                                    amountPaid: amount,
+                                    price: price,
+                                    discount: discount,
+                                    patientTreatment: targetApt.patientTreatment
+                                        ? {
+                                            ...targetApt.patientTreatment,
+                                            payments: [
+                                                ...(targetApt.patientTreatment.payments || []),
+                                                ...(amount > 0
+                                                    ? [
+                                                        {
+                                                            id: `temp-${Date.now()}`,
+                                                            date: new Date().toISOString(),
+                                                            method: options?.paymentMethod || "CASH",
+                                                            amount,
+                                                        },
+                                                    ]
+                                                    : []),
+                                            ],
+                                        }
+                                        : options?.packageCost
+                                            ? {
+                                                id: "new-plan",
+                                                totalCost: options.packageCost,
+                                                totalSessions: options.totalSessions || 1,
+                                                clinicalStatus: "IN_PROGRESS",
+                                                financialStatus:
+                                                    amount >= options.packageCost ? "FULLY_PAID" : "PARTIAL",
+                                                payments:
+                                                    amount > 0
+                                                        ? [
+                                                            {
+                                                                id: `temp-${Date.now()}`,
+                                                                date: new Date().toISOString(),
+                                                                method: options?.paymentMethod || "CASH",
+                                                                amount,
+                                                            },
+                                                        ]
+                                                        : [],
+                                            }
+                                            : targetApt.patientTreatment,
+                                };
                                 setAppointments((prev) =>
-                                    prev.map((a) => a.id === targetApt.id ? {
-                                        ...a,
-                                        status: "COMPLETED",
-                                        amountPaid: amount,
-                                        price: price,
-                                        discount: discount,
-                                    } : a)
+                                    prev.map((a) => (a.id === targetApt.id ? updatedApt : a))
                                 );
-                                toast.success(result.message || "Checked Out", { description: `Rs. ${amount.toLocaleString()} recorded for visit.` });
+                                toast.success(result.message || "Checked Out", {
+                                    description: `Rs. ${amount.toLocaleString()} recorded for visit.`,
+                                });
                                 router.refresh();
-                                setPrecautionsApt(targetApt);
+                                setReceiptApt(updatedApt);
                             }
                         } catch {
                             toast.error("Checkout Failed", { description: "Something went wrong. Please try again." });
@@ -1321,45 +1380,7 @@ export default function AppointmentsTable({
             <ReceiptDialog
                 open={!!receiptApt}
                 onOpenChange={(open) => { if (!open) setReceiptApt(null); }}
-                data={receiptApt ? {
-                    patientName: receiptApt.guestName || receiptApt.patient?.name || "Unknown Patient",
-                    patientPhone: receiptApt.guestPhone || receiptApt.patient?.phone || undefined,
-                    patientId: receiptApt.patient?.id,
-                    patientCode: receiptApt.patient?.patientCode,
-                    patientAge: receiptApt.patient?.dateOfBirth
-                        ? `${new Date().getFullYear() - new Date(receiptApt.patient.dateOfBirth).getFullYear()} Y`
-                        : undefined,
-                    patientGender: receiptApt.patient?.gender,
-                    treatmentName: receiptApt.treatment.name,
-                    appointmentDate: formatDate(receiptApt.startTime),
-                    appointmentTime: formatTime(receiptApt.startTime),
-                    treatmentPrice: receiptApt.patientTreatment?.totalCost || receiptApt.price || receiptApt.treatment.price,
-                    discount: receiptApt.discount || 0,
-                    discountPercent: (receiptApt.discount && (receiptApt.price || receiptApt.treatment.price))
-                        ? Math.round((receiptApt.discount / (receiptApt.price || receiptApt.treatment.price)) * 100)
-                        : undefined,
-                    amountPaid: receiptApt.amountPaid || 0,
-                    remainingBalance: receiptApt.patientTreatment
-                        ? Math.max(0, receiptApt.patientTreatment.totalCost - (
-                            (receiptApt.patientTreatment.payments && receiptApt.patientTreatment.payments.length > 0)
-                                ? receiptApt.patientTreatment.payments.reduce((sum, p) => sum + p.amount, 0)
-                                : (receiptApt.amountPaid || 0)
-                        ))
-                        : Math.max(0, (receiptApt.price || receiptApt.treatment.price) - (receiptApt.discount || 0) - (receiptApt.amountPaid || 0)),
-                    sessionNumber: receiptApt.sessionNumber,
-                    totalSessions: receiptApt.patientTreatment?.totalSessions,
-                    payments: (receiptApt.patientTreatment?.payments && receiptApt.patientTreatment.payments.length > 0)
-                        ? receiptApt.patientTreatment.payments
-                        : (receiptApt.amountPaid ? [
-                            {
-                                date: receiptApt.startTime,
-                                method: "CASH",
-                                amount: receiptApt.amountPaid,
-                            }
-                        ] : []),
-                    doctorName: receiptApt.doctor?.name,
-                    recordedBy: receiptApt.doctor?.name || "Dr. Shehryar Akhtar",
-                } : null}
+                data={receiptApt ? buildAppointmentReceiptData(receiptApt) : null}
             />
 
             {/* Patient History Dialog */}

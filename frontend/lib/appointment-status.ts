@@ -3,9 +3,9 @@ import { deleteCalendarEvent } from "@/lib/googleCalendar";
 import { revalidatePath } from "next/cache";
 
 /**
- * Automatically marks passed appointments that were not attended as NO_SHOW (Missed).
- * - Appointments from previous days (before today 00:00) that are still SCHEDULED or RESCHEDULED are marked as NO_SHOW.
- * - Appointments from today are marked as NO_SHOW once the clinic day has concluded (after 21:00 / 9:00 PM or at midnight).
+ * Automatically marks passed appointments that were not attended as Not_Visited (Missed).
+ * - Appointments from previous days (before today 00:00) that are still SCHEDULED or RESCHEDULED are marked as Not_Visited.
+ * - Appointments from today are marked as Not_Visited once the clinic day has concluded (after 21:00 / 9:00 PM or at midnight).
  * - Increments patient's noShowCount.
  * - Cleans up Google Calendar events in the background.
  */
@@ -55,13 +55,13 @@ export async function expirePastAppointments(): Promise<{
             }
         });
 
-        // 1. Batch update appointment statuses to NO_SHOW
+        // 1. Batch update appointment statuses to Not_Visited
         await prisma.appointment.updateMany({
             where: {
                 id: { in: appointmentIds },
             },
             data: {
-                status: "NO_SHOW",
+                status: "Not_Visited",
             },
         });
 

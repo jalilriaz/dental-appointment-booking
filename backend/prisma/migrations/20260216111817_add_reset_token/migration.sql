@@ -2,7 +2,7 @@
 CREATE TYPE "Role" AS ENUM ('ADMIN', 'STAFF', 'PATIENT');
 
 -- CreateEnum
-CREATE TYPE "AppointmentStatus" AS ENUM ('SCHEDULED', 'COMPLETED', 'CANCELLED', 'NO_SHOW');
+CREATE TYPE "AppointmentStatus" AS ENUM ('SCHEDULED', 'COMPLETED', 'CANCELLED', 'Not_Visited');
 
 -- CreateTable
 CREATE TABLE "User" (

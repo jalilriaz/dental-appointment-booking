@@ -142,8 +142,8 @@ export default function RegisteredPatientWorkspace({
             if (res.ok) {
                 const data = await res.json();
                 setResults(data.patients || []);
-                setTotalPages(data.pagination?.totalPages || 1);
-                setTotalPatients(data.pagination?.total || 0);
+                setTotalPages(data.totalPages || data.pagination?.totalPages || 1);
+                setTotalPatients(data.total ?? data.pagination?.total ?? 0);
             }
         } catch (err) {
             console.error("Patient search error:", err);

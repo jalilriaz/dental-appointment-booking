@@ -4,8 +4,10 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { fetchApi } from "@/lib/api-client";
+import { performLogout } from "@/lib/logout";
 import {
   DashboardOutlined,
   PersonAddAlt1Outlined,
@@ -65,6 +67,7 @@ export default function Sidebar({
   onToggleCollapse,
 }: SidebarProps) {
   const pathname = usePathname();
+  const queryClient = useQueryClient();
 
   // Doctor Profile State for Sidebar Identity Card
   const [doctorInfo, setDoctorInfo] = useState({
@@ -160,21 +163,7 @@ export default function Sidebar({
   };
 
   const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } catch (e) {
-      console.error("Logout request failed:", e);
-    } finally {
-      if (typeof window !== "undefined") {
-        try {
-          localStorage.clear();
-          sessionStorage.clear();
-          document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-          document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        } catch { }
-        window.location.href = "/";
-      }
-    }
+    await performLogout(queryClient, "/login");
   };
 
   const isActive = (href: string) => {

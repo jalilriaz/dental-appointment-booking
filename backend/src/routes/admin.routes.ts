@@ -23,6 +23,7 @@ const walkInSchema = z.object({
     time: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format (HH:MM)'),
     treatmentId: z.string().min(1, 'Treatment is required'),
     patientTreatmentId: z.string().optional(),
+    skipActivePlan: z.boolean().optional(),
     notes: z.string().optional(),
     doctorId: z.string().optional(),
 }).superRefine((data, ctx) => {
@@ -254,7 +255,7 @@ router.get('/walk-in/search', requireAuth, requireRole('ADMIN', 'STAFF'), async 
                             treatment: { select: { name: true } },
                             totalSessions: true,
                             appointments: {
-                                where: { status: { notIn: ['CANCELLED', 'NO_SHOW'] } },
+                                where: { status: { notIn: ['CANCELLED', 'Not_Visited'] } },
                                 select: { id: true },
                             },
                         },
@@ -291,7 +292,7 @@ router.post('/walk-in', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: 
             });
         }
 
-        const { patientId, phone, fullName, age, date, time, treatmentId, patientTreatmentId, notes, doctorId } = validationResult.data;
+        const { patientId, phone, fullName, age, date, time, treatmentId, patientTreatmentId, skipActivePlan, notes, doctorId } = validationResult.data;
 
         const bookingResult = await createAppointment({
             patientId,
@@ -304,6 +305,7 @@ router.post('/walk-in', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: 
             time,
             bookedBy: 'WALK_IN',
             patientTreatmentId,
+            skipActivePlan,
             notes,
         });
 
@@ -318,6 +320,10 @@ router.post('/walk-in', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: 
             success: true,
             appointment: bookingResult.appointment,
             patientCode: bookingResult.patientCode,
+            isMultiSession: bookingResult.isMultiSession,
+            sessionNumber: bookingResult.sessionNumber,
+            sessionLabel: bookingResult.sessionLabel,
+            whatsappConfirmation: bookingResult.whatsappConfirmation,
             message: 'Walk-in appointment booked successfully!',
         });
     } catch (error) {

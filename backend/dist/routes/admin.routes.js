@@ -232,7 +232,7 @@ router.get('/walk-in/search', auth_middleware_1.requireAuth, (0, auth_middleware
                             treatment: { select: { name: true } },
                             totalSessions: true,
                             appointments: {
-                                where: { status: { notIn: ['CANCELLED', 'NO_SHOW'] } },
+                                where: { status: { notIn: ['CANCELLED', 'Not_Visited'] } },
                                 select: { id: true },
                             },
                         },

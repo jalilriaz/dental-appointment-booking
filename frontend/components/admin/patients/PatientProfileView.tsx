@@ -8,8 +8,6 @@ import {
     PhoneOutlined,
     EmailOutlined,
     CalendarMonthOutlined,
-    ShieldOutlined,
-    WarningAmberOutlined,
     LocalHospitalOutlined,
     ReceiptLongOutlined,
     CheckCircleOutlineOutlined,
@@ -33,7 +31,6 @@ import {
 } from "@mui/icons-material";
 import { formatPKR, formatDate, formatTime } from "@/lib/utils";
 import StatusBadge from "@/components/shared/StatusBadge";
-import MedicalAlertEditor from "@/components/admin/patients/MedicalAlertEditor";
 import CreateTreatmentPlan from "@/components/admin/patients/CreateTreatmentPlan";
 import RecordPayment from "@/components/admin/patients/RecordPayment";
 import SendPrecautionsButton from "@/components/admin/SendPrecautionsButton";
@@ -200,8 +197,8 @@ export default function PatientProfileView({
     const cleanPhoneDigits = patient.phone ? patient.phone.replace(/\D/g, "") : "";
     const whatsAppHref = cleanPhoneDigits
         ? `https://wa.me/${cleanPhoneDigits}?text=${encodeURIComponent(
-              `Hello ${patient.name || "Patient"}, reaching out from Elite Dental & Aesthetic Centre regarding your dental records.`
-          )}`
+            `Hello ${patient.name || "Patient"}, reaching out from Elite Dental & Aesthetic Centre regarding your dental records.`
+        )}`
         : null;
 
     // ─── Filtered Encounters ───
@@ -209,7 +206,7 @@ export default function PatientProfileView({
         return patient.appointments.filter((apt) => {
             if (encounterFilter === "COMPLETED" && apt.status !== "COMPLETED") return false;
             if (encounterFilter === "SCHEDULED" && apt.status !== "SCHEDULED" && apt.status !== "CONFIRMED") return false;
-            if (encounterFilter === "CANCELLED" && apt.status !== "CANCELLED" && apt.status !== "NO_SHOW") return false;
+            if (encounterFilter === "CANCELLED" && apt.status !== "CANCELLED" && apt.status !== "Not_Visited") return false;
 
             if (encounterSearch.trim()) {
                 const q = encounterSearch.toLowerCase();
@@ -546,46 +543,7 @@ export default function PatientProfileView({
                             </p>
                         </div>
                     </div>
-
-                    {/* Right: Medical Alert Badge / Quick Editor */}
-                    <div className="shrink-0 w-full lg:w-auto">
-                        <div className="flex items-center gap-2">
-                            <MedicalAlertEditor
-                                patientId={patient.id}
-                                initialAlerts={patient.medicalAlerts || null}
-                            />
-                        </div>
-                    </div>
                 </div>
-
-                {/* Flagged Medical Alert Callout */}
-                {patient.medicalAlerts ? (
-                    <div className="mt-5 p-3.5 rounded-2xl bg-amber-50/90 border border-amber-300/80 flex items-center justify-between gap-3 text-amber-950">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="size-8 rounded-xl bg-amber-100 border border-amber-300/90 text-amber-800 flex items-center justify-center shrink-0">
-                                <WarningAmberOutlined sx={{ fontSize: 17 }} />
-                            </div>
-                            <div className="min-w-0">
-                                <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 block">
-                                    Flagged Medical Precautions & Allergies
-                                </span>
-                                <p className="text-xs sm:text-sm font-bold text-amber-950 truncate">
-                                    {patient.medicalAlerts}
-                                </p>
-                            </div>
-                        </div>
-                        <span className="text-[11px] font-bold text-amber-700 bg-amber-100/80 px-2.5 py-1 rounded-lg shrink-0 border border-amber-200/80">
-                            Active Flag
-                        </span>
-                    </div>
-                ) : (
-                    <div className="mt-5 p-2.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
-                        <span className="flex items-center gap-1.5 font-medium">
-                            <ShieldOutlined sx={{ fontSize: 15 }} className="text-teal-600" />
-                            No clinical medical alerts or drug allergies flagged for this patient.
-                        </span>
-                    </div>
-                )}
 
                 {/* 4 Demographics & Contact Pillars */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 pt-5 border-t border-slate-100">
@@ -687,41 +645,36 @@ export default function PatientProfileView({
 
                 {/* 4. Outstanding Balance */}
                 <div
-                    className={`p-4 rounded-3xl border transition-all ${
-                        financialStats.outstandingBalance > 0
+                    className={`p-4 rounded-3xl border transition-all ${financialStats.outstandingBalance > 0
                             ? "bg-amber-50/70 border-amber-300 shadow-2xs"
                             : "bg-white border-slate-200/90 shadow-2xs"
-                    }`}
+                        }`}
                 >
                     <div className="flex items-center justify-between">
                         <span
-                            className={`text-[11px] font-bold uppercase tracking-wider ${
-                                financialStats.outstandingBalance > 0 ? "text-amber-800" : "text-slate-500"
-                            }`}
+                            className={`text-[11px] font-bold uppercase tracking-wider ${financialStats.outstandingBalance > 0 ? "text-amber-800" : "text-slate-500"
+                                }`}
                         >
                             Balance Due
                         </span>
                         <div
-                            className={`size-8 rounded-xl border flex items-center justify-center ${
-                                financialStats.outstandingBalance > 0
+                            className={`size-8 rounded-xl border flex items-center justify-center ${financialStats.outstandingBalance > 0
                                     ? "bg-amber-100 text-amber-800 border-amber-300"
                                     : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            }`}
+                                }`}
                         >
                             <AccountBalanceWalletOutlined sx={{ fontSize: 16 }} />
                         </div>
                     </div>
                     <p
-                        className={`text-2xl font-black tracking-tight mt-2 ${
-                            financialStats.outstandingBalance > 0 ? "text-amber-900" : "text-emerald-700"
-                        }`}
+                        className={`text-2xl font-black tracking-tight mt-2 ${financialStats.outstandingBalance > 0 ? "text-amber-900" : "text-emerald-700"
+                            }`}
                     >
                         {formatPKR(financialStats.outstandingBalance)}
                     </p>
                     <p
-                        className={`text-[11px] font-semibold mt-1 ${
-                            financialStats.outstandingBalance > 0 ? "text-amber-700" : "text-emerald-700"
-                        }`}
+                        className={`text-[11px] font-semibold mt-1 ${financialStats.outstandingBalance > 0 ? "text-amber-700" : "text-emerald-700"
+                            }`}
                     >
                         {financialStats.outstandingBalance > 0 ? "Pending collection" : "All ledgers settled"}
                     </p>
@@ -733,18 +686,16 @@ export default function PatientProfileView({
                 <button
                     type="button"
                     onClick={() => setActiveTab("PLANS")}
-                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${
-                        activeTab === "PLANS"
+                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${activeTab === "PLANS"
                             ? "bg-[#0B1528] text-white shadow-xs"
                             : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
-                    }`}
+                        }`}
                 >
                     <MedicalServicesOutlined sx={{ fontSize: 15 }} />
                     <span>Treatment Plans & Packages</span>
                     <span
-                        className={`size-5 rounded-full text-[10px] font-black inline-flex items-center justify-center ${
-                            activeTab === "PLANS" ? "bg-teal-500 text-white" : "bg-slate-200 text-slate-700"
-                        }`}
+                        className={`size-5 rounded-full text-[10px] font-black inline-flex items-center justify-center ${activeTab === "PLANS" ? "bg-teal-500 text-white" : "bg-slate-200 text-slate-700"
+                            }`}
                     >
                         {patient.patientTreatments.length}
                     </span>
@@ -753,18 +704,16 @@ export default function PatientProfileView({
                 <button
                     type="button"
                     onClick={() => setActiveTab("ENCOUNTERS")}
-                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${
-                        activeTab === "ENCOUNTERS"
+                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${activeTab === "ENCOUNTERS"
                             ? "bg-[#0B1528] text-white shadow-xs"
                             : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
-                    }`}
+                        }`}
                 >
                     <AssignmentOutlined sx={{ fontSize: 15 }} />
                     <span>Visits & Clinical Charting</span>
                     <span
-                        className={`size-5 rounded-full text-[10px] font-black inline-flex items-center justify-center ${
-                            activeTab === "ENCOUNTERS" ? "bg-teal-500 text-white" : "bg-slate-200 text-slate-700"
-                        }`}
+                        className={`size-5 rounded-full text-[10px] font-black inline-flex items-center justify-center ${activeTab === "ENCOUNTERS" ? "bg-teal-500 text-white" : "bg-slate-200 text-slate-700"
+                            }`}
                     >
                         {patient.appointments.length}
                     </span>
@@ -773,18 +722,16 @@ export default function PatientProfileView({
                 <button
                     type="button"
                     onClick={() => setActiveTab("PAYMENTS")}
-                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${
-                        activeTab === "PAYMENTS"
+                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${activeTab === "PAYMENTS"
                             ? "bg-[#0B1528] text-white shadow-xs"
                             : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
-                    }`}
+                        }`}
                 >
                     <ReceiptLongOutlined sx={{ fontSize: 15 }} />
                     <span>Payment Ledger & Receipts</span>
                     <span
-                        className={`size-5 rounded-full text-[10px] font-black inline-flex items-center justify-center ${
-                            activeTab === "PAYMENTS" ? "bg-teal-500 text-white" : "bg-slate-200 text-slate-700"
-                        }`}
+                        className={`size-5 rounded-full text-[10px] font-black inline-flex items-center justify-center ${activeTab === "PAYMENTS" ? "bg-teal-500 text-white" : "bg-slate-200 text-slate-700"
+                            }`}
                     >
                         {allLedgerPayments.length}
                     </span>
@@ -884,9 +831,8 @@ export default function PatientProfileView({
                                                             Remaining
                                                         </span>
                                                         <span
-                                                            className={`text-sm font-black ${
-                                                                remaining > 0 ? "text-amber-800" : "text-emerald-700"
-                                                            }`}
+                                                            className={`text-sm font-black ${remaining > 0 ? "text-amber-800" : "text-emerald-700"
+                                                                }`}
                                                         >
                                                             {formatPKR(remaining)}
                                                         </span>
@@ -897,22 +843,22 @@ export default function PatientProfileView({
                                                 <div className="flex items-center gap-2">
                                                     {pt.clinicalStatus === "IN_PROGRESS" && (
                                                         <Button
-                            type="button"
-                            size="sm"
-                            onClick={() => {
-                                setSelectedPlanForBooking({
-                                    id: pt.id,
-                                    treatmentId: pt.treatment.id || "",
-                                    treatmentName: pt.treatment.name,
-                                    sessionNumber: (pt.appointments?.length || 0) + 1,
-                                    totalSessions: pt.totalSessions,
-                                });
-                                setScheduleOpen(true);
-                            }}
-                            className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-9 px-3 rounded-xl shadow-2xs transition-all active:scale-[0.98] flex items-center gap-1 cursor-pointer"
+                                                            type="button"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setSelectedPlanForBooking({
+                                                                    id: pt.id,
+                                                                    treatmentId: pt.treatment.id || "",
+                                                                    treatmentName: pt.treatment.name,
+                                                                    sessionNumber: (pt.appointments?.length || 0) + 1,
+                                                                    totalSessions: pt.totalSessions,
+                                                                });
+                                                                setScheduleOpen(true);
+                                                            }}
+                                                            className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-9 px-3 rounded-xl shadow-2xs transition-all active:scale-[0.98] flex items-center gap-1 cursor-pointer"
                                                         >
-                            <CalendarMonthOutlined sx={{ fontSize: 14 }} />
-                            <span>+ Schedule Next Session</span>
+                                                            <CalendarMonthOutlined sx={{ fontSize: 14 }} />
+                                                            <span>+ Schedule Next Session</span>
                                                         </Button>
                                                     )}
                                                     {remaining > 0 && (
@@ -951,9 +897,8 @@ export default function PatientProfileView({
                                             </div>
                                             <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/60">
                                                 <div
-                                                    className={`h-full transition-all duration-500 ${
-                                                        isFullyPaid ? "bg-emerald-500" : "bg-teal-600"
-                                                    }`}
+                                                    className={`h-full transition-all duration-500 ${isFullyPaid ? "bg-emerald-500" : "bg-teal-600"
+                                                        }`}
                                                     style={{ width: `${percentPaid}%` }}
                                                 />
                                             </div>
@@ -985,11 +930,10 @@ export default function PatientProfileView({
                                                                     </p>
                                                                 </div>
                                                                 <span
-                                                                    className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
-                                                                        apt.status === "COMPLETED"
+                                                                    className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${apt.status === "COMPLETED"
                                                                             ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
                                                                             : "bg-teal-50 text-teal-800 border border-teal-200"
-                                                                    }`}
+                                                                        }`}
                                                                 >
                                                                     {apt.status}
                                                                 </span>
@@ -1113,11 +1057,10 @@ export default function PatientProfileView({
                                     key={mode}
                                     type="button"
                                     onClick={() => setEncounterFilter(mode)}
-                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                                        encounterFilter === mode
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${encounterFilter === mode
                                             ? "bg-teal-600 text-white shadow-2xs"
                                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                    }`}
+                                        }`}
                                 >
                                     {mode === "ALL" ? "All Visits" : mode}
                                 </button>

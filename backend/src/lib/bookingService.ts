@@ -37,6 +37,7 @@ export interface CreateAppointmentInput {
 
     // Multi-session treatment plan linking
     patientTreatmentId?: string;
+    skipActivePlan?: boolean;
     sessionNumber?: number;
     sessionLabel?: string;
     plannedFee?: number;
@@ -50,6 +51,10 @@ export interface BookingResponse {
     isMultiSession?: boolean;
     sessionNumber?: number | null;
     sessionLabel?: string | null;
+    whatsappConfirmation?: {
+        sent: boolean;
+        error?: string;
+    };
     error?: string;
     status?: number;
 }
@@ -79,6 +84,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             notes,
             doctorId,
             patientTreatmentId: explicitPtId,
+            skipActivePlan,
             sessionNumber: explicitSessionNumber,
             sessionLabel: explicitSessionLabel,
             plannedFee,
@@ -223,7 +229,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             let assignedSessionNumber: number | null = explicitSessionNumber || null;
             let assignedSessionLabel: string | null = explicitSessionLabel || null;
 
-            if (!targetPtId) {
+            if (!targetPtId && !skipActivePlan) {
                 const activePlan = await tx.patientTreatment.findFirst({
                     where: {
                         patientId: user.id,
@@ -369,26 +375,41 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             } catch (emailErr) {
                 console.error("[BookingService] Email notification non-fatal error:", emailErr);
             }
-
-            // Non-blocking WhatsApp confirmation via n8n webhook
-            try {
-                const recipientPhone = canonicalPhone || user.phone || guestPhone || phone;
-                if (recipientPhone) {
-                    await dispatchN8nBookingWebhook({
-                        phone: recipientPhone,
-                        patientName: user.name || patientName || guestName || "Valued Patient",
-                        treatmentName: treatment.name,
-                        doctorName: appointment.doctor?.name || "Dr. Shehryar Akhtar",
-                        date: formatDate(startTime),
-                        time: formatTime(startTime),
-                        appointmentId: appointment.id,
-                        patientCode,
-                    });
-                }
-            } catch (n8nErr) {
-                console.error("[BookingService] n8n WhatsApp notification non-fatal error:", n8nErr);
-            }
         })();
+
+        // Dispatch WhatsApp confirmation via n8n webhook and capture delivery status
+        let whatsappConfirmation: { sent: boolean; error?: string } = {
+            sent: false,
+            error: "No phone number available for WhatsApp confirmation",
+        };
+        try {
+            const recipientPhone = canonicalPhone || user.phone || guestPhone || phone;
+            if (recipientPhone) {
+                const n8nResult = await dispatchN8nBookingWebhook({
+                    phone: recipientPhone,
+                    patientName: user.name || patientName || guestName || "Valued Patient",
+                    treatmentName: treatment.name,
+                    doctorName: appointment.doctor?.name || "Dr. Shehryar Akhtar",
+                    date: formatDate(startTime),
+                    time: formatTime(startTime),
+                    appointmentId: appointment.id,
+                    patientCode,
+                    bookedBy,
+                    sessionLabel: assignedSessionLabel,
+                    isMultiSession: Boolean(targetPtId),
+                });
+                whatsappConfirmation = {
+                    sent: n8nResult.success,
+                    error: n8nResult.error,
+                };
+            }
+        } catch (n8nErr: any) {
+            console.error("[BookingService] n8n WhatsApp notification non-fatal error:", n8nErr);
+            whatsappConfirmation = {
+                sent: false,
+                error: n8nErr?.message || "Failed to dispatch WhatsApp confirmation",
+            };
+        }
 
         // 5. Revalidate views
         revalidatePath("/admin");
@@ -404,6 +425,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             isMultiSession: Boolean(targetPtId),
             sessionNumber: assignedSessionNumber,
             sessionLabel: assignedSessionLabel,
+            whatsappConfirmation,
         };
     } catch (error: any) {
         if (error.message === "DOUBLE_BOOKING") {

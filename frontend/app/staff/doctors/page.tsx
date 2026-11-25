@@ -19,6 +19,7 @@ import {
   MonetizationOnOutlined,
 } from "@mui/icons-material";
 import { Button } from "@/components/ui/button";
+import StaffBookAppointmentModal from "@/components/staff/StaffBookAppointmentModal";
 
 interface LeadDoctorProfile {
   id: string;
@@ -56,6 +57,7 @@ export default function StaffDoctorDutyPage() {
   const [doctor, setDoctor] = useState<LeadDoctorProfile>(DEFAULT_DOCTOR);
   const [lastRefreshed, setLastRefreshed] = useState("Just now");
   const [isLoading, setIsLoading] = useState(true);
+  const [bookModalOpen, setBookModalOpen] = useState(false);
 
   const loadDoctorProfile = async () => {
     try {
@@ -142,13 +144,12 @@ export default function StaffDoctorDutyPage() {
             <span>Synced ({lastRefreshed})</span>
           </Button>
           <Button
-            asChild
+            type="button"
+            onClick={() => setBookModalOpen(true)}
             className="h-9 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs gap-1.5 cursor-pointer"
           >
-            <Link href="/staff/book">
-              <PersonAddAlt1Outlined sx={{ fontSize: 16 }} />
-              <span>Book Walk-In</span>
-            </Link>
+            <PersonAddAlt1Outlined sx={{ fontSize: 16 }} />
+            <span>Book Walk-In</span>
           </Button>
         </div>
       </div>
@@ -347,16 +348,21 @@ export default function StaffDoctorDutyPage() {
           </Link>
 
           <Button
-            asChild
-            className="h-10 px-5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer ml-auto"
+            type="button"
+            onClick={() => setBookModalOpen(true)}
+            className="h-10 px-5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer ml-auto gap-1.5"
           >
-            <Link href="/staff/book">
-              <PersonAddAlt1Outlined sx={{ fontSize: 16 }} />
-              <span>Book Walk-In for Dr. Shehryar</span>
-            </Link>
+            <PersonAddAlt1Outlined sx={{ fontSize: 16 }} />
+            <span>Book Walk-In for Dr. Shehryar</span>
           </Button>
         </div>
       </div>
+
+      <StaffBookAppointmentModal
+        open={bookModalOpen}
+        onOpenChange={setBookModalOpen}
+        onSuccess={loadDoctorProfile}
+      />
     </div>
   );
 }

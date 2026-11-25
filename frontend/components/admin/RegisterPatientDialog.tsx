@@ -7,7 +7,6 @@ import {
     PhoneOutlined,
     EmailOutlined,
     CalendarMonthOutlined,
-    WarningAmberOutlined,
     HomeOutlined,
     CheckCircleOutlineOutlined,
     ErrorOutlineOutlined,
@@ -43,7 +42,6 @@ export default function RegisterPatientDialog({
     const [email, setEmail] = useState("");
     const [gender, setGender] = useState<"Male" | "Female" | "Other" | "">("");
     const [dateOfBirth, setDateOfBirth] = useState("");
-    const [medicalAlerts, setMedicalAlerts] = useState("");
     const [address, setAddress] = useState("");
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,7 +54,6 @@ export default function RegisterPatientDialog({
         setEmail("");
         setGender("");
         setDateOfBirth("");
-        setMedicalAlerts("");
         setAddress("");
         setErrorMessage(null);
         setSuccessFeedback(null);
@@ -92,7 +89,6 @@ export default function RegisterPatientDialog({
                 email: email || undefined,
                 gender: gender || undefined,
                 dateOfBirth: dateOfBirth || undefined,
-                medicalAlerts: medicalAlerts || undefined,
                 address: address || undefined,
             });
 
@@ -247,25 +243,7 @@ export default function RegisterPatientDialog({
                         </div>
                     </div>
 
-                    {/* Section 3: Clinical Alerts / Precautions */}
-                    <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                        <Label className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-                            <WarningAmberOutlined sx={{ fontSize: 15 }} className="text-amber-600" />
-                            <span>Medical Alerts & Allergies (Optional)</span>
-                        </Label>
-                        <Input
-                            value={medicalAlerts}
-                            onChange={(e) => setMedicalAlerts(e.target.value)}
-                            placeholder="e.g. Allergic to Penicillin, Diabetic, Hypertension"
-                            disabled={isSubmitting}
-                            className="h-10 text-xs sm:text-sm font-medium rounded-xl border-amber-200/80 bg-amber-50/30 text-amber-950 placeholder:text-amber-700/50 focus-visible:ring-2 focus-visible:ring-amber-500/20"
-                        />
-                        <p className="text-[10px] font-medium text-slate-400">
-                            Flagged precautions will be highlighted on appointment checkouts and clinical charts.
-                        </p>
-                    </div>
-
-                    {/* Section 4: Address */}
+                    {/* Section 3: Address */}
                     <div className="pt-2 border-t border-slate-100 space-y-1.5">
                         <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                             <HomeOutlined sx={{ fontSize: 14 }} className="text-slate-500" />

@@ -18,7 +18,7 @@ const statusBackgroundColor: Record<string, string> = {
     SCHEDULED: "#eff6ff",   // Blue 50
     COMPLETED: "#f0fdf4",   // Emerald 50
     CANCELLED: "#fef2f2",   // Red 50
-    NO_SHOW: "#fffbeb",     // Amber 50
+    Not_Visited: "#fffbeb",     // Amber 50
     RESCHEDULED: "#f0fdfa", // Teal 50
 };
 
@@ -26,7 +26,7 @@ const statusBorderColor: Record<string, string> = {
     SCHEDULED: "#93c5fd",   // Blue 300
     COMPLETED: "#86efac",   // Emerald 300
     CANCELLED: "#fca5a5",   // Red 300
-    NO_SHOW: "#fcd34d",     // Amber 300
+    Not_Visited: "#fcd34d",     // Amber 300
     RESCHEDULED: "#5eead4", // Teal 300
 };
 
@@ -34,7 +34,7 @@ const statusTextColor: Record<string, string> = {
     SCHEDULED: "#1e40af",   // Blue 800
     COMPLETED: "#065f46",   // Emerald 800
     CANCELLED: "#991b1b",   // Red 800
-    NO_SHOW: "#92400e",     // Amber 800
+    Not_Visited: "#92400e",     // Amber 800
     RESCHEDULED: "#115e59", // Teal 800
 };
 

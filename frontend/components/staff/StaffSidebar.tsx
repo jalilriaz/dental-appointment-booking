@@ -8,10 +8,7 @@ import {
   CalendarMonthOutlined,
   PersonAddAlt1Outlined,
   PeopleAltOutlined,
-  LogoutOutlined,
   CloseOutlined,
-  VerifiedUserOutlined,
-  CheckCircleOutlineOutlined,
   LocalHospitalOutlined,
 } from "@mui/icons-material";
 
@@ -30,24 +27,6 @@ const navSections = [
 
 export default function StaffSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
-
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } catch (e) {
-      console.error("Logout request failed:", e);
-    } finally {
-      if (typeof window !== "undefined") {
-        try {
-          localStorage.clear();
-          sessionStorage.clear();
-          document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-          document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        } catch {}
-        window.location.href = "/";
-      }
-    }
-  };
 
   function isActive(href: string) {
     if (href === "/staff") return pathname === "/staff";
@@ -139,42 +118,6 @@ export default function StaffSidebar({ open, onClose }: { open: boolean; onClose
             </div>
           ))}
         </nav>
-
-        {/* Clinic & Lead Surgeon Badge */}
-        <div className="p-3 border-t border-slate-100 bg-slate-50/60 space-y-2">
-          <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center gap-2.5">
-            <div className="relative size-8 rounded-lg overflow-hidden border border-teal-500/40 shrink-0">
-              <Image
-                src="/dr_sheriyaar.webp"
-                alt="Dr. Shehryar Akhtar"
-                fill
-                className="object-cover object-top"
-                sizes="32px"
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1">
-                <span className="text-[11px] font-extrabold text-slate-900 truncate block">
-                  Dr. Shehryar Akhtar
-                </span>
-                <VerifiedUserOutlined sx={{ fontSize: 11, color: "#0d9488" }} />
-              </div>
-              <span className="text-[10px] text-slate-500 font-medium block truncate">
-                On Duty · G-8 Markaz
-              </span>
-            </div>
-          </div>
-
-          {/* Sign Out */}
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 border border-transparent transition-colors cursor-pointer w-full"
-          >
-            <LogoutOutlined sx={{ fontSize: 16 }} />
-            <span>Sign Out Session</span>
-          </button>
-        </div>
       </aside>
     </>
   );

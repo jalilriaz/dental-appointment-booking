@@ -92,7 +92,7 @@ export const statusColors: Record<string, string> = {
   RESCHEDULED: "bg-teal-50 text-teal-700 border border-teal-200",
   COMPLETED: "bg-emerald-50 text-emerald-700 border border-emerald-200",
   CANCELLED: "bg-rose-50 text-rose-700 border border-rose-200",
-  NO_SHOW: "bg-amber-50 text-amber-800 border border-amber-200",
+  Not_Visited: "bg-amber-50 text-amber-800 border border-amber-200",
 };
 
 /** Rich status config with label, text color, and badge background. */
@@ -100,7 +100,7 @@ export const statusConfig: Record<string, StatusConfig> = {
   SCHEDULED: { label: "Scheduled", color: "text-blue-700", bg: "badge-scheduled" },
   COMPLETED: { label: "Checked Out", color: "text-emerald-700", bg: "badge-completed" },
   CANCELLED: { label: "Cancelled", color: "text-red-700", bg: "badge-cancelled" },
-  NO_SHOW: { label: "Missed (No-Show)", color: "text-amber-800", bg: "badge-no-show" },
+  Not_Visited: { label: "Missed (Not Visited)", color: "text-amber-800", bg: "badge-Not Visited" },
   RESCHEDULED: { label: "Rescheduled", color: "text-teal-700", bg: "badge-rescheduled" },
 };
 

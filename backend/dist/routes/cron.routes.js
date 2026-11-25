@@ -42,14 +42,14 @@ const handleMarkMissed = async (req, res) => {
     const result = await (0, appointment_status_1.expirePastAppointments)();
     return res.json({
         success: true,
-        message: `Processed expired appointments. Marked ${result.updatedCount} as Missed (NO_SHOW).`,
+        message: `Processed expired appointments. Marked ${result.updatedCount} as Missed (Not_Visited).`,
         ...result,
         timestamp: new Date().toISOString(),
     });
 };
 router.get('/mark-missed', handleMarkMissed);
 router.post('/mark-missed', handleMarkMissed);
-// GET or POST /api/cron/mark-no-show
+// GET or POST /api/cron/mark-Not Visited
 const handleMarkNoShow = async (req, res) => {
     if (!(await isCronAuthorized(req))) {
         return res.status(401).json({ error: 'Unauthorized' });
@@ -57,11 +57,11 @@ const handleMarkNoShow = async (req, res) => {
     const result = await (0, appointment_status_1.expirePastAppointments)();
     return res.json({
         success: true,
-        message: `Successfully processed ${result.updatedCount} past no-show appointments.`,
+        message: `Successfully processed ${result.updatedCount} past Not Visited appointments.`,
         ...result,
     });
 };
-router.get('/mark-no-show', handleMarkNoShow);
-router.post('/mark-no-show', handleMarkNoShow);
+router.get('/mark-Not Visited', handleMarkNoShow);
+router.post('/mark-Not Visited', handleMarkNoShow);
 exports.default = router;
 //# sourceMappingURL=cron.routes.js.map
