@@ -27,20 +27,25 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${backendUrl}/api/:path*`,
-      },
-      {
-        source: "/reception",
-        destination: "/staff",
-      },
-      {
-        source: "/reception/:path*",
-        destination: "/staff/:path*",
-      },
-    ];
+    return {
+      beforeFiles: [],
+      afterFiles: [
+        {
+          source: "/reception",
+          destination: "/staff",
+        },
+        {
+          source: "/reception/:path*",
+          destination: "/staff/:path*",
+        },
+      ],
+      fallback: [
+        {
+          source: "/api/:path*",
+          destination: `${backendUrl}/api/:path*`,
+        },
+      ],
+    };
   },
 };
 

@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { formatPKR, isSunday } from "@/lib/utils";
 import { DatePicker } from "@/components/ui/date-picker";
+import PaymentMethodSelector from "@/components/shared/PaymentMethodSelector";
+import type { PaymentMethodValue } from "@/lib/constants/payment-methods";
 
 export interface CheckoutAppointment {
     id?: string;
@@ -48,7 +50,7 @@ export interface CheckoutConfirmData {
     amountPaid: number;
     billedPrice: number;
     discount: number;
-    paymentMethod: "CASH" | "CARD" | "ONLINE";
+    paymentMethod: PaymentMethodValue;
     discountPercent?: number;
     packageCost?: number;
     totalSessions?: number;
@@ -77,7 +79,7 @@ export default function CheckoutDialog({
         billedPrice: number,
         discount: number,
         options?: {
-            paymentMethod?: "CASH" | "CARD" | "ONLINE";
+            paymentMethod?: PaymentMethodValue;
             discountPercent?: number;
             packageCost?: number;
             totalSessions?: number;
@@ -100,7 +102,7 @@ export default function CheckoutDialog({
     const setDiscountPercent = controlledSetDiscountPercent ?? controlledSetDiscount ?? setInternalDiscountPercent;
 
     const [priceValue, setPriceValue] = useState<string>("");
-    const [paymentMethod, setPaymentMethod] = useState<"CASH" | "CARD" | "ONLINE">("CASH");
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethodValue>("CASH");
 
     // Multi-session fields
     const isLinkedPlan = Boolean(apt?.patientTreatment);
@@ -122,7 +124,7 @@ export default function CheckoutDialog({
     const existingPaid = (apt?.patientTreatment?.payments || []).reduce((sum, p) => sum + p.amount, 0);
     const remainingBalance = Math.max(0, existingTotalCost - existingPaid);
     const currentSessionNumber = apt?.sessionNumber || (isLinkedPlan ? 2 : 1);
-    const planTotalSessions = apt?.patientTreatment?.totalSessions || Number(totalSessions) || 1;
+    const planTotalSessions = apt?.patientTreatment?.totalSessions ?? (Number(totalSessions) > 0 ? Number(totalSessions) : 1);
 
     useEffect(() => {
         if (apt) {
@@ -435,38 +437,7 @@ export default function CheckoutDialog({
                     {/* Payment Method Selector */}
                     <div className="space-y-1.5">
                         <Label className="text-slate-700 text-xs font-semibold">Payment Method</Label>
-                        <div className="grid grid-cols-3 gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setPaymentMethod("CASH")}
-                                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${paymentMethod === "CASH"
-                                    ? "bg-teal-600 border-teal-600 text-white shadow-sm"
-                                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                                    }`}
-                            >
-                                <PaymentsOutlinedIcon className="size-3.5" /> Cash
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setPaymentMethod("CARD")}
-                                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${paymentMethod === "CARD"
-                                    ? "bg-teal-600 border-teal-600 text-white shadow-sm"
-                                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                                    }`}
-                            >
-                                <CreditCardOutlinedIcon className="size-3.5" /> Card / POS
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setPaymentMethod("ONLINE")}
-                                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${paymentMethod === "ONLINE"
-                                    ? "bg-teal-600 border-teal-600 text-white shadow-sm"
-                                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                                    }`}
-                            >
-                                <LanguageOutlinedIcon className="size-3.5" /> Online / Bank
-                            </button>
-                        </div>
+                        <PaymentMethodSelector value={paymentMethod} onChange={setPaymentMethod} />
                     </div>
 
                     {/* Next Session & Follow-up Scheduling Section */}

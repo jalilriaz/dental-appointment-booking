@@ -26,6 +26,8 @@ enum Role {
 enum ApptStatus {
   SCHEDULED
   RESCHEDULED
+  ARRIVED
+  IN_PROGRESS
   COMPLETED
   CANCELLED
   Not_Visited
@@ -40,21 +42,28 @@ enum BookingSource {
 // ─── Models ──────────────────────────────────────────────
 
 model User {
-  id          String   @id @default(uuid())
-  email       String?  @unique
-  phone       String?  @unique // Primary ID for n8n bot
-  password    String?
-  name        String
-  role        Role     @default(PATIENT)
-  patientCode Int?     @unique // Short memorable ID (1000, 1001...)
-  noShowCount Int      @default(0) // Track how many times they didn't show up
-  createdAt   DateTime @default(now())
+  id                 String    @id @default(uuid())
+  email              String?   @unique
+  phone              String?   @unique // Primary ID for n8n bot
+  password           String?
+  name               String
+  role               Role      @default(PATIENT)
+  patientCode        Int?      @unique // Short memorable ID (1000, 1001...)
+  noShowCount        Int       @default(0) // Track how many times they didn't show up
+  isActive           Boolean   @default(true)
+  deletedAt          DateTime?
+  tokenVersion       Int       @default(0)
+  mustChangePassword Boolean   @default(false)
+  recallOptOut       Boolean   @default(false)
+  createdAt          DateTime  @default(now())
 
   // Patient Details
   dateOfBirth   DateTime?
   gender        String?
   address       String?
   medicalAlerts String? // Critical health info e.g. "Diabetic, Allergic to Penicillin"
+  allergies     Json? // Structured allergy strings e.g. ["Penicillin", "Ibuprofen"]
+  medications   Json? // Structured current medication strings
 
   // Staff Details
   // specialized fields removed for single-doctor model
@@ -68,9 +77,32 @@ model User {
   resetToken       String?
   resetTokenExpiry DateTime?
 
-  appointments      Appointment[]
-  patientTreatments PatientTreatment[]
-  planChangeLogs    PlanChangeLog[]
+  appointments             Appointment[]
+  patientTreatments        PatientTreatment[]
+  planChangeLogs           PlanChangeLog[]
+  auditLogs                AuditLog[]
+  expensesRecorded         Expense[]
+  dailyClosings            DailyClosing[]     @relation("ClosingClosedBy")
+  submittedClosings        DailyClosing[]     @relation("ClosingSubmittedBy")
+  approvedClosings         DailyClosing[]     @relation("ClosingApprovedBy")
+  reopenedClosings         DailyClosing[]     @relation("ClosingReopenedBy")
+  recordedPayments         Payment[]          @relation("RecordedPayments")
+  labOrders                LabOrder[]
+  consentForms             ConsentForm[]      @relation("PatientConsents")
+  consentsWitnessed        ConsentForm[]      @relation("ConsentAuthor")
+  patientFiles             PatientFile[]      @relation("PatientOwnedFiles")
+  uploadedFiles            PatientFile[]      @relation("FileUploader")
+  beforeAfterPhotos        BeforeAfterPhoto[] @relation("PatientBeforeAfter")
+  createdBeforeAfterPhotos BeforeAfterPhoto[] @relation("BeforeAfterAuthor")
+  prescriptions            Prescription[]     @relation("PatientPrescriptions")
+  prescriptionsIssued      Prescription[]     @relation("PrescriptionAuthor")
+  waitlistEntries          WaitlistEntry[]
+  recallReminders          RecallReminder[]
+  notificationLogs         NotificationLog[]
+  feedbacks                Feedback[]
+
+  @@index([phone])
+  @@index([role, isActive])
 }
 
 model Appointment {
@@ -97,7 +129,9 @@ model Appointment {
   amountPaid   Int?      @default(0)
   price        Int       @default(0)
   discount     Int       @default(0) // Discretionary discount in PKR
+  isEmergency  Boolean   @default(false)
   createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
   checkoutTime DateTime?
 
   // Guest Booking Details
@@ -113,11 +147,18 @@ model Appointment {
   sessionLabel       String?
   plannedFee         Int? // Expected installment for this session (NOT a billing charge)
 
-  payments Payment[]
+  payments         Payment[]
+  labOrders        LabOrder[]
+  consentForms     ConsentForm[]
+  patientFiles     PatientFile[]
+  prescriptions    Prescription[]
+  notificationLogs NotificationLog[]
+  feedbacks        Feedback[]
 
   @@index([patientTreatmentId])
   @@index([doctorId])
   @@index([startTime])
+  @@index([startTime, status])
 }
 
 model ClinicalNote {
@@ -136,38 +177,53 @@ model ClinicalNote {
 }
 
 model Treatment {
-  id              String  @id @default(uuid())
+  id              String    @id @default(uuid())
   name            String
   durationMin     Int
   price           Int
   discountedPrice Int?
   description     String?
   instructions    String? // For n8n WhatsApp messages
-  isActive        Boolean @default(true)
+  isActive        Boolean   @default(true)
+  showOnWeb       Boolean   @default(true)
+  deletedAt       DateTime?
   imageUrl        String?
-  category        String  @default("General") // Cosmetic, Restorative, General, Consultations
-  isMultiSession  Boolean @default(false)
-  defaultSessions Int     @default(1)
+  category        String    @default("General") // Cosmetic, Restorative, General, Consultations
+  isMultiSession  Boolean   @default(false)
+  defaultSessions Int       @default(1)
 
   appointments      Appointment[]
   patientTreatments PatientTreatment[]
+  beforeAfterPhotos BeforeAfterPhoto[]
+  waitlistEntries   WaitlistEntry[]
+  recallReminders   RecallReminder[]
+
+  @@index([isActive, showOnWeb])
 }
 
 model SystemSettings {
-  id                String   @id @default("settings")
-  clinicName        String   @default("Elite Dental & Aesthetic Centre")
-  clinicAddress     String   @default("Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad")
-  landlinePhone     String   @default("051-2340093")
-  mobilePhone       String   @default("0303-5080011")
-  whatsappNumber    String   @default("+92 314 5475528")
-  clinicEmail       String   @default("info@elitedental.com")
-  pmdcRegNumber     String   @default("14820-D")
-  receiptFooter     String   @default("Thank you for trusting Elite Dental & Aesthetic Centre. Valid for clinical record & tax submission.")
-  workDayStart      String   @default("12:00")
-  workDayEnd        String   @default("20:00")
-  slotDurationMin   Int      @default(30)
-  weeklyWorkingDays String   @default("Monday,Tuesday,Wednesday,Thursday,Friday,Saturday")
-  updatedAt         DateTime @default(now()) @updatedAt
+  id                      String   @id @default("settings")
+  clinicName              String   @default("Elite Dental & Aesthetic Centre")
+  clinicAddress           String   @default("Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad")
+  landlinePhone           String   @default("051-2340093")
+  mobilePhone             String   @default("0303-5080011")
+  whatsappNumber          String   @default("+92 314 5475528")
+  clinicEmail             String   @default("info@elitedental.com")
+  pmdcRegNumber           String   @default("14820-D")
+  receiptFooter           String   @default("Thank you for trusting Elite Dental & Aesthetic Centre. Valid for clinical record & tax submission.")
+  workDayStart            String   @default("12:00")
+  workDayEnd              String   @default("20:00")
+  breakStart              String?
+  breakEnd                String?
+  slotDurationMin         Int      @default(30)
+  bufferMin               Int      @default(0)
+  advanceNoticeMin        Int      @default(60)
+  maxBookingDaysAhead     Int      @default(60)
+  cancellationCutoffHours Int      @default(12)
+  weeklyWorkingDays       String   @default("Monday,Tuesday,Wednesday,Thursday,Friday,Saturday")
+  messageTemplates        Json?
+  publicContent           Json?
+  updatedAt               DateTime @default(now()) @updatedAt
 }
 
 model ClinicHoliday {
@@ -188,6 +244,81 @@ enum PaymentMethod {
   CASH
   CARD
   ONLINE
+  BANK_TRANSFER
+  JAZZCASH
+  EASYPAISA
+}
+
+enum PaymentType {
+  PAYMENT
+  REFUND
+}
+
+enum ExpenseCategory {
+  RENT
+  SUPPLIES
+  LAB_FEES
+  UTILITIES
+  SALARY
+  MAINTENANCE
+  EQUIPMENT
+  MARKETING
+  OTHER
+}
+
+enum ClosingStatus {
+  SUBMITTED
+  APPROVED
+  REOPENED
+}
+
+enum LabOrderStatus {
+  SENT
+  IN_PROGRESS
+  RECEIVED
+  DELIVERED
+  CANCELLED
+}
+
+enum PatientFileType {
+  XRAY
+  PHOTO
+  REPORT
+  DOCUMENT
+}
+
+enum WaitlistStatus {
+  WAITING
+  NOTIFIED
+  BOOKED
+  CANCELLED
+  EXPIRED
+}
+
+enum RecallStatus {
+  PENDING
+  SENT
+  BOOKED
+  DISMISSED
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  EMAIL
+  SMS
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum FeedbackSource {
+  WEBSITE
+  GOOGLE
+  VERIFIED_PATIENT
 }
 
 enum TreatmentStatus {
@@ -251,17 +382,285 @@ model PlanChangeLog {
 }
 
 model Payment {
-  id     String        @id @default(uuid())
-  amount Int
-  method PaymentMethod @default(CASH)
-  date   DateTime      @default(now())
-  notes  String?
+  id                String        @id @default(uuid())
+  amount            Int
+  type              PaymentType   @default(PAYMENT)
+  method            PaymentMethod @default(CASH)
+  date              DateTime      @default(now())
+  notes             String?
+  refundedPaymentId String?
+  refundedPayment   Payment?      @relation("PaymentRefunds", fields: [refundedPaymentId], references: [id], onDelete: SetNull)
+  refunds           Payment[]     @relation("PaymentRefunds")
+  recordedById      String?
+  recordedBy        User?         @relation("RecordedPayments", fields: [recordedById], references: [id], onDelete: SetNull)
 
   patientTreatmentId String
   patientTreatment   PatientTreatment @relation(fields: [patientTreatmentId], references: [id])
 
   appointmentId String?
   appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([date])
+  @@index([type, date])
+  @@index([patientTreatmentId])
+  @@index([appointmentId])
+  @@index([refundedPaymentId])
+}
+
+model Expense {
+  id            String          @id @default(uuid())
+  title         String
+  category      ExpenseCategory @default(SUPPLIES)
+  amount        Int
+  method        PaymentMethod   @default(CASH)
+  expenseDate   DateTime        @default(now())
+  vendor        String?
+  notes         String?
+  receiptFileId String?
+  deletedAt     DateTime?
+  recordedById  String?
+  recordedBy    User?           @relation(fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([expenseDate])
+  @@index([category])
+  @@index([deletedAt])
+}
+
+model DailyClosing {
+  id                    String        @id @default(uuid())
+  closingDate           DateTime      @unique
+  openingCash           Int           @default(0)
+  openingNote           String?
+  cashCollected         Int           @default(0)
+  cardCollected         Int           @default(0)
+  onlineCollected       Int           @default(0)
+  bankTransferCollected Int           @default(0)
+  jazzcashCollected     Int           @default(0)
+  easypaisaCollected    Int           @default(0)
+  refundsTotal          Int           @default(0)
+  cashRefundsTotal      Int           @default(0)
+  expensesTotal         Int           @default(0)
+  cashExpensesTotal     Int           @default(0)
+  expectedCash          Int           @default(0)
+  actualCash            Int           @default(0)
+  variance              Int           @default(0)
+  status                ClosingStatus @default(SUBMITTED)
+  notes                 String?
+  submittedById         String?
+  submittedBy           User?         @relation("ClosingSubmittedBy", fields: [submittedById], references: [id], onDelete: SetNull)
+  submittedAt           DateTime      @default(now())
+  approvedById          String?
+  approvedBy            User?         @relation("ClosingApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt            DateTime?
+  reopenedById          String?
+  reopenedBy            User?         @relation("ClosingReopenedBy", fields: [reopenedById], references: [id], onDelete: SetNull)
+  reopenedAt            DateTime?
+  reopenReason          String?
+  closedById            String?
+  closedBy              User?         @relation("ClosingClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+  closedAt              DateTime      @default(now())
+
+  @@index([closingDate])
+  @@index([status])
+}
+
+model LabOrder {
+  id            String         @id @default(uuid())
+  patientId     String
+  patient       User           @relation(fields: [patientId], references: [id])
+  appointmentId String?
+  appointment   Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  labName       String
+  workType      String
+  toothNumbers  String?
+  shade         String?
+  cost          Int            @default(0)
+  status        LabOrderStatus @default(SENT)
+  sentDate      DateTime       @default(now())
+  expectedDate  DateTime?
+  receivedDate  DateTime?
+  deliveredDate DateTime?
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([patientId])
+  @@index([status])
+  @@index([expectedDate])
+}
+
+model ConsentForm {
+  id             String        @id @default(uuid())
+  patientId      String
+  patient        User          @relation("PatientConsents", fields: [patientId], references: [id])
+  appointmentId  String?
+  appointment    Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  title          String
+  procedureName  String?
+  content        String
+  version        Int           @default(1)
+  supersededById String?
+  supersededBy   ConsentForm?  @relation("ConsentSupersede", fields: [supersededById], references: [id], onDelete: SetNull)
+  supersedes     ConsentForm[] @relation("ConsentSupersede")
+  signatureData  String?
+  signedByName   String
+  signedAt       DateTime      @default(now())
+  witnessName    String?
+  createdById    String?
+  createdBy      User?         @relation("ConsentAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+
+  @@index([patientId])
+  @@index([appointmentId])
+}
+
+model PatientFile {
+  id               String          @id @default(uuid())
+  patientId        String
+  patient          User            @relation("PatientOwnedFiles", fields: [patientId], references: [id])
+  appointmentId    String?
+  appointment      Appointment?    @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  fileType         PatientFileType @default(DOCUMENT)
+  title            String
+  storagePath      String
+  mimeType         String
+  sizeBytes        Int
+  notes            String?
+  hasConsent       Boolean         @default(false)
+  visibleToPatient Boolean         @default(false)
+  uploadedById     String?
+  uploadedBy       User?           @relation("FileUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+  deletedAt        DateTime?
+  createdAt        DateTime        @default(now())
+
+  @@index([patientId])
+  @@index([fileType])
+}
+
+model BeforeAfterPhoto {
+  id              String     @id @default(uuid())
+  patientId       String
+  patient         User       @relation("PatientBeforeAfter", fields: [patientId], references: [id])
+  treatmentId     String?
+  treatment       Treatment? @relation(fields: [treatmentId], references: [id], onDelete: SetNull)
+  title           String
+  beforeImagePath String
+  afterImagePath  String
+  beforeFileId    String?
+  afterFileId     String?
+  notes           String?
+  hasConsent      Boolean    @default(false)
+  showOnWeb       Boolean    @default(false)
+  takenAt         DateTime   @default(now())
+  createdById     String?
+  createdBy       User?      @relation("BeforeAfterAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt       DateTime   @default(now())
+
+  @@index([patientId])
+  @@index([treatmentId])
+  @@index([hasConsent, showOnWeb])
+}
+
+model Prescription {
+  id              String       @id @default(uuid())
+  patientId       String
+  patient         User         @relation("PatientPrescriptions", fields: [patientId], references: [id])
+  appointmentId   String?
+  appointment     Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  prescribedById  String?
+  prescribedBy    User?        @relation("PrescriptionAuthor", fields: [prescribedById], references: [id], onDelete: SetNull)
+  doctorName      String
+  doctorPmdc      String?
+  entries         Json
+  allergyWarnings Json?
+  notes           String?
+  createdAt       DateTime     @default(now())
+
+  @@index([patientId])
+  @@index([appointmentId])
+}
+
+model WaitlistEntry {
+  id                String         @id @default(uuid())
+  patientId         String?
+  patient           User?          @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  patientName       String
+  patientPhone      String
+  treatmentId       String?
+  treatment         Treatment?     @relation(fields: [treatmentId], references: [id], onDelete: SetNull)
+  preferredDate     DateTime
+  preferredTimeSlot String?
+  notes             String?
+  status            WaitlistStatus @default(WAITING)
+  notifiedAt        DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([status, preferredDate])
+  @@index([patientPhone])
+}
+
+model RecallReminder {
+  id             String       @id @default(uuid())
+  patientId      String
+  patient        User         @relation(fields: [patientId], references: [id])
+  treatmentId    String?
+  treatment      Treatment?   @relation(fields: [treatmentId], references: [id], onDelete: SetNull)
+  dueDate        DateTime
+  intervalMonths Int          @default(6)
+  status         RecallStatus @default(PENDING)
+  sentAt         DateTime?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([status, dueDate])
+  @@index([patientId])
+}
+
+model NotificationLog {
+  id               String                     @id @default(uuid())
+  patientId        String?
+  patient          User?                      @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  appointmentId    String?
+  appointment      Appointment?               @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  channel          NotificationChannel
+  recipient        String
+  templateKey      String
+  messagePreview   String?
+  status           NotificationDeliveryStatus @default(PENDING)
+  providerResponse String?
+  errorMessage     String?
+  sentAt           DateTime?
+  createdAt        DateTime                   @default(now())
+
+  @@index([status, createdAt])
+  @@index([patientId])
+  @@index([appointmentId])
+}
+
+model Feedback {
+  id             String         @id @default(uuid())
+  appointmentId  String?
+  appointment    Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  patientId      String?
+  patient        User?          @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  patientName    String
+  patientEmail   String?
+  treatmentName  String?
+  rating         Int
+  comment        String
+  source         FeedbackSource @default(VERIFIED_PATIENT)
+  isPublished    Boolean        @default(true)
+  clinicResponse String?
+  respondedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([isPublished, createdAt])
+  @@index([appointmentId])
 }
 
 // ─── Inventory ───────────────────────────────────────────
@@ -292,8 +691,39 @@ model Doctor {
   image             String?       @default("/dr_sheriyaar.webp")
   isLead            Boolean       @default(false)
   isActive          Boolean       @default(true)
+  unavailableFrom   DateTime?
+  unavailableTo     DateTime?
+  unavailableReason String?
   appointments      Appointment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─── Security & Audit Governance ─────────────────────────
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model LoginAttempt {
+  id           String    @id @default(uuid())
+  identifier   String    @unique
+  failedCount  Int       @default(0)
+  lastFailedAt DateTime  @default(now())
+  lockedUntil  DateTime?
+  updatedAt    DateTime  @updatedAt
 }

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {
     ArrowBackOutlined,
     PhoneOutlined,
-    EmailOutlined,
     CalendarMonthOutlined,
     LocalHospitalOutlined,
     ReceiptLongOutlined,
@@ -30,9 +29,16 @@ import {
     CheckCircle,
 } from "@mui/icons-material";
 import { formatPKR, formatDate, formatTime } from "@/lib/utils";
+import { getPaymentMethodLabel } from "@/lib/constants/payment-methods";
 import StatusBadge from "@/components/shared/StatusBadge";
+import MedicalAlertBanner from "@/components/shared/MedicalAlertBanner";
+import MedicalAlertEditor from "@/components/admin/patients/MedicalAlertEditor";
 import CreateTreatmentPlan from "@/components/admin/patients/CreateTreatmentPlan";
 import RecordPayment from "@/components/admin/patients/RecordPayment";
+import RefundDialog, { type RefundTargetPayment } from "@/components/admin/patients/RefundDialog";
+import PatientClinicalWorkspace from "@/features/patient-data/PatientClinicalWorkspace";
+import PatientSafetyEditDialog from "@/features/patient-data/PatientSafetyEditDialog";
+import type { PatientClinicalBundle } from "@/lib/data/patientClinicalData";
 import SendPrecautionsButton from "@/components/admin/SendPrecautionsButton";
 import ReceiptDialog, { ReceiptData } from "@/components/admin/ReceiptDialog";
 import SchedulePatientSessionDialog, { PlanBookingContext } from "@/components/shared/SchedulePatientSessionDialog";
@@ -51,6 +57,9 @@ export interface PatientProfileViewProps {
         dateOfBirth?: Date | string | null;
         address?: string | null;
         medicalAlerts?: string | null;
+        allergies?: string[];
+        medications?: string[];
+        deletedAt?: Date | string | null;
         createdAt: Date | string;
         appointments: Array<{
             id: string;
@@ -85,6 +94,7 @@ export interface PatientProfileViewProps {
             payments?: Array<{
                 id: string;
                 amount: number;
+                type?: string;
                 method: string;
                 date: Date | string;
                 notes?: string | null;
@@ -108,6 +118,7 @@ export interface PatientProfileViewProps {
             payments: Array<{
                 id: string;
                 amount: number;
+                type?: string;
                 date: Date | string;
                 method: string;
                 notes?: string | null;
@@ -128,18 +139,21 @@ export interface PatientProfileViewProps {
         price: number;
         durationMin: number;
     }>;
+    clinicalBundle?: PatientClinicalBundle;
     baseRoute?: "/staff" | "/admin";
 }
 
-type TabType = "PLANS" | "ENCOUNTERS" | "PAYMENTS";
+type TabType = "PLANS" | "ENCOUNTERS" | "PAYMENTS" | "CLINICAL";
 
 export default function PatientProfileView({
     patient,
     availableTreatments,
+    clinicalBundle,
     baseRoute = "/staff",
 }: PatientProfileViewProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>("PLANS");
+    const [editSafetyOpen, setEditSafetyOpen] = useState(false);
     const [expandedPlanIds, setExpandedPlanIds] = useState<Record<string, boolean>>({
         [patient.patientTreatments[0]?.id || ""]: true,
     });
@@ -149,6 +163,10 @@ export default function PatientProfileView({
     const [receiptOpen, setReceiptOpen] = useState(false);
     const [scheduleOpen, setScheduleOpen] = useState(false);
     const [selectedPlanForBooking, setSelectedPlanForBooking] = useState<PlanBookingContext | null>(null);
+    const [refundTarget, setRefundTarget] = useState<RefundTargetPayment | null>(null);
+    const isAdmin = baseRoute === "/admin";
+    const sumNet = (items: Array<{ amount: number; type?: string }>) =>
+        Math.max(0, items.reduce((sum, p) => sum + (p.type === "REFUND" ? -p.amount : p.amount), 0));
 
     // ─── Demographic Age Helper ───
     const getAge = (dob: Date | string | null | undefined) => {
@@ -167,8 +185,7 @@ export default function PatientProfileView({
         // Sum from multi-session treatment plans
         patient.patientTreatments.forEach((pt) => {
             totalBilled += pt.totalCost;
-            const ptPaid = pt.payments.reduce((sum, p) => sum + p.amount, 0);
-            totalPaid += ptPaid;
+            totalPaid += sumNet(pt.payments);
         });
 
         // Add standalone appointments (not linked to treatment plans)
@@ -231,6 +248,7 @@ export default function PatientProfileView({
             amount: number;
             method: string;
             notes?: string | null;
+            type?: string;
             sourceType: "PLAN" | "APPOINTMENT";
             treatmentName: string;
             patientTreatmentId?: string;
@@ -243,6 +261,7 @@ export default function PatientProfileView({
                     id: p.id,
                     date: p.date,
                     amount: p.amount,
+                    type: p.type || "PAYMENT",
                     method: p.method,
                     notes: p.notes,
                     sourceType: "PLAN",
@@ -259,6 +278,7 @@ export default function PatientProfileView({
                         id: p.id,
                         date: p.date,
                         amount: p.amount,
+                        type: p.type || "PAYMENT",
                         method: p.method,
                         notes: p.notes,
                         sourceType: "APPOINTMENT",
@@ -289,12 +309,13 @@ export default function PatientProfileView({
             : patient.patientTreatments.find((pt) => pt.payments.some((p) => p.id === payment.id));
 
         if (plan) {
-            const totalPlanPaid = plan.payments.reduce((sum, p) => sum + p.amount, 0);
+            const totalPlanPaid = sumNet(plan.payments);
             const remainingDue = Math.max(0, plan.totalCost - totalPlanPaid);
             const planPayments = plan.payments.map((p) => ({
                 id: p.id,
                 date: String(p.date),
                 method: p.method,
+                type: p.type || "PAYMENT",
                 amount: p.amount,
                 notes: p.notes,
             }));
@@ -359,12 +380,13 @@ export default function PatientProfileView({
         const due = Math.max(0, net - paid);
 
         if (linkedPlan) {
-            const totalPlanPaid = linkedPlan.payments.reduce((sum, p) => sum + p.amount, 0);
+            const totalPlanPaid = sumNet(linkedPlan.payments);
             const remainingDue = Math.max(0, linkedPlan.totalCost - totalPlanPaid);
             const planPayments = linkedPlan.payments.map((p) => ({
                 id: p.id,
                 date: String(p.date),
                 method: p.method,
+                type: p.type || "PAYMENT",
                 amount: p.amount,
                 notes: p.notes,
             }));
@@ -376,7 +398,7 @@ export default function PatientProfileView({
                 patientCode: patient.patientCode,
                 patientAge: patientAge ? `${patientAge} Y` : null,
                 patientGender: patient.gender,
-                doctorName: apt.doctor?.name || "Dr. Shehryar Akhtar",
+                doctorName: apt.doctor?.name || "Attending Dentist",
                 treatmentName: linkedPlan.treatment.name,
                 appointmentDate: formatDate(apt.startTime),
                 appointmentTime: formatTime(apt.startTime),
@@ -415,7 +437,7 @@ export default function PatientProfileView({
                 patientCode: patient.patientCode,
                 patientAge: patientAge ? `${patientAge} Y` : null,
                 patientGender: patient.gender,
-                doctorName: apt.doctor?.name || "Dr. Shehryar Akhtar",
+                doctorName: apt.doctor?.name || "Attending Dentist",
                 treatmentName: apt.treatment.name,
                 appointmentDate: formatDate(apt.startTime),
                 appointmentTime: formatTime(apt.startTime),
@@ -473,7 +495,7 @@ export default function PatientProfileView({
                         className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-2xs transition-all active:scale-[0.98] cursor-pointer"
                     >
                         <CalendarMonthOutlined sx={{ fontSize: 15 }} />
-                        <span>+ Book Visit / Session</span>
+                        <span>Book Visit / Session</span>
                     </Button>
                     {whatsAppHref && (
                         <a
@@ -495,6 +517,13 @@ export default function PatientProfileView({
                             <span>Call</span>
                         </a>
                     )}
+                    <button
+                        type="button"
+                        onClick={() => setEditSafetyOpen(true)}
+                        className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-bold text-xs shadow-2xs transition-all cursor-pointer"
+                    >
+                        <span>Edit &amp; safety</span>
+                    </button>
                     <CreateTreatmentPlan
                         patientId={patient.id}
                         availableTreatments={availableTreatments}
@@ -587,6 +616,30 @@ export default function PatientProfileView({
                 </div>
             </div>
 
+            {/* ─── Medical Alerts, Allergies & Medications Banner ─── */}
+            {(patient.medicalAlerts || (patient.allergies && patient.allergies.length > 0) || (patient.medications && patient.medications.length > 0)) ? (
+                <MedicalAlertBanner
+                    alerts={patient.medicalAlerts}
+                    allergies={patient.allergies}
+                    medications={patient.medications}
+                    actionSlot={
+                        baseRoute === "/admin" ? (
+                            <MedicalAlertEditor
+                                patientId={patient.id}
+                                initialAlerts={patient.medicalAlerts ?? null}
+                            />
+                        ) : undefined
+                    }
+                />
+            ) : baseRoute === "/admin" ? (
+                <div className="rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 flex items-center justify-between gap-3">
+                    <span className="text-xs text-slate-500 font-medium">
+                        No allergies or medical alerts recorded for this patient.
+                    </span>
+                    <MedicalAlertEditor patientId={patient.id} initialAlerts={null} />
+                </div>
+            ) : null}
+
             {/* ─── Top 4 KPI Metrics Strip ─── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* 1. Encounters */}
@@ -646,8 +699,8 @@ export default function PatientProfileView({
                 {/* 4. Outstanding Balance */}
                 <div
                     className={`p-4 rounded-3xl border transition-all ${financialStats.outstandingBalance > 0
-                            ? "bg-amber-50/70 border-amber-300 shadow-2xs"
-                            : "bg-white border-slate-200/90 shadow-2xs"
+                        ? "bg-amber-50/70 border-amber-300 shadow-2xs"
+                        : "bg-white border-slate-200/90 shadow-2xs"
                         }`}
                 >
                     <div className="flex items-center justify-between">
@@ -659,8 +712,8 @@ export default function PatientProfileView({
                         </span>
                         <div
                             className={`size-8 rounded-xl border flex items-center justify-center ${financialStats.outstandingBalance > 0
-                                    ? "bg-amber-100 text-amber-800 border-amber-300"
-                                    : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                ? "bg-amber-100 text-amber-800 border-amber-300"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 }`}
                         >
                             <AccountBalanceWalletOutlined sx={{ fontSize: 16 }} />
@@ -687,8 +740,8 @@ export default function PatientProfileView({
                     type="button"
                     onClick={() => setActiveTab("PLANS")}
                     className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${activeTab === "PLANS"
-                            ? "bg-[#0B1528] text-white shadow-xs"
-                            : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
+                        ? "bg-[#0B1528] text-white shadow-xs"
+                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
                         }`}
                 >
                     <MedicalServicesOutlined sx={{ fontSize: 15 }} />
@@ -705,8 +758,8 @@ export default function PatientProfileView({
                     type="button"
                     onClick={() => setActiveTab("ENCOUNTERS")}
                     className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${activeTab === "ENCOUNTERS"
-                            ? "bg-[#0B1528] text-white shadow-xs"
-                            : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
+                        ? "bg-[#0B1528] text-white shadow-xs"
+                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
                         }`}
                 >
                     <AssignmentOutlined sx={{ fontSize: 15 }} />
@@ -723,8 +776,8 @@ export default function PatientProfileView({
                     type="button"
                     onClick={() => setActiveTab("PAYMENTS")}
                     className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${activeTab === "PAYMENTS"
-                            ? "bg-[#0B1528] text-white shadow-xs"
-                            : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
+                        ? "bg-[#0B1528] text-white shadow-xs"
+                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
                         }`}
                 >
                     <ReceiptLongOutlined sx={{ fontSize: 15 }} />
@@ -736,6 +789,26 @@ export default function PatientProfileView({
                         {allLedgerPayments.length}
                     </span>
                 </button>
+
+                {clinicalBundle && (
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab("CLINICAL")}
+                        className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${activeTab === "CLINICAL"
+                            ? "bg-[#0B1528] text-white shadow-xs"
+                            : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
+                            }`}
+                    >
+                        <LocalHospitalOutlined sx={{ fontSize: 15 }} />
+                        <span>Files, Consents &amp; Rx</span>
+                        <span
+                            className={`size-5 rounded-full text-[10px] font-black inline-flex items-center justify-center ${activeTab === "CLINICAL" ? "bg-teal-500 text-white" : "bg-slate-200 text-slate-700"
+                                }`}
+                        >
+                            {clinicalBundle.files.length + clinicalBundle.consents.length + clinicalBundle.prescriptions.length}
+                        </span>
+                    </button>
+                )}
             </div>
 
             {/* ═══════════════════════════════════════════════════════════════
@@ -759,7 +832,7 @@ export default function PatientProfileView({
                         </div>
                     ) : (
                         patient.patientTreatments.map((pt) => {
-                            const totalPaid = pt.payments.reduce((sum, p) => sum + p.amount, 0);
+                            const totalPaid = sumNet(pt.payments);
                             const remaining = Math.max(0, pt.totalCost - totalPaid);
                             const percentPaid = pt.totalCost > 0 ? Math.min(100, Math.round((totalPaid / pt.totalCost) * 100)) : 100;
                             const isFullyPaid = remaining <= 0;
@@ -800,7 +873,7 @@ export default function PatientProfileView({
                                                     <p className="text-xs font-medium text-slate-500 mt-1 flex items-center gap-2">
                                                         <span>Started {formatDate(pt.startDate)}</span>
                                                         <span className="text-slate-300">·</span>
-                                                        <span>{pt.totalSessions || 1} Planned Session{pt.totalSessions > 1 ? "s" : ""}</span>
+                                                        <span>{Math.max(1, pt.totalSessions ?? 1)} Planned Session{pt.totalSessions > 1 ? "s" : ""}</span>
                                                     </p>
                                                 </div>
                                             </div>
@@ -931,8 +1004,8 @@ export default function PatientProfileView({
                                                                 </div>
                                                                 <span
                                                                     className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${apt.status === "COMPLETED"
-                                                                            ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                                                                            : "bg-teal-50 text-teal-800 border border-teal-200"
+                                                                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                                                        : "bg-teal-50 text-teal-800 border border-teal-200"
                                                                         }`}
                                                                 >
                                                                     {apt.status}
@@ -978,45 +1051,63 @@ export default function PatientProfileView({
                                                                 </tr>
                                                             </thead>
                                                             <tbody className="divide-y divide-slate-100 font-medium">
-                                                                {pt.payments.map((p) => (
-                                                                    <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                                                                        <td className="px-4 py-3 font-bold text-slate-900">
-                                                                            {formatDate(p.date)}
-                                                                        </td>
-                                                                        <td className="px-4 py-3">
-                                                                            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[10px] border border-slate-200">
-                                                                                {p.method}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td className="px-4 py-3 text-slate-600 max-w-[200px] truncate">
-                                                                            {p.notes || "—"}
-                                                                        </td>
-                                                                        <td className="px-4 py-3 text-right font-black text-emerald-700">
-                                                                            {formatPKR(p.amount)}
-                                                                        </td>
-                                                                        <td className="px-4 py-3 text-right">
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    handleOpenReceiptForPayment({
-                                                                                        id: p.id,
-                                                                                        date: p.date,
-                                                                                        amount: p.amount,
-                                                                                        method: p.method,
-                                                                                        notes: p.notes,
-                                                                                        sourceType: "PLAN",
-                                                                                        treatmentName: pt.treatment.name,
-                                                                                        patientTreatmentId: pt.id,
-                                                                                    })
-                                                                                }
-                                                                                className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-800 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2.5 py-1 rounded-lg border border-teal-200 transition-colors cursor-pointer"
-                                                                            >
-                                                                                <PrintOutlined sx={{ fontSize: 13 }} />
-                                                                                <span>Receipt</span>
-                                                                            </button>
-                                                                        </td>
-                                                                    </tr>
-                                                                ))}
+                                                                {pt.payments.map((p) => {
+                                                                    const isRefund = p.type === "REFUND";
+                                                                    return (
+                                                                        <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                                                                            <td className="px-4 py-3 font-bold text-slate-900">
+                                                                                {formatDate(p.date)}
+                                                                            </td>
+                                                                            <td className="px-4 py-3">
+                                                                                <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[10px] border border-slate-200">
+                                                                                    {getPaymentMethodLabel(p.method)}
+                                                                                </span>
+                                                                                {isRefund && (
+                                                                                    <span className="ml-1.5 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 font-bold text-[10px] border border-rose-200">
+                                                                                        Refund
+                                                                                    </span>
+                                                                                )}
+                                                                            </td>
+                                                                            <td className="px-4 py-3 text-slate-600 max-w-[200px] truncate">
+                                                                                {p.notes || "—"}
+                                                                            </td>
+                                                                            <td className={`px-4 py-3 text-right font-black ${isRefund ? "text-rose-700" : "text-emerald-700"}`}>
+                                                                                {isRefund ? "- " : ""}{formatPKR(p.amount)}
+                                                                            </td>
+                                                                            <td className="px-4 py-3 text-right space-x-1.5 whitespace-nowrap">
+                                                                                {isAdmin && !isRefund && (
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={() => setRefundTarget({ id: p.id, amount: p.amount, method: p.method, treatmentName: pt.treatment.name })}
+                                                                                        className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-200 transition-colors cursor-pointer"
+                                                                                    >
+                                                                                        Refund
+                                                                                    </button>
+                                                                                )}
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() =>
+                                                                                        handleOpenReceiptForPayment({
+                                                                                            id: p.id,
+                                                                                            date: p.date,
+                                                                                            amount: p.amount,
+                                                                                            type: p.type,
+                                                                                            method: p.method,
+                                                                                            notes: p.notes,
+                                                                                            sourceType: "PLAN",
+                                                                                            treatmentName: pt.treatment.name,
+                                                                                            patientTreatmentId: pt.id,
+                                                                                        })
+                                                                                    }
+                                                                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-800 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2.5 py-1 rounded-lg border border-teal-200 transition-colors cursor-pointer"
+                                                                                >
+                                                                                    <PrintOutlined sx={{ fontSize: 13 }} />
+                                                                                    <span>Receipt</span>
+                                                                                </button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -1058,8 +1149,8 @@ export default function PatientProfileView({
                                     type="button"
                                     onClick={() => setEncounterFilter(mode)}
                                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${encounterFilter === mode
-                                            ? "bg-teal-600 text-white shadow-2xs"
-                                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                        ? "bg-teal-600 text-white shadow-2xs"
+                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                         }`}
                                 >
                                     {mode === "ALL" ? "All Visits" : mode}
@@ -1075,7 +1166,7 @@ export default function PatientProfileView({
                                 className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-8 px-3 rounded-xl shadow-2xs transition-all active:scale-[0.98] flex items-center gap-1 cursor-pointer shrink-0 ml-1"
                             >
                                 <CalendarMonthOutlined sx={{ fontSize: 14 }} />
-                                <span>+ Book Visit</span>
+                                <span>Book Visit</span>
                             </Button>
                         </div>
                     </div>
@@ -1220,37 +1311,55 @@ export default function PatientProfileView({
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 font-medium">
-                                        {allLedgerPayments.map((p) => (
-                                            <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                                                <td className="px-5 py-3.5 font-bold text-slate-900 whitespace-nowrap">
-                                                    {formatDate(p.date)}
-                                                </td>
-                                                <td className="px-5 py-3.5 font-bold text-[#0B1528]">
-                                                    {p.treatmentName}
-                                                </td>
-                                                <td className="px-5 py-3.5">
-                                                    <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[10px] border border-slate-200">
-                                                        {p.method}
-                                                    </span>
-                                                </td>
-                                                <td className="px-5 py-3.5 text-slate-500 max-w-[200px] truncate">
-                                                    {p.notes || "—"}
-                                                </td>
-                                                <td className="px-5 py-3.5 text-right font-black text-emerald-700 text-sm whitespace-nowrap">
-                                                    {formatPKR(p.amount)}
-                                                </td>
-                                                <td className="px-5 py-3.5 text-right whitespace-nowrap">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleOpenReceiptForPayment(p)}
-                                                        className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-3 py-1 rounded-xl border border-teal-200 transition-colors cursor-pointer"
-                                                    >
-                                                        <PrintOutlined sx={{ fontSize: 13 }} />
-                                                        <span>Official Receipt</span>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {allLedgerPayments.map((p) => {
+                                            const isRefund = p.type === "REFUND";
+                                            const isRealPayment = !isRefund && !String(p.id).startsWith("apt-");
+                                            return (
+                                                <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                                                    <td className="px-5 py-3.5 font-bold text-slate-900 whitespace-nowrap">
+                                                        {formatDate(p.date)}
+                                                    </td>
+                                                    <td className="px-5 py-3.5 font-bold text-[#0B1528]">
+                                                        {p.treatmentName}
+                                                    </td>
+                                                    <td className="px-5 py-3.5">
+                                                        <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[10px] border border-slate-200">
+                                                            {getPaymentMethodLabel(p.method)}
+                                                        </span>
+                                                        {isRefund && (
+                                                            <span className="ml-1.5 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 font-bold text-[10px] border border-rose-200">
+                                                                Refund
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-5 py-3.5 text-slate-500 max-w-[200px] truncate">
+                                                        {p.notes || "—"}
+                                                    </td>
+                                                    <td className={`px-5 py-3.5 text-right font-black text-sm whitespace-nowrap ${isRefund ? "text-rose-700" : "text-emerald-700"}`}>
+                                                        {isRefund ? "- " : ""}{formatPKR(p.amount)}
+                                                    </td>
+                                                    <td className="px-5 py-3.5 text-right whitespace-nowrap space-x-1.5">
+                                                        {isAdmin && isRealPayment && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setRefundTarget({ id: p.id, amount: p.amount, method: p.method, treatmentName: p.treatmentName })}
+                                                                className="inline-flex items-center gap-1 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1 rounded-xl border border-rose-200 transition-colors cursor-pointer"
+                                                            >
+                                                                Refund
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleOpenReceiptForPayment(p)}
+                                                            className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-3 py-1 rounded-xl border border-teal-200 transition-colors cursor-pointer"
+                                                        >
+                                                            <PrintOutlined sx={{ fontSize: 13 }} />
+                                                            <span>Official Receipt</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
@@ -1259,11 +1368,53 @@ export default function PatientProfileView({
                 </div>
             )}
 
+            {activeTab === "CLINICAL" && clinicalBundle && (
+                <PatientClinicalWorkspace
+                    patientId={patient.id}
+                    patientName={patient.name || "Patient"}
+                    patientCode={patient.patientCode ?? null}
+                    patientPhone={patient.phone ?? null}
+                    allergies={patient.allergies || []}
+                    isAdmin={isAdmin}
+                    clinicInfo={clinicalBundle.clinicInfo}
+                    files={clinicalBundle.files}
+                    consents={clinicalBundle.consents}
+                    beforeAfterPhotos={clinicalBundle.beforeAfterPhotos}
+                    prescriptions={clinicalBundle.prescriptions}
+                />
+            )}
+
             {/* ─── Official Clinical Receipt Dialog ─── */}
             <ReceiptDialog
                 open={receiptOpen}
                 onOpenChange={setReceiptOpen}
                 data={receiptData}
+            />
+
+            <RefundDialog
+                target={refundTarget}
+                onClose={() => setRefundTarget(null)}
+                onSuccess={() => router.refresh()}
+            />
+
+            <PatientSafetyEditDialog
+                open={editSafetyOpen}
+                onOpenChange={setEditSafetyOpen}
+                patient={{
+                    id: patient.id,
+                    name: patient.name,
+                    phone: patient.phone,
+                    email: patient.email,
+                    gender: patient.gender ?? null,
+                    dateOfBirth: patient.dateOfBirth ? new Date(patient.dateOfBirth).toISOString().slice(0, 10) : null,
+                    address: patient.address ?? null,
+                    medicalAlerts: patient.medicalAlerts ?? null,
+                    allergies: patient.allergies || [],
+                    medications: patient.medications || [],
+                    patientCode: patient.patientCode ?? null,
+                }}
+                isAdmin={isAdmin}
+                baseRoute={baseRoute}
             />
 
             {/* ─── Schedule Patient Visit / Session Dialog ─── */}

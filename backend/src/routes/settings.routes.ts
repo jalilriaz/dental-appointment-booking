@@ -1,10 +1,58 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import { requireAuth, requireRole } from '../middleware/auth.middleware';
+import { requireAuth, requireRole, optionalAuth } from '../middleware/auth.middleware';
+import { logAudit } from '../lib/audit';
 import { z } from 'zod';
 import { logger } from '../lib/logger';
 
 const router = Router();
+
+const DEFAULT_PUBLIC_SETTINGS = {
+    clinicName: 'Elite Dental & Aesthetic Centre',
+    clinicAddress: 'Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad',
+    landlinePhone: '051-2340093',
+    mobilePhone: '0303-5080011',
+    whatsappNumber: '+92 314 5475528',
+    clinicEmail: 'info@elitedental.com',
+    pmdcRegNumber: '',
+    workDayStart: '12:00',
+    workDayEnd: '20:00',
+    slotDurationMin: 30,
+    weeklyWorkingDays: 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
+};
+
+function pickPublicSettings(settings: any) {
+    if (!settings) return DEFAULT_PUBLIC_SETTINGS;
+    return {
+        clinicName: settings.clinicName,
+        clinicAddress: settings.clinicAddress,
+        landlinePhone: settings.landlinePhone,
+        mobilePhone: settings.mobilePhone,
+        whatsappNumber: settings.whatsappNumber,
+        clinicEmail: settings.clinicEmail,
+        pmdcRegNumber: settings.pmdcRegNumber,
+        workDayStart: settings.workDayStart,
+        workDayEnd: settings.workDayEnd,
+        slotDurationMin: settings.slotDurationMin,
+        weeklyWorkingDays: settings.weeklyWorkingDays,
+        breakStart: settings.breakStart ?? null,
+        breakEnd: settings.breakEnd ?? null,
+        bufferMin: settings.bufferMin ?? 0,
+        advanceNoticeMin: settings.advanceNoticeMin ?? 60,
+        maxBookingDaysAhead: settings.maxBookingDaysAhead ?? 60,
+        cancellationCutoffHours: settings.cancellationCutoffHours ?? 12,
+        publicContent: settings.publicContent ?? null,
+    };
+}
+
+const PUBLIC_HOLIDAY_SELECT = {
+    id: true,
+    title: true,
+    startDate: true,
+    endDate: true,
+    showOnWeb: true,
+    isActive: true,
+};
 
 const settingsSchema = z.object({
     clinicName: z.string().min(1).max(150).optional(),
@@ -19,6 +67,13 @@ const settingsSchema = z.object({
     workDayEnd: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format').optional(),
     slotDurationMin: z.number().int().min(5).max(120).optional().or(z.string().regex(/^\d+$/).transform(Number).optional()),
     weeklyWorkingDays: z.string().optional(),
+    breakStart: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal('')).nullable(),
+    breakEnd: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal('')).nullable(),
+    bufferMin: z.coerce.number().int().min(0).max(120).optional(),
+    advanceNoticeMin: z.coerce.number().int().min(0).max(10080).optional(),
+    maxBookingDaysAhead: z.coerce.number().int().min(1).max(365).optional(),
+    cancellationCutoffHours: z.coerce.number().int().min(0).max(168).optional(),
+    publicContent: z.record(z.string(), z.unknown()).optional().nullable(),
 });
 
 const holidaySchema = z.object({
@@ -33,38 +88,34 @@ const holidaySchema = z.object({
 // GET /api/settings/public - Publicly accessible settings & active holidays for website/booking
 router.get('/public', async (_req: Request, res: Response) => {
     try {
-        const settings = await prisma.systemSettings.findUnique({
-            where: { id: 'settings' },
-        });
-
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
 
-        // Fetch upcoming/active holidays that should show on web
-        const activeHolidays = await prisma.clinicHoliday.findMany({
-            where: {
-                isActive: true,
-                endDate: { gte: todayStart },
-            },
-            orderBy: { startDate: 'asc' },
-        });
+        const [settings, activeHolidays, leadDoctor] = await Promise.all([
+            prisma.systemSettings.findUnique({ where: { id: 'settings' } }),
+            prisma.clinicHoliday.findMany({
+                where: { isActive: true, showOnWeb: true, endDate: { gte: todayStart } },
+                select: PUBLIC_HOLIDAY_SELECT,
+                orderBy: { startDate: 'asc' },
+            }),
+            prisma.doctor.findFirst({
+                where: { isActive: true },
+                orderBy: { createdAt: 'asc' },
+                select: { name: true, role: true, operatory: true, pmdcReg: true, image: true },
+            }),
+        ]);
 
         return res.json({
             success: true,
-            settings: settings || {
-                clinicName: 'Elite Dental & Aesthetic Centre',
-                clinicAddress: 'Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad',
-                landlinePhone: '051-2340093',
-                mobilePhone: '0303-5080011',
-                whatsappNumber: '+92 314 5475528',
-                clinicEmail: 'info@elitedental.com',
-                pmdcRegNumber: '14820-D',
-                workDayStart: '12:00',
-                workDayEnd: '20:00',
-                slotDurationMin: 30,
-                weeklyWorkingDays: 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
-            },
+            settings: pickPublicSettings(settings),
             activeHolidays,
+            doctor: leadDoctor || {
+                name: 'Attending Dentist',
+                role: 'Dental Surgeon',
+                operatory: 'Main Operatory',
+                pmdcReg: settings?.pmdcRegNumber || '',
+                image: null,
+            },
         });
     } catch (error) {
         logger.error({ err: error }, 'Failed to fetch public settings');
@@ -72,29 +123,41 @@ router.get('/public', async (_req: Request, res: Response) => {
     }
 });
 
-// GET /api/settings - Fetch settings + all holidays (Admin / Staff)
-router.get('/', async (_req: Request, res: Response) => {
+// GET /api/settings - Full settings for ADMIN/STAFF; public-safe fields only for unauthenticated/PATIENT callers
+router.get('/', optionalAuth, async (req: Request, res: Response) => {
     try {
+        const isClinicStaff = req.user && ['ADMIN', 'STAFF'].includes(req.user.role);
+
         let settings = await prisma.systemSettings.findUnique({
             where: { id: 'settings' },
         });
+
+        if (!isClinicStaff) {
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+
+            const publicHolidays = await prisma.clinicHoliday.findMany({
+                where: {
+                    isActive: true,
+                    showOnWeb: true,
+                    endDate: { gte: todayStart },
+                },
+                select: PUBLIC_HOLIDAY_SELECT,
+                orderBy: { startDate: 'asc' },
+            });
+
+            return res.json({
+                settings: pickPublicSettings(settings),
+                holidays: publicHolidays,
+            });
+        }
 
         if (!settings) {
             settings = await prisma.systemSettings.create({
                 data: {
                     id: 'settings',
-                    clinicName: 'Elite Dental & Aesthetic Centre',
-                    clinicAddress: 'Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad',
-                    landlinePhone: '051-2340093',
-                    mobilePhone: '0303-5080011',
-                    whatsappNumber: '+92 314 5475528',
-                    clinicEmail: 'info@elitedental.com',
-                    pmdcRegNumber: '14820-D',
+                    ...DEFAULT_PUBLIC_SETTINGS,
                     receiptFooter: 'Thank you for trusting Elite Dental & Aesthetic Centre. Valid for clinical record & tax submission.',
-                    workDayStart: '12:00',
-                    workDayEnd: '20:00',
-                    slotDurationMin: 30,
-                    weeklyWorkingDays: 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 },
             });
         }
@@ -123,10 +186,12 @@ router.put('/', requireAuth, requireRole('ADMIN'), async (req: Request, res: Res
 
         const data = parseResult.data;
 
+        const { publicContent, ...scalarSettings } = data;
         const settings = await prisma.systemSettings.upsert({
             where: { id: 'settings' },
             update: {
-                ...data,
+                ...scalarSettings,
+                ...(publicContent !== undefined && publicContent !== null ? { publicContent: publicContent as object } : {}),
                 slotDurationMin: data.slotDurationMin !== undefined ? Number(data.slotDurationMin) : undefined,
             },
             create: {
@@ -137,7 +202,7 @@ router.put('/', requireAuth, requireRole('ADMIN'), async (req: Request, res: Res
                 mobilePhone: data.mobilePhone || '0303-5080011',
                 whatsappNumber: data.whatsappNumber || '+92 314 5475528',
                 clinicEmail: data.clinicEmail || 'info@elitedental.com',
-                pmdcRegNumber: data.pmdcRegNumber || '14820-D',
+                pmdcRegNumber: data.pmdcRegNumber || '',
                 receiptFooter: data.receiptFooter || 'Thank you for trusting Elite Dental & Aesthetic Centre. Valid for clinical record & tax submission.',
                 workDayStart: data.workDayStart || '12:00',
                 workDayEnd: data.workDayEnd || '20:00',
@@ -148,6 +213,14 @@ router.put('/', requireAuth, requireRole('ADMIN'), async (req: Request, res: Res
 
         if (req.user) {
             logger.info({ adminId: req.user.id, action: 'update_system_settings' }, 'Admin updated global system settings');
+            await logAudit({
+                userId: req.user.id,
+                action: 'UPDATE_SETTINGS',
+                entity: 'SystemSettings',
+                entityId: 'settings',
+                details: { updatedFields: Object.keys(data) },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+            });
         }
 
         return res.json({ success: true, settings });
@@ -192,6 +265,16 @@ router.post('/holidays', requireAuth, requireRole('ADMIN'), async (req: Request,
         });
 
         logger.info(`Holiday created: ${holiday.title} (${startDate} to ${endDate})`);
+        if (req.user) {
+            await logAudit({
+                userId: req.user.id,
+                action: 'CREATE_HOLIDAY',
+                entity: 'ClinicHoliday',
+                entityId: holiday.id,
+                details: { title: holiday.title, startDate, endDate },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+            });
+        }
         return res.status(201).json({ success: true, holiday });
     } catch (error) {
         logger.error({ err: error }, 'Failed to create clinic holiday');
@@ -231,6 +314,17 @@ router.patch('/holidays/:id', requireAuth, requireRole('ADMIN'), async (req: Req
             data: updateData,
         });
 
+        if (req.user) {
+            await logAudit({
+                userId: req.user.id,
+                action: 'UPDATE_HOLIDAY',
+                entity: 'ClinicHoliday',
+                entityId: id,
+                details: { updatedFields: Object.keys(updateData) },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+            });
+        }
+
         return res.json({ success: true, holiday: updated });
     } catch (error) {
         logger.error({ err: error }, 'Failed to update clinic holiday');
@@ -249,6 +343,16 @@ router.delete('/holidays/:id', requireAuth, requireRole('ADMIN'), async (req: Re
 
         await prisma.clinicHoliday.delete({ where: { id } });
         logger.info(`Holiday deleted: ${existing.title} (${id})`);
+        if (req.user) {
+            await logAudit({
+                userId: req.user.id,
+                action: 'DELETE_HOLIDAY',
+                entity: 'ClinicHoliday',
+                entityId: id,
+                details: { title: existing.title },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+            });
+        }
         return res.json({ success: true, message: 'Holiday deleted successfully' });
     } catch (error) {
         logger.error({ err: error }, 'Failed to delete clinic holiday');

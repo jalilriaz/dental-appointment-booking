@@ -20,11 +20,17 @@ export interface BookingWebhookPayload {
  */
 export async function dispatchN8nBookingWebhook(payload: BookingWebhookPayload): Promise<{ success: boolean; error?: string }> {
     try {
-        // 1. Fetch dynamic clinic settings for message formatting
-        const settings = await prisma.systemSettings.findUnique({ where: { id: "settings" } }).catch(() => null);
+        // 1. Fetch dynamic clinic & lead doctor settings for message formatting
+        const [settings, leadDoctor] = await Promise.all([
+            prisma.systemSettings.findUnique({ where: { id: "settings" } }).catch(() => null),
+            !payload.doctorName
+                ? prisma.doctor.findFirst({ where: { isActive: true }, orderBy: { createdAt: "asc" }, select: { name: true } }).catch(() => null)
+                : Promise.resolve(null),
+        ]);
         const clinicName = settings?.clinicName || "Elite Dental & Aesthetic Centre";
         const clinicAddress = settings?.clinicAddress || "Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz, Islamabad";
         const clinicPhones = settings?.landlinePhone || settings?.mobilePhone || "051-2340093 / 0303-5080011";
+        const resolvedDoctor = payload.doctorName || leadDoctor?.name || "Attending Dentist";
 
         // 2. Clean phone number for Meta WhatsApp Cloud API (e.g. +92 314 5475528 -> 923145475528)
         let sanitizedPhone = payload.phone.replace(/[^0-9]/g, "");
@@ -45,7 +51,7 @@ export async function dispatchN8nBookingWebhook(payload: BookingWebhookPayload):
             `📋 *Appointment Details:*\n` +
             `• *Treatment:* ${payload.treatmentName}\n` +
             (payload.sessionLabel ? `• *Treatment Session:* ${payload.sessionLabel}\n` : "") +
-            `• *Attending Doctor:* ${payload.doctorName || "Dr. Sheriyaar"}\n` +
+            `• *Attending Doctor:* ${resolvedDoctor}\n` +
             `• *Date:* ${payload.date}\n` +
             `• *Time:* ${payload.time}\n` +
             (payload.patientCode ? `• *Patient Code:* #${payload.patientCode}\n` : "") +
@@ -61,7 +67,7 @@ export async function dispatchN8nBookingWebhook(payload: BookingWebhookPayload):
             appointmentId: payload.appointmentId,
             patientName: payload.patientName,
             treatmentName: payload.treatmentName,
-            doctorName: payload.doctorName || "Dr. Sheriyaar",
+            doctorName: resolvedDoctor,
             date: payload.date,
             time: payload.time,
             patientCode: payload.patientCode,

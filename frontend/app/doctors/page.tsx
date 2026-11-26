@@ -62,7 +62,7 @@ export default async function DoctorsPage() {
   let treatments = [];
   try {
     treatments = await prisma.treatment.findMany({
-      where: { isActive: true },
+      where: { isActive: true, showOnWeb: true, deletedAt: null },
       select: {
         id: true,
         name: true,

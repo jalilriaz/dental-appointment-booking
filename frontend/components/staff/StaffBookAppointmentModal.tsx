@@ -129,7 +129,7 @@ export default function StaffBookAppointmentModal({
   useEffect(() => {
     if (!open) return;
 
-    fetchApi("/api/treatments")
+    fetchApi("/api/treatments?scope=desk")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.treatments?.length) {
@@ -898,7 +898,7 @@ export default function StaffBookAppointmentModal({
                     rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="e.g. Patient prefers Chair 1, continuing root canal dressing..."
+                    placeholder="e.g. Patient prefers morning slot, continuing root canal dressing..."
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 resize-none font-medium"
                   />
                 </div>

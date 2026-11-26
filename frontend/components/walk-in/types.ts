@@ -54,6 +54,7 @@ export interface BookingForm {
     notes: string;
     patientTreatmentId?: string;
     doctorId?: string;
+    isEmergency?: boolean;
 }
 
 export interface NewPatientForm extends BookingForm {

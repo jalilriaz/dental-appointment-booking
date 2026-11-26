@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchApi } from "@/lib/api-client";
 import { performLogout } from "@/lib/logout";
+import { setPendingAppointmentSearch } from "@/lib/search-handoff";
 import {
   MenuOutlined,
   CalendarTodayOutlined,
@@ -17,8 +18,7 @@ import {
   NotificationsActiveOutlined,
   KeyboardArrowDownOutlined,
   LogoutOutlined,
-  SettingsOutlined,
-  AccountBalanceWalletOutlined,
+  LockResetOutlined,
   CheckCircleOutlineOutlined,
   CloseOutlined,
   VerifiedUserOutlined,
@@ -74,15 +74,11 @@ function getInitials(name: string): string {
 
 interface HeaderProps {
   onMenuClick: () => void;
-  collapsed?: boolean;
-  onToggleCollapse?: () => void;
   label?: string;
 }
 
 export default function Header({
   onMenuClick,
-  collapsed = false,
-  onToggleCollapse,
   label = "Admin",
 }: HeaderProps) {
   const router = useRouter();
@@ -99,6 +95,7 @@ export default function Header({
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const lastScrollY = useRef(0);
 
   const searchRef = useRef<HTMLFormElement>(null);
@@ -126,6 +123,31 @@ export default function Header({
     },
     refetchInterval: 30000,
   });
+
+  const { data: clinicProfile } = useQuery<{
+    settings?: { clinicName?: string; clinicAddress?: string };
+    doctor?: { name?: string; role?: string; image?: string | null };
+  } | null>({
+    queryKey: ["clinic-public-profile"],
+    queryFn: async () => {
+      const res = await fetchApi("/api/settings/public");
+      if (!res.ok) return null;
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  useEffect(() => {
+    const onDoctorUpdated = () => {
+      queryClient.invalidateQueries({ queryKey: ["clinic-public-profile"] });
+    };
+    window.addEventListener("doctor-profile-updated", onDoctorUpdated);
+    return () => window.removeEventListener("doctor-profile-updated", onDoctorUpdated);
+  }, [queryClient]);
+
+  const adminName = clinicProfile?.doctor?.name || currentUser?.name || "Attending Dentist";
+  const adminRole = clinicProfile?.doctor?.role || "Clinic Director";
+  const adminImage = clinicProfile?.doctor?.image || null;
 
   const isStaffMode = label === "Reception" || currentUser?.role === "STAFF";
   const staffName = currentUser?.name || "Reception Staff";
@@ -218,7 +240,8 @@ export default function Header({
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
     setSearchOpen(false);
-    router.push(`${appointmentsBasePath}?search=${encodeURIComponent(trimmed)}`);
+    setPendingAppointmentSearch(trimmed);
+    router.push(appointmentsBasePath);
   };
 
   const handleLogout = async () => {
@@ -233,9 +256,9 @@ export default function Header({
         visible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
       }`}
     >
-      <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8 gap-3 sm:gap-6">
+      <div className="flex items-center justify-between h-16 px-3 sm:px-6 lg:px-8 gap-2 sm:gap-4 lg:gap-6">
         {/* Left: Mobile Menu Trigger + Global Search */}
-        <div className="flex items-center gap-3 flex-1 max-w-xl">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 max-w-xl">
           <button
             type="button"
             onClick={onMenuClick}
@@ -270,8 +293,8 @@ export default function Header({
                   if (e.key === "Escape") setSearchOpen(false);
                 }}
                 aria-label="Search patients, appointments, treatments"
-                placeholder="Search patients, appointments, MRN, phone..."
-                className="w-full pl-10 pr-12 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200/80 focus:border-teal-500 rounded-xl text-slate-800 placeholder-slate-400 transition-all outline-hidden shadow-2xs font-medium"
+                placeholder="Search patients, appointments, MRN..."
+                className="w-full pl-10 pr-10 sm:pr-16 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200/80 focus:border-teal-500 rounded-xl text-slate-800 placeholder-slate-400 transition-all outline-hidden shadow-2xs font-medium"
               />
               {searchQuery ? (
                 <button
@@ -353,11 +376,15 @@ export default function Header({
                           const filterTerm =
                             apt.patient?.name || apt.guestName || apt.patient?.phone || searchQuery.trim();
                           return (
-                            <Link
+                            <button
                               key={apt.id}
-                              href={`${appointmentsBasePath}?search=${encodeURIComponent(filterTerm)}`}
-                              onClick={() => setSearchOpen(false)}
-                              className="flex items-center justify-between gap-3 px-4 py-2 hover:bg-teal-50/60 transition-colors"
+                              type="button"
+                              onClick={() => {
+                                setSearchOpen(false);
+                                setPendingAppointmentSearch(filterTerm);
+                                router.push(appointmentsBasePath);
+                              }}
+                              className="w-full text-left flex items-center justify-between gap-3 px-4 py-2 hover:bg-teal-50/60 transition-colors cursor-pointer"
                             >
                               <div className="flex items-center gap-2.5 min-w-0">
                                 <div className="size-7 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center shrink-0">
@@ -375,7 +402,7 @@ export default function Header({
                               <span className="text-[10px] font-bold text-teal-700 shrink-0">
                                 View →
                               </span>
-                            </Link>
+                            </button>
                           );
                         })}
                       </div>
@@ -435,7 +462,7 @@ export default function Header({
 
             {/* Notification Dropdown */}
             {notifOpen && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-88 rounded-2xl bg-white border border-slate-200 shadow-xl py-3 z-50 text-left animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="fixed inset-x-3 top-16 mt-2 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-88 rounded-2xl bg-white border border-slate-200 shadow-xl py-3 z-50 text-left animate-in fade-in slide-in-from-top-2 duration-150">
                 <div className="flex items-center justify-between px-4 pb-2 border-b border-slate-100">
                   <div className="flex items-center gap-2">
                     <NotificationsActiveOutlined sx={{ fontSize: 18, color: "#0d9488" }} />
@@ -452,20 +479,22 @@ export default function Header({
                     </div>
                   ) : (
                     notifications.map((item) => (
-                      <Link
+                      <button
                         key={item.id}
-                        href={
-                          item.searchTerm
-                            ? `${appointmentsBasePath}?search=${encodeURIComponent(item.searchTerm)}`
-                            : appointmentsBasePath
-                        }
-                        onClick={() => setNotifOpen(false)}
-                        className="block px-4 py-3 hover:bg-slate-50 transition-colors"
+                        type="button"
+                        onClick={() => {
+                          setNotifOpen(false);
+                          if (item.searchTerm) {
+                            setPendingAppointmentSearch(item.searchTerm);
+                          }
+                          router.push(appointmentsBasePath);
+                        }}
+                        className="w-full text-left block px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer"
                       >
                         <p className="text-xs font-semibold text-slate-800">{item.title}</p>
                         <p className="text-[11px] text-slate-500 mt-0.5">{item.description}</p>
                         <span className="text-[10px] text-slate-400 mt-1 block">{item.meta}</span>
-                      </Link>
+                      </button>
                     ))
                   )}
                 </div>
@@ -489,50 +518,57 @@ export default function Header({
               onClick={() => setProfileOpen(!profileOpen)}
               aria-expanded={profileOpen}
               aria-haspopup="menu"
-              className="flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1.5 rounded-xl hover:bg-slate-100/80 border border-transparent hover:border-slate-200/80 transition-all cursor-pointer"
+              className="flex items-center gap-2 p-1 sm:px-2 sm:py-1 rounded-xl hover:bg-slate-100/80 border border-transparent hover:border-slate-200/80 transition-all cursor-pointer max-w-[196px]"
             >
               {isStaffMode ? (
                 <>
                   <div className="size-8 rounded-xl bg-teal-600 text-white font-black text-xs flex items-center justify-center ring-1 ring-teal-500/30 shrink-0">
                     {getInitials(staffName)}
                   </div>
-                  <div className="hidden sm:flex flex-col text-left">
-                    <span className="text-xs font-black text-slate-900 leading-none">
+                  <div className="hidden sm:flex flex-col text-left min-w-0 max-w-[124px]">
+                    <span className="text-xs font-black text-slate-900 leading-none truncate">
                       {staffName}
                     </span>
-                    <span className="text-[10px] text-teal-700 font-bold uppercase tracking-wider leading-tight mt-0.5">
+                    <span className="text-[10px] text-teal-700 font-bold uppercase tracking-wider leading-tight mt-0.5 truncate">
                       {staffRoleLabel}
                     </span>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="relative size-8 rounded-xl overflow-hidden ring-1 ring-teal-500/30 bg-slate-900 shrink-0">
-                    <Image
-                      src="/dr_sheriyaar.webp"
-                      alt="Dr. Sheriyaar"
-                      fill
-                      className="object-cover object-top"
-                      sizes="32px"
-                    />
-                  </div>
-                  <div className="hidden sm:flex flex-col text-left">
-                    <span className="text-xs font-black text-slate-900 leading-none">
-                      Dr. Sheriyaar
+                  {adminImage && !avatarError ? (
+                    <div className="relative size-8 rounded-xl overflow-hidden ring-1 ring-teal-500/30 bg-teal-600 shrink-0">
+                      <Image
+                        src={adminImage}
+                        alt={adminName}
+                        fill
+                        onError={() => setAvatarError(true)}
+                        className="object-cover object-top"
+                        sizes="32px"
+                      />
+                    </div>
+                  ) : (
+                    <div className="size-8 rounded-xl bg-teal-600 text-white font-bold text-xs flex items-center justify-center shrink-0 ring-1 ring-teal-500/30">
+                      {getInitials(adminName)}
+                    </div>
+                  )}
+                  <div className="hidden sm:flex flex-col text-left min-w-0 max-w-[124px]">
+                    <span className="text-xs font-black text-slate-900 leading-none truncate">
+                      {adminName}
                     </span>
-                    <span className="text-[10px] text-teal-700 font-bold uppercase tracking-wider leading-tight mt-0.5">
-                      Admin · Chief Surgeon
+                    <span className="text-[10px] text-teal-700 font-bold uppercase tracking-wider leading-tight mt-0.5 truncate">
+                      Admin
                     </span>
                   </div>
                 </>
               )}
-              <KeyboardArrowDownOutlined sx={{ fontSize: 16 }} className="text-slate-400 hidden sm:block" />
+              <KeyboardArrowDownOutlined sx={{ fontSize: 16 }} className="text-slate-400 hidden sm:block shrink-0" />
             </button>
 
             {/* Profile Dropdown */}
             {profileOpen && (
               isStaffMode ? (
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl p-3 z-50 space-y-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-white border border-slate-200 shadow-xl p-3 z-50 space-y-2 animate-in fade-in slide-in-from-top-2 duration-150">
                   <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 flex items-center gap-2.5">
                     <div className="size-9 rounded-lg bg-teal-600 text-white font-black text-xs flex items-center justify-center shrink-0 border border-teal-500/40">
                       {getInitials(staffName)}
@@ -564,10 +600,10 @@ export default function Header({
                   </button>
                 </div>
               ) : (
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-white border border-slate-200 shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                   <div className="px-4 py-3 border-b border-slate-100">
-                    <p className="text-xs font-black text-slate-900">Dr. Sheriyaar</p>
-                    <p className="text-[11px] text-slate-500">Chief Dental Surgeon & Head of Implantology</p>
+                    <p className="text-xs font-black text-slate-900">{adminName}</p>
+                    <p className="text-[11px] text-slate-500">{adminRole}</p>
                     <div className="inline-flex items-center gap-1.5 mt-2 px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-[10px] font-bold text-teal-700">
                       <CheckCircleOutlineOutlined sx={{ fontSize: 12 }} />
                       <span>Administrator Access</span>
@@ -576,32 +612,12 @@ export default function Header({
 
                   <div className="py-1">
                     <Link
-                      href="/admin/settings"
+                      href="/change-password"
                       onClick={() => setProfileOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-teal-700 transition-colors"
                     >
-                      <SettingsOutlined sx={{ fontSize: 16 }} />
-                      <span>Clinic settings</span>
-                    </Link>
-
-                    <Link
-                      href="/admin/revenue"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-teal-700 transition-colors"
-                    >
-                      <AccountBalanceWalletOutlined sx={{ fontSize: 16 }} />
-                      <span>Revenue ledger</span>
-                    </Link>
-
-                    <Link
-                      href="/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-teal-700 transition-colors"
-                    >
-                      <OpenInNewOutlined sx={{ fontSize: 16 }} />
-                      <span>View public website</span>
+                      <LockResetOutlined sx={{ fontSize: 16 }} />
+                      <span>Change password</span>
                     </Link>
                   </div>
 

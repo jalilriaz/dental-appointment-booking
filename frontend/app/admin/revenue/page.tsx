@@ -1,11 +1,21 @@
-import RevenueClient from "@/components/admin/RevenueClient"
-import { getRevenueData } from "@/app/actions/revenue"
+import { requireRole } from "@/lib/auth/permissions";
+import { getKarachiDateKey } from "@/lib/format";
+import { shiftDateKey } from "@/lib/karachi-date";
+import { getAgingReport, getProfitReport } from "@/lib/data/financeReports";
+import { getAppointmentReport, getRetentionReport } from "@/lib/data/clinicalReports";
+import ReportsView from "@/features/reports/ReportsView";
 
 export default async function AdminRevenuePage() {
-  // Fetch initial data (defaulting to last 6 months to match the client state)
-  const initialData = await getRevenueData("last6Months")
+    await requireRole(["ADMIN"], { callbackUrl: "/admin/revenue" });
+    const todayKey = getKarachiDateKey(new Date());
+    const startKey = shiftDateKey(todayKey, -30);
 
-  return (
-    <RevenueClient initialData={initialData} />
-  )
+    const [profit, aging, appointments, retention] = await Promise.all([
+        getProfitReport(startKey, todayKey),
+        getAgingReport(),
+        getAppointmentReport(startKey, todayKey),
+        getRetentionReport(startKey, todayKey),
+    ]);
+
+    return <ReportsView initialData={{ profit, aging, appointments, retention }} />;
 }

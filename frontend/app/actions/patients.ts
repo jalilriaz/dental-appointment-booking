@@ -1,6 +1,8 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { requireActionRole } from "@/lib/auth/permissions";
+import { logFrontendAudit } from "@/lib/audit";
 import { generatePatientCode } from "@/lib/patientCode";
 import { normalizePhone, isValidPakistaniPhone } from "@/lib/phone";
 import { generateRandomPatientPasswordHash } from "@/lib/security";
@@ -18,6 +20,11 @@ export interface RegisterPatientInput {
 
 export async function registerNewPatient(input: RegisterPatientInput) {
     try {
+        const auth = await requireActionRole(["ADMIN", "STAFF"]);
+        if (!auth.ok) {
+            return { success: false, error: auth.error };
+        }
+
         const name = input.name?.trim();
         if (!name || name.length < 2) {
             return { success: false, error: "Patient name is required (at least 2 characters)." };
@@ -42,6 +49,19 @@ export async function registerNewPatient(input: RegisterPatientInput) {
         });
 
         if (existingByPhone) {
+            if (existingByPhone.deletedAt) {
+                return {
+                    success: false,
+                    code: "ARCHIVED_PATIENT_MATCH" as const,
+                    archivedPatient: {
+                        id: existingByPhone.id,
+                        name: existingByPhone.name,
+                        phone: existingByPhone.phone,
+                        patientCode: existingByPhone.patientCode,
+                    },
+                    error: `This phone belongs to an archived patient (${existingByPhone.name}${existingByPhone.patientCode ? ` · MRN #${existingByPhone.patientCode}` : ""}). You can restore their record instead.`,
+                };
+            }
             return {
                 success: false,
                 error: `A patient is already registered with this phone number (${existingByPhone.name || "Existing Patient"}${existingByPhone.patientCode ? ` · MRN #${existingByPhone.patientCode}` : ""}).`,
@@ -86,6 +106,14 @@ export async function registerNewPatient(input: RegisterPatientInput) {
                 medicalAlerts: input.medicalAlerts?.trim() || null,
                 address: input.address?.trim() || null,
             },
+        });
+
+        await logFrontendAudit({
+            userId: auth.user.id,
+            action: "CREATE_PATIENT",
+            entity: "User",
+            entityId: newPatient.id,
+            details: { patientCode: newPatient.patientCode },
         });
 
         revalidatePath("/admin/patients");

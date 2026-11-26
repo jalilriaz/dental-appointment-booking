@@ -1,25 +1,13 @@
 import prisma from "@/lib/prisma";
-import { cookies } from "next/headers";
-import { decrypt } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireRole } from "@/lib/auth/permissions";
 import WalkInRegistration from "@/components/admin/WalkInRegistration";
 
 export default async function WalkInPage() {
-    const cookie = (await cookies()).get("session")?.value;
-    if (!cookie) redirect("/login");
+    await requireRole(["ADMIN", "STAFF"], { callbackUrl: "/admin/walk-in" });
 
-    try {
-        const session = await decrypt(cookie);
-        if (session.role !== "ADMIN" && session.role !== "STAFF") {
-            redirect("/login");
-        }
-    } catch {
-        redirect("/login");
-    }
-
-    // Fetch active treatments from DB (attending doctor defaults implicitly to Dr. Sheriyaar Akhtar)
+    // Fetch active non-archived treatments from DB for internal triage desk
     const treatments = await prisma.treatment.findMany({
-        where: { isActive: true },
+        where: { isActive: true, deletedAt: null },
         orderBy: { name: "asc" },
         select: {
             id: true,

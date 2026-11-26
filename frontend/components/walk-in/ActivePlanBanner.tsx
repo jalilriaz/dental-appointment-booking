@@ -28,7 +28,7 @@ export default function ActivePlanBanner({ plans }: ActivePlanBannerProps) {
             {activePlans.map((plan) => {
                 const percentCompleted = Math.min(
                     100,
-                    Math.round((plan.completedSessions / (plan.totalSessions || 1)) * 100)
+                    Math.round((plan.completedSessions / Math.max(1, plan.totalSessions ?? 1)) * 100)
                 );
 
                 return (

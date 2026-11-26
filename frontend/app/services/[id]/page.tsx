@@ -36,7 +36,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const treatment = await prisma.treatment.findUnique({ where: { id } });
+  const treatment = await prisma.treatment.findFirst({ where: { id, isActive: true, showOnWeb: true, deletedAt: null } });
   if (!treatment) return { title: "Treatment Details | Elite Dental Centre" };
 
   return {
@@ -64,10 +64,10 @@ export default async function ServiceDetailPage({
   const { id } = await params;
   const [treatment, allTreatments] = await Promise.all([
     prisma.treatment.findUnique({ where: { id } }),
-    prisma.treatment.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
+    prisma.treatment.findMany({ where: { isActive: true, showOnWeb: true, deletedAt: null }, orderBy: { name: "asc" } }),
   ]);
 
-  if (!treatment || !treatment.isActive) {
+  if (!treatment || !treatment.isActive || !treatment.showOnWeb || treatment.deletedAt) {
     notFound();
   }
 

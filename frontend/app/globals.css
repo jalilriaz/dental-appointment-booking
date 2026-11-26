@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@source "../features";
+@source "../components";
+@source "../app";
 
 html,
 body {
@@ -55,16 +58,18 @@ body {
 :root {
   --radius: 0.625rem;
 
-  /* Daylight Clinical Porcelain Canvas */
-  --background: hsl(210 40% 98%);
-  /* #F8FAFC */
+  /* Warm Off-White SaaS Canvas */
+  --background: hsl(40 16% 97%);
   --foreground: hsl(222 47% 11%);
-  /* #0F172A deep slate navy */
 
-  /* Cards: pure white clinical surfaces */
+  /* Cards: crisp white panels with hairline border */
   --card: hsl(0 0% 100%);
-  /* #FFFFFF */
   --card-foreground: hsl(222 47% 11%);
+
+  /* Champagne / Gold subtle accent */
+  --accent-gold: #b68a47;
+  --accent-gold-soft: #fbf7ef;
+  --accent-gold-border: #eadbc1;
 
   /* Popovers & Modals */
   --popover: hsl(0 0% 100%);
@@ -579,4 +584,13 @@ input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
 
 .animate-tooth-float {
   animation: tooth-float-3d 5.5s ease-in-out infinite;
+}
+
+@media print {
+  aside, header, .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
 }

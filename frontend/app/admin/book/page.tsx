@@ -1,22 +1,9 @@
 import prisma from "@/lib/prisma";
-import { cookies } from "next/headers";
-import { decrypt } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireRole } from "@/lib/auth/permissions";
 import DeskBookingClient from "@/components/shared/DeskBookingClient";
 
 export default async function AdminBookPage() {
-    const cookie = (await cookies()).get("session")?.value;
-    if (!cookie) redirect("/login");
-
-    let session;
-    try {
-        session = await decrypt(cookie);
-        if (session.role !== "ADMIN") {
-            redirect("/login");
-        }
-    } catch {
-        redirect("/login");
-    }
+    await requireRole(["ADMIN"], { callbackUrl: "/admin/book" });
 
     // Fetch all patients
     const patients = await prisma.user.findMany({
@@ -32,7 +19,7 @@ export default async function AdminBookPage() {
 
     // Fetch treatments
     const treatments = await prisma.treatment.findMany({
-        where: { isActive: true },
+        where: { isActive: true, deletedAt: null },
         orderBy: { name: "asc" },
     });
 

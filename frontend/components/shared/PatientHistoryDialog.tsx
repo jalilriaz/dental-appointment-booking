@@ -156,7 +156,7 @@ export default function PatientHistoryDialog({
     // Fetch active treatments for booking and treatment plan creation
     useEffect(() => {
         if (!open) return;
-        fetchApi("/api/treatments")
+        fetchApi("/api/treatments?scope=desk")
             .then((res) => res.json())
             .then((data) => {
                 if (data.treatments) {
@@ -219,7 +219,7 @@ export default function PatientHistoryDialog({
                                 className="bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs h-9 px-3.5 rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
                             >
                                 <CalendarMonthOutlinedIcon sx={{ fontSize: 15 }} />
-                                <span>+ Book Visit</span>
+                                <span>Book Visit</span>
                             </Button>
                         </div>
                     </div>
@@ -230,8 +230,8 @@ export default function PatientHistoryDialog({
                             <button
                                 onClick={() => setActiveTab("plans")}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "plans"
-                                        ? "bg-teal-600 text-white shadow-xs"
-                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                    ? "bg-teal-600 text-white shadow-xs"
+                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                                     }`}
                             >
                                 <AutoAwesomeOutlinedIcon className="size-3.5" />
@@ -240,8 +240,8 @@ export default function PatientHistoryDialog({
                             <button
                                 onClick={() => setActiveTab("appointments")}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "appointments"
-                                        ? "bg-teal-600 text-white shadow-xs"
-                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                    ? "bg-teal-600 text-white shadow-xs"
+                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                                     }`}
                             >
                                 <CalendarMonthOutlinedIcon className="size-3.5" />
@@ -250,8 +250,8 @@ export default function PatientHistoryDialog({
                             <button
                                 onClick={() => setActiveTab("payments")}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "payments"
-                                        ? "bg-teal-600 text-white shadow-xs"
-                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                    ? "bg-teal-600 text-white shadow-xs"
+                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                                     }`}
                             >
                                 <CreditCardOutlinedIcon className="size-3.5" />
@@ -271,7 +271,7 @@ export default function PatientHistoryDialog({
                                         className="h-8 px-3 rounded-lg border-teal-300 text-teal-800 hover:bg-teal-50 text-xs font-bold shadow-2xs flex items-center gap-1 cursor-pointer"
                                     >
                                         <AddOutlinedIcon sx={{ fontSize: 14 }} />
-                                        <span>+ New Treatment Plan</span>
+                                        <span>New Treatment Plan</span>
                                     </Button>
                                 }
                             />
@@ -322,14 +322,14 @@ export default function PatientHistoryDialog({
                                                             <div className="flex items-center gap-2">
                                                                 <h4 className="text-base font-bold text-slate-900">{plan.treatment.name}</h4>
                                                                 <Badge variant="outline" className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${plan.clinicalStatus === "COMPLETED"
-                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                                        : "bg-blue-50 text-blue-700 border-blue-200"
+                                                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                                                    : "bg-blue-50 text-blue-700 border-blue-200"
                                                                     }`}>
                                                                     {plan.clinicalStatus.replace("_", " ")}
                                                                 </Badge>
                                                                 <Badge variant="outline" className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${isPaid
-                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                                        : "bg-amber-50 text-amber-800 border-amber-200"
+                                                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                                                    : "bg-amber-50 text-amber-800 border-amber-200"
                                                                     }`}>
                                                                     {isPaid ? "Fully Paid" : "Partial Payment"}
                                                                 </Badge>
@@ -412,8 +412,8 @@ export default function PatientHistoryDialog({
                                                                                 {format(new Date(apt.startTime), "MMM d, yyyy h:mm a")}
                                                                             </span>
                                                                             <Badge variant="outline" className={`text-[9px] uppercase px-1.5 py-0 font-bold rounded ${apt.status === "COMPLETED" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                                                                                    apt.status === "SCHEDULED" ? "bg-blue-50 text-blue-700 border-blue-200" :
-                                                                                        "bg-slate-100 text-slate-600 border-slate-200"
+                                                                                apt.status === "SCHEDULED" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                                                                                    "bg-slate-100 text-slate-600 border-slate-200"
                                                                                 }`}>
                                                                                 {apt.status}
                                                                             </Badge>
@@ -445,7 +445,7 @@ export default function PatientHistoryDialog({
                                             className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-7 px-2.5 rounded-lg shadow-2xs transition-all active:scale-[0.98] flex items-center gap-1 cursor-pointer"
                                         >
                                             <CalendarMonthOutlinedIcon sx={{ fontSize: 13 }} />
-                                            <span>+ Book Visit</span>
+                                            <span>Book Visit</span>
                                         </Button>
                                     </div>
                                     {history.appointments.length === 0 ? (

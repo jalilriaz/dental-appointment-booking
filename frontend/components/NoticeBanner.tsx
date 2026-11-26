@@ -14,6 +14,7 @@ export interface ActiveHoliday {
 
 export default function NoticeBanner() {
     const [holiday, setHoliday] = useState<ActiveHoliday | null>(null);
+    const [announcement, setAnnouncement] = useState<string>("");
 
     useEffect(() => {
         let isMounted = true;
@@ -23,6 +24,10 @@ export default function NoticeBanner() {
                 if (!res.ok) return;
                 const data = await res.json();
                 if (!isMounted) return;
+
+                if (data.settings?.publicContent?.announcementEnabled && data.settings?.publicContent?.announcementText) {
+                    setAnnouncement(String(data.settings.publicContent.announcementText));
+                }
 
                 if (data.activeHolidays && data.activeHolidays.length > 0) {
                     const todayStr = new Date().toISOString().split("T")[0];
@@ -52,7 +57,7 @@ export default function NoticeBanner() {
         };
     }, []);
 
-    if (!holiday) return null;
+    if (!holiday && !announcement) return null;
 
     const formatDateDisplay = (dateStr: string) => {
         try {
@@ -64,8 +69,8 @@ export default function NoticeBanner() {
         }
     };
 
-    const startDisplay = formatDateDisplay(holiday.startDate);
-    const endDisplay = formatDateDisplay(holiday.endDate);
+    const startDisplay = holiday ? formatDateDisplay(holiday.startDate) : "";
+    const endDisplay = holiday ? formatDateDisplay(holiday.endDate) : "";
     const dateRangeLabel =
         startDisplay === endDisplay ? startDisplay : `${startDisplay} – ${endDisplay}`;
 
@@ -93,14 +98,20 @@ export default function NoticeBanner() {
 
                     {/* Announcement Text */}
                     <p className="text-[11px] sm:text-xs font-semibold text-amber-50 truncate sm:overflow-visible drop-shadow-xs">
-                        Closed for <strong className="font-black text-white">{holiday.title}</strong>
-                        <span className="text-amber-100 font-extrabold ml-1.5 bg-black/30 border border-white/20 px-2 py-0.5 rounded-md inline-block shadow-2xs">
-                            {dateRangeLabel}
-                        </span>
-                        {holiday.reason && (
-                            <span className="text-amber-100/90 font-medium ml-2 hidden md:inline">
-                                — {holiday.reason}
-                            </span>
+                        {holiday ? (
+                            <>
+                                Closed for <strong className="font-black text-white">{holiday.title}</strong>
+                                <span className="text-amber-100 font-extrabold ml-1.5 bg-black/30 border border-white/20 px-2 py-0.5 rounded-md inline-block shadow-2xs">
+                                    {dateRangeLabel}
+                                </span>
+                                {holiday.reason && (
+                                    <span className="text-amber-100/90 font-medium ml-2 hidden md:inline">
+                                        — {holiday.reason}
+                                    </span>
+                                )}
+                            </>
+                        ) : (
+                            <span className="font-semibold text-white">{announcement}</span>
                         )}
                     </p>
                 </div>

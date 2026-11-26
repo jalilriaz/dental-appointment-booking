@@ -3,6 +3,7 @@ import prisma from '../lib/prisma';
 import { requireAuth, requireRole } from '../middleware/auth.middleware';
 import { z } from 'zod';
 import { logger } from '../lib/logger';
+import { logAudit } from '../lib/audit';
 
 const router = Router();
 
@@ -16,10 +17,10 @@ const doctorCreateSchema = z.object({
     qualifications: cleanString('BDS'),
     experience: cleanString('Qualified Practitioner'),
     specialty: cleanString('General Dental Surgery & Care'),
-    operatory: cleanString('Chair 1 · Surgical Suite A'),
+    operatory: cleanString('Main Operatory'),
     schedule: cleanString('Mon – Fri: 12:00 PM – 8:00 PM'),
     consultationFee: z.coerce.number().int().min(0).default(2000),
-    image: cleanString('/dr_sheriyaar.webp'),
+    image: cleanString(''),
     isLead: z.boolean().optional().default(false),
     isActive: z.boolean().optional().default(true),
 });
@@ -161,6 +162,16 @@ router.delete('/:id', requireAuth, requireRole('ADMIN'), async (req: Request, re
 
         await prisma.doctor.delete({ where: { id } });
         logger.info(`Doctor deleted: ${doctor.name} (${doctor.id})`);
+        if (req.user) {
+            await logAudit({
+                userId: req.user.id,
+                action: 'DELETE_DOCTOR',
+                entity: 'Doctor',
+                entityId: id,
+                details: { name: doctor.name },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+            });
+        }
         return res.json({ success: true, message: `Doctor ${doctor.name} successfully deleted.` });
     } catch (error) {
         logger.error({ err: error }, 'Failed to delete doctor');

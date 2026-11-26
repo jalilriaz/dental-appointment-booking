@@ -21,6 +21,7 @@ import {
 import PatientHistoryDialog from "@/components/shared/PatientHistoryDialog";
 import CheckoutDialog from "@/components/shared/CheckoutDialog";
 import SendPrecautionsModal from "@/components/shared/SendPrecautionsModal";
+import MedicalAlertBanner from "@/components/shared/MedicalAlertBanner";
 import ReceiptDialog from "@/components/admin/ReceiptDialog";
 import { buildAppointmentReceiptData } from "@/lib/receipt";
 import { Button } from "@/components/ui/button";
@@ -169,7 +170,7 @@ export default function TodayAppointments({
               ? {
                 id: "new-plan",
                 totalCost: options.packageCost,
-                totalSessions: options.totalSessions || 1,
+                totalSessions: options.totalSessions ?? 1,
                 clinicalStatus: "IN_PROGRESS",
                 financialStatus: collected >= options.packageCost ? "FULLY_PAID" : "PARTIAL",
                 payments:
@@ -301,7 +302,7 @@ export default function TodayAppointments({
 
                   {/* Patient + Treatment */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-bold text-slate-900 truncate flex items-center gap-2">
                         {apt.guestName || apt.patient?.name || "Unknown Patient"}
                         {(apt.patient as any)?.noShowCount > 0 && (
@@ -314,6 +315,7 @@ export default function TodayAppointments({
                           </span>
                         )}
                       </p>
+                      <MedicalAlertBanner variant="badge" alerts={apt.patient?.medicalAlerts} />
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-xs text-slate-600 truncate">

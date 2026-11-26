@@ -142,7 +142,7 @@ export default function RegisteredPatientWorkspace({
             if (res.ok) {
                 const data = await res.json();
                 setResults(data.patients || []);
-                setTotalPages(data.totalPages || data.pagination?.totalPages || 1);
+                setTotalPages(Math.max(1, Number(data.totalPages ?? data.pagination?.totalPages ?? 1)));
                 setTotalPatients(data.total ?? data.pagination?.total ?? 0);
             }
         } catch (err) {
@@ -232,6 +232,7 @@ export default function RegisteredPatientWorkspace({
                     treatmentId: bookingForm.treatmentId,
                     patientTreatmentId: bookingForm.patientTreatmentId,
                     notes: bookingForm.notes || undefined,
+                    isEmergency: Boolean(bookingForm.isEmergency),
                 }),
             });
             const data = await res.json();

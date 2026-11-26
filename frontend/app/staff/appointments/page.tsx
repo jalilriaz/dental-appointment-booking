@@ -1,7 +1,5 @@
 import prisma from "@/lib/prisma";
-import { cookies } from "next/headers";
-import { decrypt } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireRole } from "@/lib/auth/permissions";
 import { AppointmentsSkeleton } from "@/components/LoadingSpinner";
 import AppointmentsTable from "@/components/appointments/AppointmentsTable";
 import { Suspense } from "react";
@@ -10,32 +8,16 @@ import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import StaffBookAppointmentButton from "@/components/staff/StaffBookAppointmentButton";
 
 import { startOfDay, endOfDay } from "date-fns";
-import { buildAppointmentSearchOr } from "@/lib/appointment-search";
 
 export default async function StaffAppointmentsPage({
     searchParams,
 }: {
-    searchParams: Promise<{ status?: string; filter?: string; search?: string }>;
+    searchParams: Promise<{ status?: string; filter?: string }>;
 }) {
-    const cookie = (await cookies()).get("session")?.value;
-    if (!cookie) redirect("/login?callbackUrl=/staff/appointments");
+    const session = await requireRole(["ADMIN", "STAFF"], { callbackUrl: "/staff/appointments" });
 
-    let session;
-    try {
-        session = await decrypt(cookie);
-        if (session.role !== "STAFF" && session.role !== "ADMIN") {
-            redirect("/login");
-        }
-    } catch {
-        redirect("/login");
-    }
-
-    const { status, filter, search } = await searchParams;
+    const { status, filter } = await searchParams;
     const where: any = {};
-
-    if (search && search.trim()) {
-        where.OR = buildAppointmentSearchOr(search);
-    }
 
     if (status) {
         where.status = status;
@@ -65,7 +47,7 @@ export default async function StaffAppointmentsPage({
     const appointments = await prisma.appointment.findMany({
         where,
         include: {
-            patient: { select: { id: true, name: true, email: true, phone: true, patientCode: true } },
+            patient: { select: { id: true, name: true, email: true, phone: true, patientCode: true, medicalAlerts: true } },
             treatment: { select: { id: true, name: true, price: true, durationMin: true } },
             doctor: { select: { id: true, name: true, role: true, operatory: true, isLead: true } },
             patientTreatment: {
@@ -126,8 +108,7 @@ export default async function StaffAppointmentsPage({
             <Suspense fallback={<AppointmentsSkeleton />}>
                 <AppointmentsTable
                     appointments={serialized}
-                    userRole={session.role as string}
-                    initialSearch={search || ""}
+                    userRole={session.role}
                 />
             </Suspense>
         </div>

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma"
+import { requireRole } from "@/lib/auth/permissions"
 import { Suspense } from "react"
 import AppointmentsTable from "@/components/appointments/AppointmentsTable"
 import { AppointmentsSkeleton } from "@/components/LoadingSpinner"
@@ -7,22 +8,19 @@ import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlin
 
 import { startOfDay, endOfDay } from "date-fns"
 import { expirePastAppointments } from "@/lib/appointment-status"
-import { buildAppointmentSearchOr } from "@/lib/appointment-search"
 
 export default async function AdminAppointmentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; filter?: string; search?: string }>
+  searchParams: Promise<{ status?: string; filter?: string }>
 }) {
+  await requireRole(["ADMIN"], { callbackUrl: "/admin/appointments" })
+
   // Auto catch-up: expire any past unattended appointments before rendering table
   await expirePastAppointments()
 
-  const { status, filter, search } = await searchParams
+  const { status, filter } = await searchParams
   const where: any = {}
-
-  if (search && search.trim()) {
-    where.OR = buildAppointmentSearchOr(search)
-  }
 
   if (status) {
     where.status = status
@@ -44,7 +42,7 @@ export default async function AdminAppointmentsPage({
   const appointments = await prisma.appointment.findMany({
     where,
     include: {
-      patient: { select: { id: true, name: true, email: true, phone: true, patientCode: true, gender: true, dateOfBirth: true } },
+      patient: { select: { id: true, name: true, email: true, phone: true, patientCode: true, gender: true, dateOfBirth: true, medicalAlerts: true } },
       treatment: {
         select: { id: true, name: true, price: true, durationMin: true },
       },
@@ -116,7 +114,7 @@ export default async function AdminAppointmentsPage({
         </Link>
       </div>
       <Suspense fallback={<AppointmentsSkeleton />}>
-        <AppointmentsTable appointments={serialized} initialSearch={search || ""} />
+        <AppointmentsTable appointments={serialized} />
       </Suspense>
     </div>
   )

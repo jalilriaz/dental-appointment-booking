@@ -1,6 +1,6 @@
 /**
  * Centralized WhatsApp Link Generator for Elite Dental Centre.
- * Clinic WhatsApp: +92 314 5475528 (Dr. Shehryar Akhtar)
+ * Clinic WhatsApp: +92 314 5475528
  */
 
 export const CLINIC_WHATSAPP_NUMBER = "923145475528";
@@ -12,10 +12,10 @@ export const CLINIC_PHONE_DISPLAY = "+92 314 5475528";
  */
 export function getWhatsAppBookingUrl(treatmentName?: string, customNote?: string): string {
   let message =
-    "Hello Elite Dental Centre, I would like to book an appointment with Dr. Shehryar Akhtar. Please guide me on available slots.";
+    "Hello Elite Dental Centre, I would like to book a dental appointment. Please guide me on available slots.";
 
   if (treatmentName && treatmentName.trim().length > 0) {
-    message = `Hello Elite Dental Centre, I would like to book an appointment for ${treatmentName.trim()} with Dr. Shehryar Akhtar.`;
+    message = `Hello Elite Dental Centre, I would like to book an appointment for ${treatmentName.trim()}.`;
   }
 
   if (customNote && customNote.trim().length > 0) {

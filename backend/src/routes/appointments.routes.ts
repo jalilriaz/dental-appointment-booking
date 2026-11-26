@@ -2,12 +2,20 @@ import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { z } from 'zod';
 import { logger } from '../lib/logger';
+import { logAudit } from '../lib/audit';
 import { requireAuth, requireRole, optionalAuth } from '../middleware/auth.middleware';
 import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from '../lib/googleCalendar';
 import { sendAppointmentConfirmationEmail, sendAppointmentRescheduleEmail } from '../lib/email';
 import { normalizePhone } from '../lib/phone';
 import { isSundayInKarachi, parseKarachiDateTime, getKarachiDayBoundaries } from '../lib/timezone';
 import { createAppointment } from '../lib/bookingService';
+import { checkDoctorAvailability } from '../lib/doctorAvailability';
+import {
+    exceedsMaxBookingHorizon,
+    hasBufferCollision,
+    isOverlappingBreak,
+    violatesAdvanceNotice,
+} from '../lib/bookingRules';
 import { generateRandomPatientPasswordHash } from '../lib/security';
 import {
     getPrecautionsForTreatment,
@@ -17,16 +25,19 @@ import {
 } from '../lib/precautions';
 import { ALL_TREATMENTS } from '../lib/treatmentsData';
 
-async function resolveTreatment(treatmentId?: string) {
+async function resolveTreatment(treatmentId?: string, publicOnly = false) {
     if (!treatmentId) return null;
-    let treatment = await prisma.treatment.findUnique({
-        where: { id: treatmentId },
+    const vis = publicOnly
+        ? { isActive: true, showOnWeb: true, deletedAt: null }
+        : { isActive: true, deletedAt: null };
+    let treatment = await prisma.treatment.findFirst({
+        where: { id: treatmentId, ...vis },
     });
     if (!treatment) {
         const mock = ALL_TREATMENTS.find((t) => t.id === treatmentId);
         if (mock) {
             treatment = await prisma.treatment.findFirst({
-                where: { name: { equals: mock.name, mode: 'insensitive' } },
+                where: { name: { equals: mock.name, mode: 'insensitive' }, ...vis },
             });
         }
     }
@@ -94,7 +105,7 @@ const bookingSchema = z.object({
 });
 
 // GET /api/appointments/availability
-router.get('/availability', async (req: Request, res: Response) => {
+router.get('/availability', optionalAuth, async (req: Request, res: Response) => {
     try {
         const { date, treatmentId, excludeAppointmentId } = req.query as {
             date?: string;
@@ -144,10 +155,32 @@ router.get('/availability', async (req: Request, res: Response) => {
             });
         }
 
+        const docCheck = await checkDoctorAvailability(date);
+        if (!docCheck.available) {
+            return res.json({
+                slots: [],
+                dayOff: true,
+                reason: docCheck.reason || 'Doctor is currently unavailable.',
+            });
+        }
+
+        const maxHorizon = settings?.maxBookingDaysAhead ?? 60;
+        if (exceedsMaxBookingHorizon(date, maxHorizon)) {
+            return res.json({
+                slots: [],
+                dayOff: true,
+                reason: `Advance booking window is ${maxHorizon} days.`,
+            });
+        }
+
         let treatmentDuration = 30;
         if (treatmentId) {
-            const treatment = await resolveTreatment(treatmentId);
-            if (treatment && treatment.durationMin) treatmentDuration = treatment.durationMin;
+            const publicOnly = !req.user || (req.user.role !== 'ADMIN' && req.user.role !== 'STAFF');
+            const treatment = await resolveTreatment(treatmentId, publicOnly);
+            if (!treatment) {
+                return res.status(404).json({ error: 'Selected treatment is not available' });
+            }
+            if (treatment.durationMin) treatmentDuration = treatment.durationMin;
         }
 
         const workStart = settings?.workDayStart || '12:00';
@@ -175,6 +208,9 @@ router.get('/availability', async (req: Request, res: Response) => {
         const workEndMin = endH * 60 + endM;
 
         const now = new Date();
+        const isInternal = Boolean(req.user && ['ADMIN', 'STAFF'].includes(req.user.role));
+        const bufferMin = settings?.bufferMin ?? 0;
+        const advanceNoticeMin = settings?.advanceNoticeMin ?? 60;
 
         // Increment through the work day by the slot interval (default 30 min)
         for (let min = workStartMin; min < workEndMin; min += slotIncrement) {
@@ -182,17 +218,15 @@ router.get('/availability', async (req: Request, res: Response) => {
             const slotM = min % 60;
             const slotEndMin = min + treatmentDuration;
 
-            // If the full treatment cannot be completed before closing time, omit the slot
+            // If the full treatment cannot be completed before closing time or hits break window, omit the slot
             if (slotEndMin > workEndMin) continue;
+            if (isOverlappingBreak(min, slotEndMin, settings?.breakStart, settings?.breakEnd)) continue;
 
             const timeStr = `${slotH.toString().padStart(2, '0')}:${slotM.toString().padStart(2, '0')}`;
             const slotStartTime = parseKarachiDateTime(date, timeStr);
             const slotEndTime = new Date(slotStartTime.getTime() + treatmentDuration * 60000);
 
-            // True dynamic collision check: [slotStartTime, slotEndTime] overlaps existing non-cancelled appointment
-            const isOccupied = existingAppointments.some((apt) => {
-                return apt.startTime < slotEndTime && apt.endTime > slotStartTime;
-            });
+            const isOccupied = hasBufferCollision(slotStartTime, slotEndTime, existingAppointments, bufferMin);
 
             const period = slotH >= 12 ? 'PM' : 'AM';
             const displayH = slotH === 0 ? 12 : slotH > 12 ? slotH - 12 : slotH;
@@ -205,12 +239,13 @@ router.get('/availability', async (req: Request, res: Response) => {
             const endLabel = `${endDisplayH}:${endTimeM.toString().padStart(2, '0')} ${endPeriod}`;
 
             const isPast = slotStartTime.getTime() <= now.getTime();
+            const tooSoon = !isInternal && violatesAdvanceNotice(slotStartTime, now, advanceNoticeMin);
 
             slots.push({
                 value: timeStr,
                 label,
                 endLabel,
-                available: !isOccupied && !isPast,
+                available: !isOccupied && !isPast && !tooSoon,
             });
         }
 
@@ -452,6 +487,16 @@ router.post('/', optionalAuth, async (req: Request, res: Response) => {
         const { treatmentId, date, time, notes, newPatient, guestName, guestPhone, guestEmail, guestDob } =
             validationResult.data;
 
+        if (
+            bookerRole !== 'ADMIN' &&
+            bookerRole !== 'STAFF' &&
+            (validationResult.data.patientId || body?.patientId !== undefined || newPatient)
+        ) {
+            return res.status(403).json({
+                error: 'Forbidden: Unauthenticated or patient callers cannot specify patientId or newPatient',
+            });
+        }
+
         if (!session && (!guestName || !guestPhone)) {
             return res.status(400).json({ error: 'Name and phone number are required to book' });
         }
@@ -486,6 +531,7 @@ router.post('/', optionalAuth, async (req: Request, res: Response) => {
             time,
             bookedBy,
             notes,
+            isEmergency: (bookerRole === 'STAFF' || bookerRole === 'ADMIN') ? Boolean(body.isEmergency) : false,
         });
 
         if (!bookingResult.success) {
@@ -510,17 +556,36 @@ router.post('/', optionalAuth, async (req: Request, res: Response) => {
 // GET /api/appointments/:id
 router.get('/:id', requireAuth, async (req: Request, res: Response) => {
     try {
+        const userRole = req.user?.role;
+        const isClinicStaff = userRole === 'ADMIN' || userRole === 'STAFF';
+
         const appointment = await prisma.appointment.findUnique({
             where: { id: req.params.id },
             include: {
                 treatment: true,
-                patient: true,
-                clinicalNotes: true,
+                patient: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
+                        patientCode: true,
+                        gender: true,
+                        dateOfBirth: true,
+                        ...(isClinicStaff ? { medicalAlerts: true } : {}),
+                    },
+                },
+                ...(isClinicStaff ? { clinicalNotes: { orderBy: { createdAt: 'desc' } } } : {}),
             },
         });
         if (!appointment) {
             return res.status(404).json({ error: 'Appointment not found' });
         }
+
+        if (!isClinicStaff && appointment.patientId !== req.user?.id) {
+            return res.status(403).json({ error: 'Forbidden: You may only view your own appointments' });
+        }
+
         return res.json({ appointment });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to fetch appointment' });
@@ -533,7 +598,7 @@ router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), async (r
         const { id } = req.params;
         const { status, amountPaid, price, discount } = req.body;
 
-        const validStatuses = ['SCHEDULED', 'COMPLETED', 'CANCELLED', 'Not_Visited', 'RESCHEDULED'];
+        const validStatuses = ['SCHEDULED', 'ARRIVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'Not_Visited', 'RESCHEDULED'];
         if (!status || !validStatuses.includes(status)) {
             return res.status(400).json({
                 error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
@@ -547,6 +612,22 @@ router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), async (r
 
         if (!existingAppointment) {
             return res.status(404).json({ error: 'Appointment not found' });
+        }
+
+        const allowedTransitions: Record<string, string[]> = {
+            SCHEDULED: ['ARRIVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'Not_Visited', 'RESCHEDULED'],
+            RESCHEDULED: ['ARRIVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'Not_Visited', 'RESCHEDULED'],
+            ARRIVED: ['IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'Not_Visited', 'SCHEDULED'],
+            IN_PROGRESS: ['COMPLETED', 'CANCELLED', 'Not_Visited'],
+            COMPLETED: ['COMPLETED'],
+            CANCELLED: ['SCHEDULED'],
+            Not_Visited: ['SCHEDULED', 'RESCHEDULED'],
+        };
+        const allowed = allowedTransitions[existingAppointment.status] || [];
+        if (status !== existingAppointment.status && !allowed.includes(status)) {
+            return res.status(400).json({
+                error: `Cannot transition appointment from ${existingAppointment.status} to ${status}`,
+            });
         }
 
         let updateData: any = {
@@ -608,6 +689,22 @@ router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), async (r
             })();
         }
 
+        if (req.user) {
+            await logAudit({
+                userId: req.user.id,
+                action: status === 'CANCELLED' ? 'CANCEL_APPOINTMENT' : `APPOINTMENT_${status}`,
+                entity: 'Appointment',
+                entityId: id,
+                details: {
+                    previousStatus: existingAppointment.status,
+                    newStatus: status,
+                    amountPaid: appointment.amountPaid,
+                    discount: appointment.discount,
+                },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+            });
+        }
+
         return res.json({
             success: true,
             appointment,
@@ -655,6 +752,17 @@ router.patch('/:id/reschedule', requireAuth, requireRole('ADMIN', 'STAFF'), asyn
                 );
             }
 
+            if (req.user) {
+                await logAudit({
+                    userId: req.user.id,
+                    action: 'CANCEL_APPOINTMENT',
+                    entity: 'Appointment',
+                    entityId: id,
+                    details: { previousStatus: existingApt.status },
+                    ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+                });
+            }
+
             return res.json({
                 success: true,
                 appointment: updatedApt,
@@ -682,6 +790,11 @@ router.patch('/:id/reschedule', requireAuth, requireRole('ADMIN', 'STAFF'), asyn
 
         if (existingApt.status === 'CANCELLED') {
             return res.status(400).json({ error: 'Cannot reschedule a cancelled appointment' });
+        }
+
+        const docCheck = await checkDoctorAvailability(date, existingApt.doctorId);
+        if (!docCheck.available) {
+            return res.status(400).json({ error: docCheck.reason || 'Doctor is unavailable on this date' });
         }
 
         const [timeH, timeM] = time.split(':').map(Number);
@@ -776,12 +889,35 @@ router.patch('/:id/reschedule', requireAuth, requireRole('ADMIN', 'STAFF'), asyn
             ).catch((err) => console.error('Failed to send reschedule email:', err));
         }
 
+        if (req.user) {
+            await logAudit({
+                userId: req.user.id,
+                action: 'RESCHEDULE_APPOINTMENT',
+                entity: 'Appointment',
+                entityId: id,
+                details: {
+                    previousStartTime: existingApt.startTime.toISOString(),
+                    newStartTime: newStartTime.toISOString(),
+                },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+            });
+        }
+
         return res.json({
             success: true,
             appointment: updatedApt,
             message: `Appointment rescheduled to ${newStartTime.toLocaleDateString()} at ${newStartTime.toLocaleTimeString()}`,
         });
-    } catch (error) {
+    } catch (error: any) {
+        const isOverlapExclusion =
+            error?.code === '23P01' ||
+            error?.meta?.code === '23P01' ||
+            String(error?.message || '').includes('Appointment_no_overlap_active');
+        if (isOverlapExclusion) {
+            return res.status(409).json({
+                error: 'This time slot is already booked. Please choose another time.',
+            });
+        }
         console.error('Reschedule appointment error:', error);
         return res.status(500).json({
             error: error instanceof Error ? error.message : 'Failed to process appointment update',
@@ -870,7 +1006,7 @@ router.get('/:id/send-precautions', requireAuth, requireRole('ADMIN', 'STAFF'), 
             patientName,
             treatmentName: appointment.treatment.name,
             precautions: precautionsList,
-            doctorName: 'Dr. Sheriyaar',
+            doctorName: 'Attending Dentist',
         });
 
         const whatsappUrl = generateWhatsAppDeepLink(patientPhone, message);
@@ -922,7 +1058,7 @@ router.post('/:id/send-precautions', requireAuth, requireRole('ADMIN', 'STAFF'),
             patientName,
             treatmentName: appointment.treatment.name,
             precautions: precautionsList,
-            doctorName: 'Dr. Sheriyaar',
+            doctorName: 'Attending Dentist',
         });
 
         const result = await dispatchN8nPrecautionsWebhook({

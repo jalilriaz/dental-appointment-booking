@@ -1,13 +1,19 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { StatusConfig } from "@/lib/types"
+import {
+  formatPKR as formatPKRCore,
+  formatKarachiDate,
+  formatKarachiTime,
+} from "@/lib/format"
+import { APPT_STATUS_META } from "@/lib/constants/status"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
 export function formatPKR(amount: number) {
-  return `Rs. ${amount.toLocaleString("en-PK")}`;
+  return formatPKRCore(amount);
 }
 
 /** Converts a number into words for clinical receipts & invoices (e.g. 95000 -> "Ninety-Five Thousand Rupees Only") */
@@ -61,25 +67,17 @@ export function formatPriceRange(minPrice: number, maxPrice?: number | null): st
   return `Rs. ${minFormatted} – ${maxPrice.toLocaleString("en-PK")}`;
 }
 
-/** Format a date string/Date to a human-readable date. */
+/** Format a date string/Date to a human-readable date in Asia/Karachi. */
 export function formatDate(
   date: string | Date,
   style: "short" | "medium" | "long" | "month-year" = "medium"
 ): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const opts: Record<string, Intl.DateTimeFormatOptions> = {
-    short: { month: "short", day: "numeric" },
-    medium: { month: "short", day: "numeric", year: "numeric" },
-    long: { weekday: "long", month: "long", day: "numeric", year: "numeric" },
-    "month-year": { month: "short", year: "numeric" },
-  };
-  return d.toLocaleDateString("en-PK", opts[style]);
+  return formatKarachiDate(date, style);
 }
 
-/** Format a date string/Date to a human-readable time (e.g. "2:30 PM"). */
+/** Format a date string/Date to a human-readable time in Asia/Karachi. */
 export function formatTime(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleTimeString("en-PK", { hour: "numeric", minute: "2-digit", hour12: true });
+  return formatKarachiTime(date);
 }
 
 /** Format a date string/Date to "Mar 9, 2026, 2:30 PM". */
@@ -87,22 +85,17 @@ export function formatDateTime(date: string | Date): string {
   return `${formatDate(date, "medium")}, ${formatTime(date)}`;
 }
 
-export const statusColors: Record<string, string> = {
-  SCHEDULED: "bg-sky-50 text-sky-700 border border-sky-200",
-  RESCHEDULED: "bg-teal-50 text-teal-700 border border-teal-200",
-  COMPLETED: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  CANCELLED: "bg-rose-50 text-rose-700 border border-rose-200",
-  Not_Visited: "bg-amber-50 text-amber-800 border border-amber-200",
-};
+export const statusColors: Record<string, string> = Object.fromEntries(
+  Object.entries(APPT_STATUS_META).map(([key, meta]) => [key, meta.badgeClass])
+);
 
 /** Rich status config with label, text color, and badge background. */
-export const statusConfig: Record<string, StatusConfig> = {
-  SCHEDULED: { label: "Scheduled", color: "text-blue-700", bg: "badge-scheduled" },
-  COMPLETED: { label: "Checked Out", color: "text-emerald-700", bg: "badge-completed" },
-  CANCELLED: { label: "Cancelled", color: "text-red-700", bg: "badge-cancelled" },
-  Not_Visited: { label: "Missed (Not Visited)", color: "text-amber-800", bg: "badge-Not Visited" },
-  RESCHEDULED: { label: "Rescheduled", color: "text-teal-700", bg: "badge-rescheduled" },
-};
+export const statusConfig: Record<string, StatusConfig> = Object.fromEntries(
+  Object.entries(APPT_STATUS_META).map(([key, meta]) => [
+    key,
+    { label: meta.label, color: meta.textColor, bg: meta.legacyBg },
+  ])
+);
 
 export function getTreatmentImage(name: string, imageUrl?: string | null): string {
   if (imageUrl) return imageUrl;

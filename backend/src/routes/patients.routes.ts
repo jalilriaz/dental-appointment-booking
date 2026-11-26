@@ -57,7 +57,7 @@ router.patch('/:id', requireAuth, requireRole('ADMIN'), async (req: Request, res
             select: { id: true, medicalAlerts: true },
         });
 
-        logger.info({ patientId: id, medicalAlerts }, 'Updated patient medical alerts');
+        logger.info({ patientId: id }, 'Updated patient medical alerts');
         return res.json({ success: true, patient });
     } catch (error) {
         console.error('Update patient details error:', error);

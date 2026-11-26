@@ -1,25 +1,13 @@
 import prisma from "@/lib/prisma";
-import { cookies } from "next/headers";
-import { decrypt } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireRole } from "@/lib/auth/permissions";
 import WalkInRegistration from "@/components/admin/WalkInRegistration";
 
 export default async function StaffBookingPage() {
-    const cookie = (await cookies()).get("session")?.value;
-    if (!cookie) redirect("/login");
+    await requireRole(["ADMIN", "STAFF"], { callbackUrl: "/staff/book" });
 
-    try {
-        const session = await decrypt(cookie);
-        if (session.role !== "STAFF" && session.role !== "ADMIN") {
-            redirect("/login");
-        }
-    } catch {
-        redirect("/login");
-    }
-
-    // Fetch active treatments from DB (same as admin walk-in)
+    // Fetch active non-archived treatments from DB (same as admin walk-in)
     const treatments = await prisma.treatment.findMany({
-        where: { isActive: true },
+        where: { isActive: true, deletedAt: null },
         orderBy: { name: "asc" },
     });
 

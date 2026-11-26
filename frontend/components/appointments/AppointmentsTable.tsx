@@ -52,6 +52,7 @@ import CheckoutDialog from "@/components/shared/CheckoutDialog";
 import SendPrecautionsModal from "@/components/shared/SendPrecautionsModal";
 import { buildAppointmentReceiptData } from "@/lib/receipt";
 import StatusBadge from "@/components/shared/StatusBadge";
+import MedicalAlertBanner from "@/components/shared/MedicalAlertBanner";
 import AppointmentsCalendar from "@/components/admin/AppointmentsCalendar";
 import {
     Dialog,
@@ -73,6 +74,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import EmptyState from "@/components/shared/EmptyState";
 import { formatPKR, formatDate, formatTime, statusColors } from "@/lib/utils";
+import { consumePendingAppointmentSearch, subscribeAppointmentSearch } from "@/lib/search-handoff";
 import type { Appointment, TimeSlot, DoctorOption } from "@/lib/types";
 
 
@@ -111,11 +113,18 @@ export default function AppointmentsTable({
     );
 
     useEffect(() => {
-        setSearch(initialSearch);
-        if (initialSearch) {
+        const pending = consumePendingAppointmentSearch();
+        const resolved = pending || initialSearch;
+        if (resolved) {
+            setSearch(resolved);
             setTimelineFilter("all");
+            setPage(1);
         }
-        setPage(1);
+        return subscribeAppointmentSearch((term) => {
+            setSearch(term);
+            setTimelineFilter("all");
+            setPage(1);
+        });
     }, [initialSearch]);
     const [perPage, setPerPage] = useState(25);
     const [detailId, setDetailId] = useState<string | null>(null);
@@ -171,16 +180,16 @@ export default function AppointmentsTable({
         return { today, upcoming, completed, cancelled };
     }, [appointments, getAptBucket]);
 
-    // Assigned specialist mapping (Dr. Sheriyaar Akhtar as sole lead dental surgeon)
+    // Assigned specialist mapping (single-doctor practice fallback)
     const getDoctorForAppointment = useCallback((apt: Appointment) => {
         if (apt.doctor) {
             return {
                 name: apt.doctor.name,
                 role: apt.doctor.role.split("&")[0].trim(),
-                operatory: apt.doctor.operatory || "Chair 1 · Surgical Suite A",
+                operatory: apt.doctor.operatory || "Main Operatory",
             };
         }
-        return { name: "Dr. Sheriyaar", role: "Chief Dental Surgeon", operatory: "Chair 1 · Surgical Suite A" };
+        return { name: "Attending Dentist", role: "Dental Surgeon", operatory: "Main Operatory" };
     }, []);
 
     // Quick counts for the timeline switcher
@@ -989,6 +998,7 @@ export default function AppointmentsTable({
                                                         <span className="text-[11px] text-slate-400 font-medium truncate">
                                                             {apt.guestPhone || apt.patient?.phone || "No phone"}
                                                         </span>
+                                                        <MedicalAlertBanner variant="badge" alerts={apt.patient?.medicalAlerts} className="mt-1" />
                                                     </div>
                                                 </td>
 
@@ -1201,6 +1211,7 @@ export default function AppointmentsTable({
 
                     {selectedApt && (
                         <div className="space-y-4">
+                            <MedicalAlertBanner alerts={selectedApt.patient?.medicalAlerts} />
                             <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-200">
                                 <div><p className="text-slate-500 text-xs font-semibold uppercase">Patient</p><p className="font-semibold text-slate-900">{selectedApt.guestName || selectedApt.patient?.name || "Unknown"}</p></div>
                                 <div><p className="text-slate-500 text-xs font-semibold uppercase">Phone</p><p className="font-semibold text-slate-900">{selectedApt.guestPhone || selectedApt.patient?.phone || "—"}</p></div>
@@ -1340,7 +1351,7 @@ export default function AppointmentsTable({
                                             ? {
                                                 id: "new-plan",
                                                 totalCost: options.packageCost,
-                                                totalSessions: options.totalSessions || 1,
+                                                totalSessions: options.totalSessions ?? 1,
                                                 clinicalStatus: "IN_PROGRESS",
                                                 financialStatus:
                                                     amount >= options.packageCost ? "FULLY_PAID" : "PARTIAL",

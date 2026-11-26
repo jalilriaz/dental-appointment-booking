@@ -247,9 +247,9 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
 
       {/* 3. Main Interactive Grid: Landmark & Wayfinding Hub + Smart Triage Form */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-        <div className="grid lg:grid-cols-12 gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Left Column: Landmark & Accessibility Wayfinding */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 min-w-0 space-y-6">
             <div className="rounded-3xl border border-slate-200 bg-white p-7 sm:p-8 shadow-sm">
               <div className="flex items-center gap-2 text-teal-600 text-xs font-bold uppercase tracking-wider mb-2">
                 <LocationOnOutlined sx={{ fontSize: 16 }} />
@@ -380,7 +380,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
           </div>
 
           {/* Right Column: Smart Clinical Inquiry & Consultation Dispatcher */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 min-w-0 space-y-6">
             <div className="rounded-3xl border border-slate-200 bg-white p-7 sm:p-10 shadow-sm relative">
               <div className="flex items-center gap-2 text-teal-600 text-xs font-bold uppercase tracking-wider mb-2">
                 <SupportAgentOutlined sx={{ fontSize: 16 }} />
@@ -463,7 +463,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                     <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
                       2. How Soon Do You Need Care?
                     </label>
-                    <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                       <button
                         type="button"
                         onClick={() => setUrgency("urgent")}
@@ -538,7 +538,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
                     <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
                       Preferred Reply Channel
                     </label>
-                    <div className="flex gap-4">
+                    <div className="flex flex-wrap gap-4">
                       <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
                         <input
                           type="radio"
@@ -624,7 +624,7 @@ export default function ContactForm({ workingHours, treatments }: ContactFormPro
               </p>
             </div>
 
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
               <a
                 href="https://www.google.com/maps/dir/?api=1&destination=Elite+Dental+%26+Aesthetic+Centre+G-8+Markaz+Islamabad"
                 target="_blank"

@@ -22,6 +22,7 @@ import MedicationOutlinedIcon from "@mui/icons-material/MedicationOutlined";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import { Badge } from "@/components/ui/badge";
+import MedicalAlertBanner from "@/components/shared/MedicalAlertBanner";
 import OdontogramChart, { type OdontogramData } from "@/components/admin/OdontogramChart";
 
 interface ClinicalNote {
@@ -40,6 +41,9 @@ interface ClinicalNoteDialogProps {
     patientName: string;
     treatmentName: string;
     appointmentDate: string;
+    medicalAlerts?: string | null;
+    allergies?: string[] | null;
+    medications?: string[] | null;
     existingNote?: ClinicalNote | null;
     onNoteSaved?: () => void;
     readOnly?: boolean;
@@ -51,6 +55,9 @@ export default function ClinicalNoteDialog({
     patientName,
     treatmentName,
     appointmentDate,
+    medicalAlerts,
+    allergies,
+    medications,
     existingNote,
     onNoteSaved,
     readOnly = false,
@@ -168,6 +175,7 @@ export default function ClinicalNoteDialog({
                 </div>
                 {/* Scrollable Body */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4">
+                    <MedicalAlertBanner alerts={medicalAlerts} allergies={allergies} medications={medications} className="mb-4" />
 
                     {success ? (
                         <div className="py-8 text-center">

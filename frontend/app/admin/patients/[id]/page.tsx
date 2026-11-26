@@ -1,6 +1,7 @@
-import prisma from "@/lib/prisma";
+import { requireRole } from "@/lib/auth/permissions";
 import { notFound } from "next/navigation";
 import PatientProfileView from "@/components/admin/patients/PatientProfileView";
+import { loadPatientProfileBundle } from "@/lib/data/patientClinicalData";
 
 export default async function AdminPatientProfilePage({
     params,
@@ -8,47 +9,16 @@ export default async function AdminPatientProfilePage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
+    await requireRole(["ADMIN"], { callbackUrl: `/admin/patients/${id}` });
 
-    const patient = await prisma.user.findUnique({
-        where: { id },
-        include: {
-            appointments: {
-                include: {
-                    treatment: { select: { id: true, name: true, price: true, durationMin: true } },
-                    doctor: { select: { id: true, name: true } },
-                    clinicalNotes: { orderBy: { createdAt: "desc" } },
-                    payments: { orderBy: { date: "desc" } },
-                },
-                orderBy: { startTime: "desc" },
-            },
-            patientTreatments: {
-                include: {
-                    treatment: { select: { id: true, name: true, description: true, price: true, durationMin: true } },
-                    payments: { orderBy: { date: "desc" } },
-                    appointments: {
-                        include: {
-                            treatment: { select: { name: true } },
-                        },
-                        orderBy: { startTime: "asc" },
-                    },
-                },
-                orderBy: { startDate: "desc" },
-            },
-        },
-    });
-
-    if (!patient) return notFound();
-
-    const treatments = await prisma.treatment.findMany({
-        where: { isActive: true },
-        select: { id: true, name: true, price: true, durationMin: true },
-        orderBy: { name: "asc" },
-    });
+    const bundle = await loadPatientProfileBundle(id, "ADMIN");
+    if (!bundle) return notFound();
 
     return (
         <PatientProfileView
-            patient={patient}
-            availableTreatments={treatments}
+            patient={bundle.patient}
+            availableTreatments={bundle.treatments}
+            clinicalBundle={bundle.clinicalBundle}
             baseRoute="/admin"
         />
     );

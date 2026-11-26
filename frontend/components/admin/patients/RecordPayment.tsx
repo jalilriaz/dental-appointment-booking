@@ -26,6 +26,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { SELECTABLE_PAYMENT_METHODS } from "@/lib/constants/payment-methods";
 
 interface RecordPaymentProps {
     treatmentPlanId: string;
@@ -128,9 +129,11 @@ export default function RecordPayment({ treatmentPlanId, treatmentName, remainin
                                 <SelectValue placeholder="Select method" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border-slate-200 text-slate-900 shadow-xl rounded-xl">
-                                <SelectItem value="CASH">Cash</SelectItem>
-                                <SelectItem value="CARD">Card</SelectItem>
-                                <SelectItem value="ONLINE">Online Transfer</SelectItem>
+                                {SELECTABLE_PAYMENT_METHODS.map((m) => (
+                                    <SelectItem key={m.value} value={m.value}>
+                                        {m.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

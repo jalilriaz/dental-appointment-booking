@@ -90,7 +90,7 @@ export default function SchedulePatientSessionDialog({
         }
 
         if (!initialTreatments || initialTreatments.length === 0) {
-            fetchApi("/api/treatments")
+            fetchApi("/api/treatments?scope=desk")
                 .then((res) => res.json())
                 .then((data) => {
                     if (data.treatments) {
@@ -304,7 +304,7 @@ export default function SchedulePatientSessionDialog({
                         <Input
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            placeholder={plan ? `e.g. Session ${plan.sessionNumber} arch check & wire adjustment` : "e.g. Patient prefers Chair 1, routine follow-up"}
+                            placeholder={plan ? `e.g. Session ${plan.sessionNumber} arch check & wire adjustment` : "e.g. Patient prefers morning slot, routine follow-up"}
                             className="h-10 bg-slate-50/80 border-slate-200 text-xs sm:text-sm rounded-xl font-medium"
                         />
                     </div>

@@ -24,7 +24,7 @@ const updateStaffSchema = z.object({
 });
 
 // GET /api/staff/dashboard - Real-time reception telemetry
-router.get('/dashboard', requireAuth, async (_req: Request, res: Response) => {
+router.get('/dashboard', requireAuth, requireRole('ADMIN', 'STAFF'), async (_req: Request, res: Response) => {
     try {
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -44,7 +44,13 @@ router.get('/dashboard', requireAuth, async (_req: Request, res: Response) => {
         ] = await Promise.all([
             prisma.appointment.findMany({
                 where: { startTime: { gte: todayStart, lt: todayEnd }, status: { not: 'CANCELLED' } },
-                include: {
+                select: {
+                    id: true,
+                    startTime: true,
+                    endTime: true,
+                    status: true,
+                    isEmergency: true,
+                    notes: true,
                     patient: {
                         select: {
                             id: true,
@@ -58,15 +64,12 @@ router.get('/dashboard', requireAuth, async (_req: Request, res: Response) => {
                         },
                     },
                     doctor: { select: { id: true, name: true, role: true, operatory: true } },
-                    treatment: { select: { name: true, durationMin: true, price: true, isMultiSession: true, defaultSessions: true } },
+                    treatment: { select: { name: true, durationMin: true, isMultiSession: true, defaultSessions: true } },
                     patientTreatment: {
                         select: {
                             id: true,
-                            totalCost: true,
                             totalSessions: true,
                             clinicalStatus: true,
-                            financialStatus: true,
-                            payments: { select: { amount: true, date: true, method: true } },
                         },
                     },
                 },
@@ -74,9 +77,13 @@ router.get('/dashboard', requireAuth, async (_req: Request, res: Response) => {
             }),
             prisma.appointment.findMany({
                 where: { startTime: { gte: tomorrowStart, lt: tomorrowEnd }, status: { not: 'CANCELLED' } },
-                include: {
+                select: {
+                    id: true,
+                    startTime: true,
+                    endTime: true,
+                    status: true,
                     patient: { select: { id: true, name: true, phone: true } },
-                    treatment: { select: { name: true, durationMin: true, price: true } },
+                    treatment: { select: { name: true, durationMin: true } },
                 },
                 orderBy: { startTime: 'asc' },
             }),
@@ -101,7 +108,7 @@ router.get('/dashboard', requireAuth, async (_req: Request, res: Response) => {
         const totalAttendedOrMissed = allCompletedCount + allNoShowCount;
         const attendanceRate = totalAttendedOrMissed > 0
             ? Math.round((allCompletedCount / totalAttendedOrMissed) * 100)
-            : 94;
+            : null;
 
         // 7-day trend curve
         const daysMap: Record<string, { count: number; completed: number }> = {};
@@ -122,7 +129,7 @@ router.get('/dashboard', requireAuth, async (_req: Request, res: Response) => {
 
         const weeklyTrend = Object.keys(daysMap).map((day) => ({
             day,
-            count: daysMap[day].count || 1,
+            count: daysMap[day].count,
             completed: daysMap[day].completed,
         }));
 
@@ -215,7 +222,14 @@ router.post('/', requireAuth, requireRole('ADMIN'), async (req: Request, res: Re
         });
 
         if (req.user) {
-            await logAudit(req.user.id, 'CREATE_STAFF', staff.id, { name, role: staff.role });
+            await logAudit({
+                userId: req.user.id,
+                action: 'CREATE_STAFF',
+                entity: 'User',
+                entityId: staff.id,
+                details: { name, role: staff.role },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+            });
         }
 
         const { password: _, ...staffWithoutPassword } = staff;
@@ -246,6 +260,11 @@ router.put('/:id', requireAuth, requireRole('ADMIN'), async (req: Request, res: 
             updateData.password = await bcrypt.hash(password, 10);
         }
 
+        const existingStaff = await prisma.user.findUnique({
+            where: { id },
+            select: { role: true },
+        });
+
         const staff = await prisma.user.update({
             where: { id },
             data: updateData,
@@ -253,8 +272,18 @@ router.put('/:id', requireAuth, requireRole('ADMIN'), async (req: Request, res: 
         });
 
         if (req.user) {
-            await logAudit(req.user.id, 'UPDATE_STAFF', staff.id, {
-                updateData: { ...updateData, password: '[REDACTED]' },
+            const roleChanged = existingStaff && role !== undefined && existingStaff.role !== role;
+            await logAudit({
+                userId: req.user.id,
+                action: roleChanged ? 'ROLE_CHANGE' : 'UPDATE_STAFF',
+                entity: 'User',
+                entityId: staff.id,
+                details: {
+                    previousRole: existingStaff?.role,
+                    newRole: staff.role,
+                    updatedFields: Object.keys(updateData),
+                },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
             });
         }
 
@@ -265,20 +294,40 @@ router.put('/:id', requireAuth, requireRole('ADMIN'), async (req: Request, res: 
     }
 });
 
-// DELETE /api/staff/:id - Remove staff member
+// DELETE /api/staff/:id - Deactivate staff member (never hard-delete; invalidates active sessions)
 router.delete('/:id', requireAuth, requireRole('ADMIN'), async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        await prisma.user.delete({ where: { id } });
+        const target = await prisma.user.findUnique({ where: { id }, select: { id: true, role: true, isActive: true, name: true } });
+        if (!target) {
+            return res.status(404).json({ error: 'Staff member not found' });
+        }
+        if (target.role === 'ADMIN' && target.isActive) {
+            const activeAdmins = await prisma.user.count({ where: { role: 'ADMIN', isActive: true, deletedAt: null } });
+            if (activeAdmins <= 1) {
+                return res.status(409).json({ error: 'Cannot deactivate the last active clinic administrator.' });
+            }
+        }
+        await prisma.user.update({
+            where: { id },
+            data: { isActive: false, deletedAt: new Date(), tokenVersion: { increment: 1 } },
+        });
 
         if (req.user) {
-            await logAudit(req.user.id, 'DELETE_STAFF', id, {});
+            await logAudit({
+                userId: req.user.id,
+                action: 'DEACTIVATE_STAFF',
+                entity: 'User',
+                entityId: id,
+                details: { name: target.name },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+            });
         }
 
         return res.json({ success: true });
     } catch (error) {
-        console.error('Delete staff error:', error);
-        return res.status(500).json({ error: 'Failed to delete staff' });
+        console.error('Deactivate staff error:', error);
+        return res.status(500).json({ error: 'Failed to deactivate staff' });
     }
 });
 

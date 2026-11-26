@@ -1,9 +1,15 @@
 "use server"
 
 import prisma from "@/lib/prisma";
+import { requireActionRole } from "@/lib/auth/permissions";
 import { format, startOfDay, endOfDay, startOfYear, subMonths } from "date-fns";
 
 export async function getRevenueData(dateRange: string, customStartStr?: string, customEndStr?: string) {
+  const auth = await requireActionRole(["ADMIN"]);
+  if (!auth.ok) {
+    throw new Error(auth.error);
+  }
+
   const today = new Date();
   let startDate: Date | undefined;
   let endDate = endOfDay(today);

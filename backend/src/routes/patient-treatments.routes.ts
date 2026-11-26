@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { requireAuth, requireRole } from '../middleware/auth.middleware';
+import { logAudit } from '../lib/audit';
 
 const router = Router();
 
@@ -87,7 +88,10 @@ router.get('/:id', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: Reque
             return res.status(404).json({ error: 'Treatment plan not found' });
         }
 
-        const totalPaid = plan.payments.reduce((sum, p) => sum + p.amount, 0);
+        const totalPaid = Math.max(
+            0,
+            plan.payments.reduce((sum, p) => sum + (p.type === 'REFUND' ? -p.amount : p.amount), 0)
+        );
         const remainingDue = Math.max(0, plan.totalCost - totalPaid);
 
         return res.json({
@@ -120,6 +124,13 @@ router.post('/:id/payments', requireAuth, requireRole('ADMIN', 'STAFF'), async (
             return res.status(404).json({ error: 'Treatment plan not found' });
         }
 
+        const shiftNow = new Date(Date.now() + 5 * 3600 * 1000);
+        const closingDateUtc = new Date(Date.UTC(shiftNow.getUTCFullYear(), shiftNow.getUTCMonth(), shiftNow.getUTCDate()));
+        const closingLock = await prisma.dailyClosing.findUnique({ where: { closingDate: closingDateUtc }, select: { status: true } });
+        if (closingLock?.status === 'APPROVED') {
+            return res.status(409).json({ error: 'Today is closed and locked. Reopen Daily Closing before recording payments.' });
+        }
+
         const newPayment = await prisma.payment.create({
             data: {
                 patientTreatmentId: id,
@@ -127,11 +138,26 @@ router.post('/:id/payments', requireAuth, requireRole('ADMIN', 'STAFF'), async (
                 method: method || 'CASH',
                 notes: notes || null,
                 appointmentId: appointmentId || null,
+                recordedById: req.user?.id || null,
             },
         });
 
-        const totalPaid = patientTreatment.payments.reduce((sum, p) => sum + p.amount, 0) + amount;
-        const isFullyPaid = totalPaid >= patientTreatment.totalCost;
+        if (req.user) {
+            await logAudit({
+                userId: req.user.id,
+                action: 'RECORD_PAYMENT',
+                entity: 'Payment',
+                entityId: newPayment.id,
+                details: { patientTreatmentId: id, appointmentId: appointmentId || null, amount, method: method || 'CASH' },
+                ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+            });
+        }
+
+        const netPaid = Math.max(
+            0,
+            patientTreatment.payments.reduce((sum, p) => sum + (p.type === 'REFUND' ? -p.amount : p.amount), 0) + amount
+        );
+        const isFullyPaid = netPaid >= patientTreatment.totalCost;
 
         await prisma.patientTreatment.update({
             where: { id },
@@ -143,8 +169,8 @@ router.post('/:id/payments', requireAuth, requireRole('ADMIN', 'STAFF'), async (
 
         return res.status(201).json({
             payment: newPayment,
-            totalPaid,
-            remainingDue: Math.max(0, patientTreatment.totalCost - totalPaid),
+            totalPaid: netPaid,
+            remainingDue: Math.max(0, patientTreatment.totalCost - netPaid),
             isFullyPaid,
         });
     } catch (error) {

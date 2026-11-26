@@ -94,6 +94,6 @@ export function buildAppointmentReceiptData(apt: ReceiptSourceAppointment): Rece
     totalSessions: apt.patientTreatment?.totalSessions,
     payments,
     doctorName: apt.doctor?.name || undefined,
-    recordedBy: apt.doctor?.name || "Dr. Shehryar Akhtar",
+    recordedBy: apt.doctor?.name || "Attending Dentist",
   };
 }

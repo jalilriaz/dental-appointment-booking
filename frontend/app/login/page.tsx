@@ -58,7 +58,9 @@ function LoginForm() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        if (callbackUrl) {
+        if (data.user?.mustChangePassword) {
+          router.push("/change-password");
+        } else if (callbackUrl) {
           router.push(callbackUrl);
         } else if (data.user.role === "ADMIN") {
           router.push("/admin");

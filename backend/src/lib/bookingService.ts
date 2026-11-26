@@ -7,6 +7,12 @@ import { generateRandomPatientPasswordHash } from "@/lib/security";
 import { ALL_TREATMENTS } from "@/lib/treatmentsData";
 import { sendAppointmentConfirmationEmail } from "@/lib/email";
 import { dispatchN8nBookingWebhook } from "@/lib/n8n";
+import { checkDoctorAvailability } from "@/lib/doctorAvailability";
+import {
+    exceedsMaxBookingHorizon,
+    isOverlappingBreak,
+    violatesAdvanceNotice,
+} from "@/lib/bookingRules";
 import { formatTime, formatDate } from "@/lib/utils";
 
 const revalidatePath = (..._args: any[]) => {};
@@ -34,6 +40,7 @@ export interface CreateAppointmentInput {
     bookedBy: "WEBSITE" | "WALK_IN" | "WHATSAPP_BOT" | "ADMIN" | "RECEPTIONIST" | "STAFF";
     notes?: string;
     doctorId?: string;
+    isEmergency?: boolean;
 
     // Multi-session treatment plan linking
     patientTreatmentId?: string;
@@ -83,6 +90,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             bookedBy,
             notes,
             doctorId,
+            isEmergency,
             patientTreatmentId: explicitPtId,
             skipActivePlan,
             sessionNumber: explicitSessionNumber,
@@ -102,11 +110,30 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             return { success: false, error: "Patient name and phone number are required.", status: 400 };
         }
 
-        // 2. Validate clinic closure on Sunday
+        // 2. Validate clinic closure on Sunday & doctor availability
         if (isSundayInKarachi(date)) {
             return {
                 success: false,
                 error: "The clinic is closed on Sundays. Please select a day from Monday to Saturday.",
+                status: 400,
+            };
+        }
+
+        const docCheck = await checkDoctorAvailability(date, doctorId);
+        if (!docCheck.available) {
+            return {
+                success: false,
+                error: docCheck.reason || "Doctor is currently unavailable.",
+                status: 400,
+            };
+        }
+
+        const rules = await prisma.systemSettings.findUnique({ where: { id: "settings" } }).catch(() => null);
+        const isPublicChannel = bookedBy === "WEBSITE" || bookedBy === "WHATSAPP_BOT";
+        if (exceedsMaxBookingHorizon(date, rules?.maxBookingDaysAhead ?? 60)) {
+            return {
+                success: false,
+                error: `Bookings can only be scheduled up to ${rules?.maxBookingDaysAhead ?? 60} days in advance.`,
                 status: 400,
             };
         }
@@ -118,30 +145,30 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             const lockKey = `slot_${date}_${time}`;
             await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}));`;
 
-            // A. Resolve treatment
+            // A. Resolve treatment (enforce showOnWeb for website/WhatsApp channels; deletedAt: null everywhere)
+            const isPublicChannel = bookedBy === "WEBSITE" || bookedBy === "WHATSAPP_BOT";
+            const visFilter = isPublicChannel
+                ? { isActive: true, showOnWeb: true, deletedAt: null }
+                : { isActive: true, deletedAt: null };
             let treatment = null;
             if (treatmentId) {
-                treatment = await tx.treatment.findUnique({
-                    where: { id: treatmentId },
+                treatment = await tx.treatment.findFirst({
+                    where: { id: treatmentId, ...visFilter },
                 });
                 if (!treatment) {
                     const mock = ALL_TREATMENTS.find((t) => t.id === treatmentId);
                     if (mock) {
                         treatment = await tx.treatment.findFirst({
-                            where: { name: { equals: mock.name, mode: "insensitive" } },
+                            where: { name: { equals: mock.name, mode: "insensitive" }, ...visFilter },
                         });
                     }
                 }
-            }
-            if (!treatment) {
-                // Default fallback to General Consultation & Dental Checkup first
+            } else {
                 treatment = await tx.treatment.findFirst({
-                    where: { name: { contains: "Consultation", mode: "insensitive" }, isActive: true },
+                    where: { name: { contains: "Consultation", mode: "insensitive" }, ...visFilter },
                 });
                 if (!treatment) {
-                    treatment = await tx.treatment.findFirst({
-                        where: { isActive: true },
-                    });
+                    treatment = await tx.treatment.findFirst({ where: visFilter });
                 }
             }
             if (!treatment) {
@@ -153,13 +180,25 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             const startTime = parseKarachiDateTime(date, time);
             const endTime = new Date(startTime.getTime() + duration * 60000);
 
-            // C. Atomic double-booking collision check across all channels
+            if (!isEmergency) {
+                const [hh, mm] = time.split(":").map(Number);
+                const sMin = hh * 60 + mm;
+                if (isOverlappingBreak(sMin, sMin + duration, rules?.breakStart, rules?.breakEnd)) {
+                    throw new Error("BREAK_WINDOW");
+                }
+                if (isPublicChannel && violatesAdvanceNotice(startTime, new Date(), rules?.advanceNoticeMin ?? 60)) {
+                    throw new Error("ADVANCE_NOTICE");
+                }
+            }
+
+            // C. Atomic double-booking + buffer collision check across all channels
+            const bufferPadMs = !isEmergency ? (rules?.bufferMin ?? 0) * 60_000 : 0;
             const conflict = await tx.appointment.findFirst({
                 where: {
                     status: { notIn: ["CANCELLED"] },
                     AND: [
-                        { startTime: { lt: endTime } },
-                        { endTime: { gt: startTime } },
+                        { startTime: { lt: new Date(endTime.getTime() + bufferPadMs) } },
+                        { endTime: { gt: new Date(startTime.getTime() - bufferPadMs) } },
                     ],
                 },
             });
@@ -177,7 +216,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                 user = await tx.user.findUnique({
                     where: { id: inputPatientId },
                 });
-                if (!user) throw new Error("PATIENT_NOT_FOUND");
+                if (!user || user.deletedAt) throw new Error("PATIENT_NOT_FOUND");
                 canonicalPhone = user.phone ? normalizePhone(user.phone) : null;
                 patientCode = user.patientCode;
                 if (!patientCode) {
@@ -192,6 +231,9 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                 user = await tx.user.findFirst({
                     where: { phone: canonicalPhone },
                 });
+                if (user && user.deletedAt) {
+                    throw new Error("PATIENT_ARCHIVED");
+                }
 
                 const nameToUse = rawName || "Valued Patient";
                 const emailToUse = email || guestEmail || undefined;
@@ -286,6 +328,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                     treatmentId: treatment.id,
                     doctorId: targetDoctorId,
                     bookedBy: bookedBy as any,
+                    isEmergency: Boolean(isEmergency),
                     status: "SCHEDULED",
                     price: appointmentPrice,
                     guestName: guestName || rawName || user.name,
@@ -360,36 +403,52 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                 console.error("[BookingService] Google Calendar sync non-fatal error:", err);
             }
 
-            // Non-blocking confirmation email
+            // Non-blocking confirmation email + NotificationLog
             try {
                 const emailRecipient = user.email || guestEmail || email;
+                const previewText = `${treatment.name} visit on ${formatDate(startTime)} at ${formatTime(startTime)}`.slice(0, 140);
                 if (emailRecipient) {
-                    await sendAppointmentConfirmationEmail(
+                    const emailRes = await sendAppointmentConfirmationEmail(
                         emailRecipient,
                         user.name || patientName || guestName || "Patient",
                         treatment.name,
                         formatDate(startTime),
                         formatTime(startTime)
                     );
+                    const skipped = (emailRes as any)?.messageId === "skipped-no-smtp";
+                    await prisma.notificationLog.create({
+                        data: {
+                            patientId: user.id,
+                            appointmentId: appointment.id,
+                            channel: "EMAIL",
+                            recipient: emailRecipient,
+                            templateKey: "booking_confirmation",
+                            messagePreview: previewText,
+                            status: skipped ? "SKIPPED" : "SENT",
+                            errorMessage: skipped ? "SMTP not configured" : null,
+                            sentAt: skipped ? null : new Date(),
+                        },
+                    }).catch(() => {});
                 }
-            } catch (emailErr) {
+            } catch (emailErr: any) {
                 console.error("[BookingService] Email notification non-fatal error:", emailErr);
             }
         })();
 
-        // Dispatch WhatsApp confirmation via n8n webhook and capture delivery status
+        // Dispatch WhatsApp confirmation via n8n webhook and log in NotificationLog
         let whatsappConfirmation: { sent: boolean; error?: string } = {
             sent: false,
             error: "No phone number available for WhatsApp confirmation",
         };
         try {
             const recipientPhone = canonicalPhone || user.phone || guestPhone || phone;
+            const previewText = `${treatment.name} visit on ${formatDate(startTime)} at ${formatTime(startTime)}`.slice(0, 140);
             if (recipientPhone) {
                 const n8nResult = await dispatchN8nBookingWebhook({
                     phone: recipientPhone,
                     patientName: user.name || patientName || guestName || "Valued Patient",
                     treatmentName: treatment.name,
-                    doctorName: appointment.doctor?.name || "Dr. Shehryar Akhtar",
+                    doctorName: appointment.doctor?.name || "Attending Dentist",
                     date: formatDate(startTime),
                     time: formatTime(startTime),
                     appointmentId: appointment.id,
@@ -402,6 +461,32 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                     sent: n8nResult.success,
                     error: n8nResult.error,
                 };
+                await prisma.notificationLog.create({
+                    data: {
+                        patientId: user.id,
+                        appointmentId: appointment.id,
+                        channel: "WHATSAPP",
+                        recipient: recipientPhone,
+                        templateKey: "booking_confirmation",
+                        messagePreview: previewText,
+                        status: n8nResult.success ? "SENT" : "FAILED",
+                        errorMessage: n8nResult.error || null,
+                        sentAt: n8nResult.success ? new Date() : null,
+                    },
+                }).catch(() => {});
+            } else {
+                await prisma.notificationLog.create({
+                    data: {
+                        patientId: user.id,
+                        appointmentId: appointment.id,
+                        channel: "WHATSAPP",
+                        recipient: "missing",
+                        templateKey: "booking_confirmation",
+                        messagePreview: previewText,
+                        status: "SKIPPED",
+                        errorMessage: "No phone number on file",
+                    },
+                }).catch(() => {});
             }
         } catch (n8nErr: any) {
             console.error("[BookingService] n8n WhatsApp notification non-fatal error:", n8nErr);
@@ -428,7 +513,12 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             whatsappConfirmation,
         };
     } catch (error: any) {
-        if (error.message === "DOUBLE_BOOKING") {
+        const isOverlapExclusion =
+            error?.message === "DOUBLE_BOOKING" ||
+            error?.code === "23P01" ||
+            error?.meta?.code === "23P01" ||
+            String(error?.message || "").includes("Appointment_no_overlap_active");
+        if (isOverlapExclusion) {
             return {
                 success: false,
                 error: "This time slot is already booked. Please choose another time.",
@@ -447,6 +537,27 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
                 success: false,
                 error: "Patient record not found.",
                 status: 404,
+            };
+        }
+        if (error.message === "PATIENT_ARCHIVED") {
+            return {
+                success: false,
+                error: "This patient account is archived. Restore it in the Patients Directory before booking.",
+                status: 409,
+            };
+        }
+        if (error.message === "BREAK_WINDOW") {
+            return {
+                success: false,
+                error: "This time falls during the clinic break window.",
+                status: 400,
+            };
+        }
+        if (error.message === "ADVANCE_NOTICE") {
+            return {
+                success: false,
+                error: `Online bookings require at least ${error?.advanceNoticeMin || "configured"} advance notice.`,
+                status: 400,
             };
         }
 

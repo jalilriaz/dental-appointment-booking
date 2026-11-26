@@ -2,12 +2,18 @@ import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 
-const secretKey =
-  process.env.JWT_SECRET_KEY ||
-  process.env.JWT_SECRET ||
-  "development-fallback-secret-key-at-least-32-chars";
+function resolveSecretKey(): Uint8Array {
+  const secretKey = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET;
+  if (!secretKey || secretKey.trim().length < 32) {
+    throw new Error(
+      "FATAL: JWT_SECRET_KEY (at least 32 characters) must be configured in the environment."
+    );
+  }
+  return new TextEncoder().encode(secretKey);
+}
 
-const key = new TextEncoder().encode(secretKey);
+// Fail closed at startup (after dotenv.config() in src/index.ts)
+const key = resolveSecretKey();
 
 export async function signAccessToken(payload: Record<string, unknown>) {
   return await new SignJWT(payload)
@@ -63,14 +69,34 @@ export async function authenticate(cookieValue: string | undefined) {
     const payload = await decrypt(cookieValue);
     const user = await prisma.user.findUnique({
       where: { id: payload.id as string },
-      select: { id: true, role: true, email: true, name: true },
+      select: {
+        id: true,
+        role: true,
+        email: true,
+        name: true,
+        isActive: true,
+        deletedAt: true,
+        tokenVersion: true,
+        mustChangePassword: true,
+      },
     });
 
-    if (!user) {
+    if (!user || !user.isActive || user.deletedAt) {
       return null;
     }
 
-    return user;
+    const tokenVersion = Number(payload.tokenVersion ?? 0);
+    if (user.tokenVersion !== tokenVersion) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      role: user.role,
+      email: user.email,
+      name: user.name,
+      mustChangePassword: user.mustChangePassword,
+    };
   } catch {
     return null;
   }

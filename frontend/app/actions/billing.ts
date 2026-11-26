@@ -2,7 +2,14 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { z } from "zod";
+import { requireActionRole } from "@/lib/auth/permissions";
+import { logFrontendAudit } from "@/lib/audit";
+import { paymentMethodEnum } from "@/lib/validations/billing";
+import { assertDayNotClosed } from "@/lib/services/closingLock";
+import { calculatePlanFinancialState } from "@/lib/services/moneyMath";
+import type { PaymentMethodValue } from "@/lib/constants/payment-methods";
 import {
     getPrecautionsForTreatment,
     formatPrecautionsMessage,
@@ -15,7 +22,7 @@ export interface CheckoutOptions {
     notes?: string;
     billedPrice?: number;
     discount?: number;
-    paymentMethod?: "CASH" | "CARD" | "ONLINE";
+    paymentMethod?: PaymentMethodValue;
     discountPercent?: number;
     packageCost?: number;
     totalSessions?: number;
@@ -32,7 +39,7 @@ const checkoutSchema = z.object({
     billedPrice: z.number().min(0, "Billed price cannot be negative").optional(),
     discount: z.number().min(0, "Discount cannot be negative").optional(),
     discountPercent: z.number().min(0).max(100).optional(),
-    paymentMethod: z.enum(["CASH", "CARD", "ONLINE"]).optional().default("CASH"),
+    paymentMethod: paymentMethodEnum.optional().default("CASH"),
     packageCost: z.number().min(0).optional(),
     totalSessions: z.number().int().min(1).optional(),
     nextSessionDate: z.string().optional(),
@@ -50,6 +57,11 @@ export async function checkoutAppointment(
     extraOptions?: Partial<CheckoutOptions>
 ) {
     try {
+        const auth = await requireActionRole(["ADMIN", "STAFF"]);
+        if (!auth.ok) {
+            return { success: false, error: auth.error };
+        }
+
         // Normalize input whether passed as object or positional arguments
         let rawInput: CheckoutOptions;
         if (typeof appointmentIdOrOptions === "object") {
@@ -185,16 +197,18 @@ export async function checkoutAppointment(
             }
         }
 
-        // 3. Create Payment Record (only if collected > 0)
+        // 3. Create Payment Record (only if collected > 0; check daily closing lock)
         if (validData.amountCollected > 0 && patientTreatmentId) {
+            await assertDayNotClosed(new Date());
             await prisma.payment.create({
                 data: {
                     amount: validData.amountCollected,
                     date: new Date(),
-                    method: validData.paymentMethod as any,
+                    method: validData.paymentMethod,
                     notes: validData.notes,
                     appointmentId: validData.appointmentId,
                     patientTreatmentId: patientTreatmentId,
+                    recordedById: auth.user.id,
                 },
             });
         }
@@ -222,15 +236,14 @@ export async function checkoutAppointment(
             });
 
             if (pt) {
-                const totalPaid = pt.payments.reduce((sum, p) => sum + p.amount, 0);
+                const fin = calculatePlanFinancialState(
+                    pt.totalCost,
+                    pt.payments.map((p) => ({ amount: p.amount, type: p.type as "PAYMENT" | "REFUND" }))
+                );
+                const totalPaid = fin.netPaid;
                 const completedCount = pt.appointments.filter(a => a.status === "COMPLETED").length;
 
-                // Financial status
-                const financialStatus = totalPaid >= pt.totalCost
-                    ? "FULLY_PAID"
-                    : totalPaid > 0
-                        ? "PARTIALLY_PAID"
-                        : "UNPAID";
+                const financialStatus = fin.financialStatus;
 
                 // Clinical status: For multi-session treatments (e.g. Braces, Implants, RCT), 
                 // clinical status stays IN_PROGRESS until explicitly completed by doctor/staff
@@ -253,14 +266,18 @@ export async function checkoutAppointment(
         let nextAppointment = null;
         let nextSessionError: string | null = null;
         if (validData.nextSessionDate && validData.nextSessionTime) {
-            const nextSessionNumber = (appointment.sessionNumber || 1) + 1;
+            const nextSessionNumber = (appointment.sessionNumber ?? 1) + 1;
             const nextSessionLabel = validData.nextSessionLabel || `Session #${nextSessionNumber} (Follow-Up / Adjustment)`;
 
             try {
                 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:4000';
+                const sessionToken = (await cookies()).get("session")?.value;
                 const nextRes = await fetch(`${API_BASE_URL}/api/admin/walk-in`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(sessionToken ? { Cookie: `session=${sessionToken}` } : {}),
+                    },
                     body: JSON.stringify({
                         patientId: appointment.patientId,
                         treatmentId: appointment.treatmentId,
@@ -297,7 +314,7 @@ export async function checkoutAppointment(
                         patientName,
                         treatmentName: appointment.treatment.name,
                         precautions,
-                        doctorName: "Dr. Sheriyaar",
+                        doctorName: "Attending Dentist",
                     });
                     await dispatchN8nPrecautionsWebhook({
                         phone: patientPhone,
@@ -313,7 +330,22 @@ export async function checkoutAppointment(
             })();
         }
 
-        // 8. Revalidate paths
+        // 8. Audit checkout & payment collection
+        await logFrontendAudit({
+            userId: auth.user.id,
+            action: "CHECKOUT_PAYMENT",
+            entity: "Appointment",
+            entityId: appointment.id,
+            details: {
+                amountCollected: validData.amountCollected,
+                billedPrice: validData.billedPrice ?? appointment.price,
+                discount: validData.discount ?? appointment.discount,
+                paymentMethod: validData.paymentMethod,
+                patientTreatmentId,
+            },
+        });
+
+        // 9. Revalidate paths
         revalidatePath("/admin");
         revalidatePath("/staff");
         revalidatePath("/admin/appointments");

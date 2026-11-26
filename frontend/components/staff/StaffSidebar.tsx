@@ -10,6 +10,9 @@ import {
   PeopleAltOutlined,
   CloseOutlined,
   LocalHospitalOutlined,
+  PointOfSaleOutlined,
+  HourglassTopOutlined,
+  BiotechOutlined,
 } from "@mui/icons-material";
 
 const navSections = [
@@ -19,8 +22,11 @@ const navSections = [
       { label: "Dashboard", href: "/staff", icon: DashboardOutlined },
       { label: "Walk-In Booking", href: "/staff/book", icon: PersonAddAlt1Outlined },
       { label: "Appointments", href: "/staff/appointments", icon: CalendarMonthOutlined },
+      { label: "Waitlist", href: "/staff/waitlist", icon: HourglassTopOutlined },
+      { label: "Lab Orders", href: "/staff/lab-orders", icon: BiotechOutlined },
       { label: "Patients Directory", href: "/staff/patients", icon: PeopleAltOutlined },
       { label: "Doctor on Duty", href: "/staff/doctors", icon: LocalHospitalOutlined },
+      { label: "Daily Closing", href: "/staff/closing", icon: PointOfSaleOutlined },
     ],
   },
 ];

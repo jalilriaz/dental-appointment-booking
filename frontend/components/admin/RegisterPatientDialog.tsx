@@ -46,6 +46,12 @@ export default function RegisterPatientDialog({
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [archivedMatch, setArchivedMatch] = useState<{
+        id: string;
+        name: string;
+        phone: string | null;
+        patientCode: number | null;
+    } | null>(null);
     const [successFeedback, setSuccessFeedback] = useState<string | null>(null);
 
     const resetForm = () => {
@@ -56,6 +62,7 @@ export default function RegisterPatientDialog({
         setDateOfBirth("");
         setAddress("");
         setErrorMessage(null);
+        setArchivedMatch(null);
         setSuccessFeedback(null);
     };
 
@@ -93,6 +100,9 @@ export default function RegisterPatientDialog({
             });
 
             if (!res.success || !res.patient) {
+                if ("code" in res && res.code === "ARCHIVED_PATIENT_MATCH" && res.archivedPatient) {
+                    setArchivedMatch(res.archivedPatient);
+                }
                 setErrorMessage(res.error || "Failed to register patient.");
                 setIsSubmitting(false);
                 return;
@@ -140,9 +150,37 @@ export default function RegisterPatientDialog({
                 <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
                     {/* Feedback Banners */}
                     {errorMessage && (
-                        <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200/90 flex items-start gap-2.5 text-rose-700 text-xs font-semibold animate-in fade-in duration-200">
-                            <ErrorOutlineOutlined sx={{ fontSize: 18 }} className="shrink-0 mt-0.5" />
-                            <span>{errorMessage}</span>
+                        <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200/90 space-y-2 text-rose-700 text-xs font-semibold animate-in fade-in duration-200">
+                            <div className="flex items-start gap-2.5">
+                                <ErrorOutlineOutlined sx={{ fontSize: 18 }} className="shrink-0 mt-0.5" />
+                                <span>{errorMessage}</span>
+                            </div>
+                            {archivedMatch && (
+                                <button
+                                    type="button"
+                                    disabled={isSubmitting}
+                                    onClick={async () => {
+                                        setIsSubmitting(true);
+                                        try {
+                                            const r = await fetch(`/api/patient-records/${archivedMatch.id}`, { method: "POST" });
+                                            if (!r.ok) throw new Error("Restore failed");
+                                            const data = await r.json();
+                                            setArchivedMatch(null);
+                                            setErrorMessage(null);
+                                            setSuccessFeedback(`Restored ${data.patient.name} cleanly!`);
+                                            if (onSuccess) onSuccess(data.patient as PatientRow);
+                                            setTimeout(() => handleDialogClose(false), 700);
+                                        } catch {
+                                            setErrorMessage("Could not restore archived patient.");
+                                        } finally {
+                                            setIsSubmitting(false);
+                                        }
+                                    }}
+                                    className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold cursor-pointer"
+                                >
+                                    Restore patient ({archivedMatch.name})
+                                </button>
+                            )}
                         </div>
                     )}
                     {successFeedback && (

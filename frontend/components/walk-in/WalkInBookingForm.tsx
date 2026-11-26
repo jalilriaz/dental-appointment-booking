@@ -149,9 +149,17 @@ export default function WalkInBookingForm({
                         rows={2}
                         value={bookingForm.notes}
                         onChange={(e) => setBookingForm((p) => ({ ...p, notes: e.target.value }))}
-                        placeholder="e.g., Patient prefers Chair 1 with Dr. Shehryar, medical alert check..."
+                        placeholder="e.g., Patient prefers afternoon slot, medical alert check..."
                         className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all resize-none font-medium"
                     />
+                    <label className="inline-flex items-center gap-2 pt-1 text-xs font-semibold text-rose-800 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={Boolean(bookingForm.isEmergency)}
+                            onChange={(e) => setBookingForm((p) => ({ ...p, isEmergency: e.target.checked }))}
+                        />
+                        <span>Mark as Emergency / urgent pain visit</span>
+                    </label>
                 </div>
 
                 {/* Submit Action */}

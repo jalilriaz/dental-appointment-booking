@@ -4,7 +4,7 @@ import { decrypt } from "@/lib/auth";
 import { checkRateLimit, rateLimitExceededResponse } from "@/lib/rateLimit";
 
 // UI Routes
-const protectedUIRoutes = ["/admin", "/staff", "/reception"];
+const protectedUIRoutes = ["/admin", "/staff", "/reception", "/change-password"];
 
 // API Routes
 // Exclude public auth routes, webhooks, or open endpoints from this list
@@ -17,6 +17,22 @@ const protectedApiRoutes = [
     "/api/settings",
     "/api/notifications",
     "/api/upload",
+    "/api/expenses",
+    "/api/refunds",
+    "/api/closing",
+    "/api/reports",
+    "/api/patient-files",
+    "/api/consents",
+    "/api/before-after",
+    "/api/prescriptions",
+    "/api/patient-records",
+    "/api/staff-accounts",
+    "/api/doctor-availability",
+    "/api/recalls",
+    "/api/lab-orders",
+    "/api/waitlist",
+    "/api/feedback-admin",
+    "/api/backup",
 ];
 
 // Routes that are strictly public (whitelisted)
@@ -32,6 +48,7 @@ const publicApiRoutes = [
 
 function isPublicApiRoute(pathname: string, method?: string) {
     if (pathname === "/api/appointments" && method === "POST") return true;
+    if (/^\/api\/before-after\/[^/]+\/image$/.test(pathname) && method === "GET") return true;
     return publicApiRoutes.some((route) => pathname.startsWith(route));
 }
 
@@ -166,7 +183,36 @@ export default async function middleware(request: NextRequest) {
         const role = session.role as string;
 
         // Admin functionality
-        const isAdminStrictRoute = pathname.startsWith("/admin") || (pathname.startsWith("/api/admin") && !pathname.startsWith("/api/admin/walk-in")) || pathname.startsWith("/api/settings");
+        const isClosingAdminRoute =
+            pathname.startsWith("/api/closing") && !pathname.startsWith("/api/closing/submit");
+        const isPrescriptionAdminRoute =
+            pathname.startsWith("/api/prescriptions") && request.method === "POST";
+        const isBeforeAfterAdminRoute =
+            pathname.startsWith("/api/before-after") && !pathname.endsWith("/image");
+        const isLabAdminOnly =
+            pathname.startsWith("/api/lab-orders") && (request.method === "POST" || request.method === "DELETE");
+        const isFeedbackAdminOnly =
+            pathname.startsWith("/api/feedback-admin") && request.method === "PATCH";
+        const isSettingsAdminOnly =
+            pathname.startsWith("/api/settings") && !(pathname === "/api/settings/public" && request.method === "GET") && request.method !== "GET";
+        const isAdminStrictRoute =
+            pathname.startsWith("/admin") ||
+            (pathname.startsWith("/api/admin") && !pathname.startsWith("/api/admin/walk-in")) ||
+            isSettingsAdminOnly ||
+            pathname.startsWith("/api/expenses") ||
+            pathname.startsWith("/api/refunds") ||
+            pathname.startsWith("/api/reports") ||
+            pathname.startsWith("/api/patient-files") ||
+            pathname.startsWith("/api/staff-accounts") ||
+            pathname.startsWith("/api/doctor-availability") ||
+            pathname.startsWith("/api/notifications/logs") ||
+            pathname.startsWith("/api/recalls") ||
+            pathname.startsWith("/api/backup") ||
+            isLabAdminOnly ||
+            isFeedbackAdminOnly ||
+            isBeforeAfterAdminRoute ||
+            isPrescriptionAdminRoute ||
+            isClosingAdminRoute;
 
         if (isAdminStrictRoute && role !== "ADMIN") {
             if (isApiRoute) return applySecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }));
@@ -175,7 +221,7 @@ export default async function middleware(request: NextRequest) {
 
         // Staff functionality (Staff or Admin)
         const isAppointmentsStaffRoute = pathname.startsWith("/api/appointments") && request.method !== "POST";
-        const isStaffRoute = pathname.startsWith("/staff") || pathname.startsWith("/reception") || pathname.startsWith("/api/staff") || pathname.startsWith("/api/patients") || isAppointmentsStaffRoute || pathname.startsWith("/api/medical-records") || pathname.startsWith("/api/admin/walk-in") || pathname.startsWith("/api/upload");
+        const isStaffRoute = pathname.startsWith("/staff") || pathname.startsWith("/reception") || pathname.startsWith("/api/staff") || pathname.startsWith("/api/patients") || isAppointmentsStaffRoute || pathname.startsWith("/api/medical-records") || pathname.startsWith("/api/admin/walk-in") || pathname.startsWith("/api/upload") || pathname.startsWith("/api/closing/submit") || pathname.startsWith("/api/consents") || pathname.startsWith("/api/prescriptions") || pathname.startsWith("/api/patient-records");
 
         if (isStaffRoute && role !== "STAFF" && role !== "ADMIN") {
             if (isApiRoute) return applySecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }));

@@ -1,135 +1,143 @@
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
+import prisma from '../lib/prisma';
+import { checkRateLimit } from '../lib/rateLimit';
 
 const router = Router();
 
-export interface FeedbackItem {
-    id: string;
-    name: string;
-    email?: string;
-    rating: number;
-    comment: string;
-    treatmentName?: string;
-    date: string;
-    source: 'Google' | 'Website' | 'Verified Patient';
-    clinicResponse?: {
-        responder: string;
-        date: string;
-        message: string;
-    };
-}
+const feedbackCreateSchema = z.object({
+    name: z.string().trim().min(2, 'Patient name must be at least 2 characters.').max(80),
+    email: z.string().trim().email('Invalid email address.').optional().or(z.literal('')),
+    rating: z.coerce.number().int().min(1, 'Rating must be between 1 and 5 stars.').max(5),
+    comment: z.string().trim().min(5, 'Please provide a review comment of at least 5 characters.').max(1000),
+    treatmentName: z.string().trim().max(120).optional(),
+    appointmentId: z.string().uuid('Invalid appointment reference.').optional(),
+});
 
-const fallbackFeedback: FeedbackItem[] = [
-    {
-        id: 'fb-1',
-        name: 'Ayesha Malik',
-        rating: 5,
-        treatmentName: 'Dental Implants',
-        date: 'March 18, 2026',
-        source: 'Google',
-        comment: 'I was extremely anxious about getting an implant done, but Dr. Sheriyaar and the team made it completely seamless and painless. The 3D scan and pre-planning was top tier. Highly recommended!',
-        clinicResponse: {
-            responder: 'Dr. Sheriyaar Dental Care',
-            date: 'March 19, 2026',
-            message: 'Thank you so much, Ayesha! We are thrilled to hear your implant procedure was smooth and comfortable.',
-        },
-    },
-    {
-        id: 'fb-2',
-        name: 'Hamza Tariq',
-        rating: 5,
-        treatmentName: 'Root Canal Treatment',
-        date: 'April 02, 2026',
-        source: 'Google',
-        comment: 'Painless single-sitting root canal! Absolutely incredible hygiene and state-of-the-art facility. The staff was courteous and followed up the next day.',
-        clinicResponse: {
-            responder: 'Dr. Sheriyaar Dental Care',
-            date: 'April 03, 2026',
-            message: 'Hamza, hearing that your root canal was completely painless is fantastic. We appreciate your feedback!',
-        },
-    },
-    {
-        id: 'fb-3',
-        name: 'Dr. Bilal Rafiq',
-        rating: 5,
-        treatmentName: 'Teeth Whitening',
-        date: 'April 15, 2026',
-        source: 'Verified Patient',
-        comment: 'Came in for laser teeth whitening before my wedding. The results exceeded all my expectations — 4 shades brighter in just 45 minutes.',
-        clinicResponse: {
-            responder: 'Dr. Sheriyaar Dental Care',
-            date: 'April 15, 2026',
-            message: 'Congratulations on your wedding, Dr. Bilal! It was our pleasure to brighten your smile.',
-        },
-    },
-];
+// GET /api/feedback - Real database patient reviews (no synthetic counts)
+router.get('/', async (_req: Request, res: Response) => {
+    try {
+        const [rows, settings] = await Promise.all([
+            prisma.feedback.findMany({
+                where: { isPublished: true },
+                orderBy: { createdAt: 'desc' },
+                take: 50,
+            }),
+            prisma.systemSettings.findUnique({
+                where: { id: 'settings' },
+                select: { clinicName: true },
+            }),
+        ]);
 
-// GET /api/feedback
-router.get('/', (_req: Request, res: Response) => {
-    const total = fallbackFeedback.length + 844;
-    const distribution = {
-        5: 712,
-        4: 112,
-        3: 20,
-        2: 5,
-        1: 1,
-    };
+        const clinicLabel = settings?.clinicName || 'Clinic Reception';
+        const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } as Record<1 | 2 | 3 | 4 | 5, number>;
+        let ratingSum = 0;
 
-    return res.json({
-        success: true,
-        stats: {
-            averageRating: 4.9,
-            totalReviews: total,
-            distribution,
-        },
-        reviews: fallbackFeedback,
-    });
+        for (const r of rows) {
+            const key = Math.min(5, Math.max(1, r.rating)) as 1 | 2 | 3 | 4 | 5;
+            distribution[key] += 1;
+            ratingSum += r.rating;
+        }
+
+        const averageRating = rows.length > 0 ? Number((ratingSum / rows.length).toFixed(1)) : null;
+
+        const formatD = (d: Date) => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const reviews = rows.map((r) => ({
+            id: r.id,
+            name: r.patientName,
+            rating: r.rating,
+            comment: r.comment,
+            treatmentName: r.treatmentName || 'General Consultation',
+            date: formatD(r.createdAt),
+            source: r.source === 'GOOGLE' ? 'Google' : r.source === 'WEBSITE' ? 'Website' : 'Verified Patient',
+            ...(r.clinicResponse && {
+                clinicResponse: { responder: clinicLabel, date: formatD(r.respondedAt || r.createdAt), message: r.clinicResponse },
+            }),
+        }));
+
+        return res.json({
+            success: true,
+            stats: {
+                averageRating,
+                totalReviews: rows.length,
+                distribution,
+            },
+            reviews,
+        });
+    } catch (err) {
+        console.error('Fetch feedback error:', err);
+        return res.status(500).json({ success: false, error: 'Failed to load reviews' });
+    }
 });
 
 // POST /api/feedback
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
     try {
-        const { name, email, rating, comment, treatmentName } = req.body;
+        const rawIp = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip || 'unknown';
+        const rateCheck = checkRateLimit(rawIp, '/api/feedback', { limit: 5, windowMs: 15 * 60 * 1000 });
 
-        if (!name || typeof name !== 'string' || name.trim().length === 0) {
-            return res.status(400).json({ success: false, error: 'Patient name is required.' });
+        Object.entries(rateCheck.headers).forEach(([k, v]) => res.setHeader(k, v));
+        if (!rateCheck.success) {
+            return res.status(429).json({
+                success: false,
+                error: 'Too many feedback submissions. Please try again later.',
+            });
         }
 
-        const numericRating = Number(rating);
-        if (isNaN(numericRating) || numericRating < 1 || numericRating > 5) {
-            return res.status(400).json({ success: false, error: 'Rating must be between 1 and 5 stars.' });
+        const parsed = feedbackCreateSchema.safeParse(req.body);
+        if (!parsed.success) {
+            const firstErr = Object.values(parsed.error.flatten().fieldErrors).flat()[0] || 'Invalid feedback payload.';
+            return res.status(400).json({ success: false, error: firstErr });
         }
 
-        if (!comment || typeof comment !== 'string' || comment.trim().length < 5) {
-            return res.status(400).json({ success: false, error: 'Please provide a review comment of at least 5 characters.' });
+        const { name, email, rating, comment, treatmentName, appointmentId } = parsed.data;
+        let linkedPatientId: string | null = null;
+
+        if (appointmentId) {
+            const completedAppt = await prisma.appointment.findFirst({
+                where: { id: appointmentId, status: 'COMPLETED' },
+                select: { id: true, patientId: true },
+            });
+            if (!completedAppt) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Feedback can only be linked to a completed appointment.',
+                });
+            }
+            linkedPatientId = completedAppt.patientId;
         }
 
-        const newFeedback: FeedbackItem = {
-            id: `fb-${Date.now()}`,
-            name: name.trim(),
-            email: email ? String(email).trim() : undefined,
-            rating: numericRating,
-            comment: comment.trim(),
-            treatmentName: treatmentName?.trim() || 'General Consultation',
-            date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-            source: 'Verified Patient',
-            clinicResponse: {
-                responder: 'Dr. Sheriyaar Dental Care',
-                date: 'Just now',
-                message: `Thank you ${name.trim()} for your feedback! Our clinical team appreciates your trust.`,
+        const created = await prisma.feedback.create({
+            data: {
+                patientName: name,
+                patientEmail: email || null,
+                rating,
+                comment,
+                treatmentName: treatmentName || 'General Consultation',
+                appointmentId: appointmentId || null,
+                patientId: linkedPatientId,
+                source: appointmentId ? 'VERIFIED_PATIENT' : 'WEBSITE',
+                isPublished: true,
             },
-        };
-
-        fallbackFeedback.unshift(newFeedback);
+        });
 
         return res.status(201).json({
             success: true,
             message: 'Thank you! Your feedback has been submitted successfully.',
-            feedback: newFeedback,
+            feedback: {
+                id: created.id,
+                name: created.patientName,
+                rating: created.rating,
+                comment: created.comment,
+                treatmentName: created.treatmentName,
+                date: created.createdAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+                source: created.source === 'VERIFIED_PATIENT' ? 'Verified Patient' : 'Website',
+            },
         });
-    } catch (err: any) {
-        return res.status(500).json({ success: false, error: err?.message || 'Internal Server Error' });
+    } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Internal Server Error';
+        return res.status(500).json({ success: false, error: msg });
     }
 });
 
 export default router;
-

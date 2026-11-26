@@ -101,7 +101,7 @@ export default async function LandingPage() {
   let treatments = ALL_TREATMENTS.slice(0, 8) as any;
   try {
     const dbTreatments = await prisma.treatment.findMany({
-      where: { isActive: true },
+      where: { isActive: true, showOnWeb: true, deletedAt: null },
       take: 8,
       orderBy: { name: "asc" },
     });

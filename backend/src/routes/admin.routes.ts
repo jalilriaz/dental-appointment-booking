@@ -26,6 +26,7 @@ const walkInSchema = z.object({
     skipActivePlan: z.boolean().optional(),
     notes: z.string().optional(),
     doctorId: z.string().optional(),
+    isEmergency: z.boolean().optional(),
 }).superRefine((data, ctx) => {
     if (!data.patientId) {
         if (!data.phone) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Phone is required for new patients', path: ['phone'] });
@@ -131,6 +132,7 @@ router.get('/search', requireAuth, requireRole('ADMIN'), async (req: Request, re
         const [users, appointments] = await Promise.all([
             prisma.user.findMany({
                 where: {
+                    deletedAt: null,
                     OR: [
                         { name: { contains: query, mode: 'insensitive' } },
                         { email: { contains: query, mode: 'insensitive' } },
@@ -188,7 +190,7 @@ router.get('/walk-in/search', requireAuth, requireRole('ADMIN', 'STAFF'), async 
         const limit = 8;
         const skip = (page - 1) * limit;
 
-        const where: any = { role: 'PATIENT' };
+        const where: any = { role: 'PATIENT', deletedAt: null };
 
         if (channel && channel !== 'ALL') {
             where.appointments = {
@@ -292,7 +294,7 @@ router.post('/walk-in', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: 
             });
         }
 
-        const { patientId, phone, fullName, age, date, time, treatmentId, patientTreatmentId, skipActivePlan, notes, doctorId } = validationResult.data;
+        const { patientId, phone, fullName, age, date, time, treatmentId, patientTreatmentId, skipActivePlan, notes, doctorId, isEmergency } = validationResult.data;
 
         const bookingResult = await createAppointment({
             patientId,
@@ -307,6 +309,7 @@ router.post('/walk-in', requireAuth, requireRole('ADMIN', 'STAFF'), async (req: 
             patientTreatmentId,
             skipActivePlan,
             notes,
+            isEmergency: Boolean(isEmergency),
         });
 
         if (!bookingResult.success) {

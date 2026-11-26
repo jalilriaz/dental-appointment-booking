@@ -102,11 +102,18 @@ exports.Prisma.UserScalarFieldEnum = {
   role: 'role',
   patientCode: 'patientCode',
   noShowCount: 'noShowCount',
+  isActive: 'isActive',
+  deletedAt: 'deletedAt',
+  tokenVersion: 'tokenVersion',
+  mustChangePassword: 'mustChangePassword',
+  recallOptOut: 'recallOptOut',
   createdAt: 'createdAt',
   dateOfBirth: 'dateOfBirth',
   gender: 'gender',
   address: 'address',
   medicalAlerts: 'medicalAlerts',
+  allergies: 'allergies',
+  medications: 'medications',
   googleCalendarToken: 'googleCalendarToken',
   googleCalendarRefreshToken: 'googleCalendarRefreshToken',
   googleCalendarConnected: 'googleCalendarConnected',
@@ -128,7 +135,9 @@ exports.Prisma.AppointmentScalarFieldEnum = {
   amountPaid: 'amountPaid',
   price: 'price',
   discount: 'discount',
+  isEmergency: 'isEmergency',
   createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
   checkoutTime: 'checkoutTime',
   guestName: 'guestName',
   guestPhone: 'guestPhone',
@@ -161,6 +170,8 @@ exports.Prisma.TreatmentScalarFieldEnum = {
   description: 'description',
   instructions: 'instructions',
   isActive: 'isActive',
+  showOnWeb: 'showOnWeb',
+  deletedAt: 'deletedAt',
   imageUrl: 'imageUrl',
   category: 'category',
   isMultiSession: 'isMultiSession',
@@ -179,8 +190,16 @@ exports.Prisma.SystemSettingsScalarFieldEnum = {
   receiptFooter: 'receiptFooter',
   workDayStart: 'workDayStart',
   workDayEnd: 'workDayEnd',
+  breakStart: 'breakStart',
+  breakEnd: 'breakEnd',
   slotDurationMin: 'slotDurationMin',
+  bufferMin: 'bufferMin',
+  advanceNoticeMin: 'advanceNoticeMin',
+  maxBookingDaysAhead: 'maxBookingDaysAhead',
+  cancellationCutoffHours: 'cancellationCutoffHours',
   weeklyWorkingDays: 'weeklyWorkingDays',
+  messageTemplates: 'messageTemplates',
+  publicContent: 'publicContent',
   updatedAt: 'updatedAt'
 };
 
@@ -222,11 +241,204 @@ exports.Prisma.PlanChangeLogScalarFieldEnum = {
 exports.Prisma.PaymentScalarFieldEnum = {
   id: 'id',
   amount: 'amount',
+  type: 'type',
   method: 'method',
   date: 'date',
   notes: 'notes',
+  refundedPaymentId: 'refundedPaymentId',
+  recordedById: 'recordedById',
   patientTreatmentId: 'patientTreatmentId',
   appointmentId: 'appointmentId'
+};
+
+exports.Prisma.ExpenseScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  category: 'category',
+  amount: 'amount',
+  method: 'method',
+  expenseDate: 'expenseDate',
+  vendor: 'vendor',
+  notes: 'notes',
+  receiptFileId: 'receiptFileId',
+  deletedAt: 'deletedAt',
+  recordedById: 'recordedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DailyClosingScalarFieldEnum = {
+  id: 'id',
+  closingDate: 'closingDate',
+  openingCash: 'openingCash',
+  openingNote: 'openingNote',
+  cashCollected: 'cashCollected',
+  cardCollected: 'cardCollected',
+  onlineCollected: 'onlineCollected',
+  bankTransferCollected: 'bankTransferCollected',
+  jazzcashCollected: 'jazzcashCollected',
+  easypaisaCollected: 'easypaisaCollected',
+  refundsTotal: 'refundsTotal',
+  cashRefundsTotal: 'cashRefundsTotal',
+  expensesTotal: 'expensesTotal',
+  cashExpensesTotal: 'cashExpensesTotal',
+  expectedCash: 'expectedCash',
+  actualCash: 'actualCash',
+  variance: 'variance',
+  status: 'status',
+  notes: 'notes',
+  submittedById: 'submittedById',
+  submittedAt: 'submittedAt',
+  approvedById: 'approvedById',
+  approvedAt: 'approvedAt',
+  reopenedById: 'reopenedById',
+  reopenedAt: 'reopenedAt',
+  reopenReason: 'reopenReason',
+  closedById: 'closedById',
+  closedAt: 'closedAt'
+};
+
+exports.Prisma.LabOrderScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  appointmentId: 'appointmentId',
+  labName: 'labName',
+  workType: 'workType',
+  toothNumbers: 'toothNumbers',
+  shade: 'shade',
+  cost: 'cost',
+  status: 'status',
+  sentDate: 'sentDate',
+  expectedDate: 'expectedDate',
+  receivedDate: 'receivedDate',
+  deliveredDate: 'deliveredDate',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ConsentFormScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  appointmentId: 'appointmentId',
+  title: 'title',
+  procedureName: 'procedureName',
+  content: 'content',
+  version: 'version',
+  supersededById: 'supersededById',
+  signatureData: 'signatureData',
+  signedByName: 'signedByName',
+  signedAt: 'signedAt',
+  witnessName: 'witnessName',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PatientFileScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  appointmentId: 'appointmentId',
+  fileType: 'fileType',
+  title: 'title',
+  storagePath: 'storagePath',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  notes: 'notes',
+  hasConsent: 'hasConsent',
+  visibleToPatient: 'visibleToPatient',
+  uploadedById: 'uploadedById',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.BeforeAfterPhotoScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  treatmentId: 'treatmentId',
+  title: 'title',
+  beforeImagePath: 'beforeImagePath',
+  afterImagePath: 'afterImagePath',
+  beforeFileId: 'beforeFileId',
+  afterFileId: 'afterFileId',
+  notes: 'notes',
+  hasConsent: 'hasConsent',
+  showOnWeb: 'showOnWeb',
+  takenAt: 'takenAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PrescriptionScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  appointmentId: 'appointmentId',
+  prescribedById: 'prescribedById',
+  doctorName: 'doctorName',
+  doctorPmdc: 'doctorPmdc',
+  entries: 'entries',
+  allergyWarnings: 'allergyWarnings',
+  notes: 'notes',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.WaitlistEntryScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  patientName: 'patientName',
+  patientPhone: 'patientPhone',
+  treatmentId: 'treatmentId',
+  preferredDate: 'preferredDate',
+  preferredTimeSlot: 'preferredTimeSlot',
+  notes: 'notes',
+  status: 'status',
+  notifiedAt: 'notifiedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RecallReminderScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  treatmentId: 'treatmentId',
+  dueDate: 'dueDate',
+  intervalMonths: 'intervalMonths',
+  status: 'status',
+  sentAt: 'sentAt',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.NotificationLogScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  appointmentId: 'appointmentId',
+  channel: 'channel',
+  recipient: 'recipient',
+  templateKey: 'templateKey',
+  messagePreview: 'messagePreview',
+  status: 'status',
+  providerResponse: 'providerResponse',
+  errorMessage: 'errorMessage',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.FeedbackScalarFieldEnum = {
+  id: 'id',
+  appointmentId: 'appointmentId',
+  patientId: 'patientId',
+  patientName: 'patientName',
+  patientEmail: 'patientEmail',
+  treatmentName: 'treatmentName',
+  rating: 'rating',
+  comment: 'comment',
+  source: 'source',
+  isPublished: 'isPublished',
+  clinicResponse: 'clinicResponse',
+  respondedAt: 'respondedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.InventoryScalarFieldEnum = {
@@ -253,7 +465,30 @@ exports.Prisma.DoctorScalarFieldEnum = {
   image: 'image',
   isLead: 'isLead',
   isActive: 'isActive',
+  unavailableFrom: 'unavailableFrom',
+  unavailableTo: 'unavailableTo',
+  unavailableReason: 'unavailableReason',
   createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  action: 'action',
+  entity: 'entity',
+  entityId: 'entityId',
+  details: 'details',
+  ipAddress: 'ipAddress',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LoginAttemptScalarFieldEnum = {
+  id: 'id',
+  identifier: 'identifier',
+  failedCount: 'failedCount',
+  lastFailedAt: 'lastFailedAt',
+  lockedUntil: 'lockedUntil',
   updatedAt: 'updatedAt'
 };
 
@@ -267,20 +502,24 @@ exports.Prisma.NullableJsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
-};
-
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
 };
 
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
 };
 exports.Role = exports.$Enums.Role = {
   ADMIN: 'ADMIN',
@@ -291,6 +530,8 @@ exports.Role = exports.$Enums.Role = {
 exports.ApptStatus = exports.$Enums.ApptStatus = {
   SCHEDULED: 'SCHEDULED',
   RESCHEDULED: 'RESCHEDULED',
+  ARRIVED: 'ARRIVED',
+  IN_PROGRESS: 'IN_PROGRESS',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
   Not_Visited: 'Not_Visited'
@@ -305,7 +546,82 @@ exports.BookingSource = exports.$Enums.BookingSource = {
 exports.PaymentMethod = exports.$Enums.PaymentMethod = {
   CASH: 'CASH',
   CARD: 'CARD',
-  ONLINE: 'ONLINE'
+  ONLINE: 'ONLINE',
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  JAZZCASH: 'JAZZCASH',
+  EASYPAISA: 'EASYPAISA'
+};
+
+exports.PaymentType = exports.$Enums.PaymentType = {
+  PAYMENT: 'PAYMENT',
+  REFUND: 'REFUND'
+};
+
+exports.ExpenseCategory = exports.$Enums.ExpenseCategory = {
+  RENT: 'RENT',
+  SUPPLIES: 'SUPPLIES',
+  LAB_FEES: 'LAB_FEES',
+  UTILITIES: 'UTILITIES',
+  SALARY: 'SALARY',
+  MAINTENANCE: 'MAINTENANCE',
+  EQUIPMENT: 'EQUIPMENT',
+  MARKETING: 'MARKETING',
+  OTHER: 'OTHER'
+};
+
+exports.ClosingStatus = exports.$Enums.ClosingStatus = {
+  SUBMITTED: 'SUBMITTED',
+  APPROVED: 'APPROVED',
+  REOPENED: 'REOPENED'
+};
+
+exports.LabOrderStatus = exports.$Enums.LabOrderStatus = {
+  SENT: 'SENT',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RECEIVED: 'RECEIVED',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.PatientFileType = exports.$Enums.PatientFileType = {
+  XRAY: 'XRAY',
+  PHOTO: 'PHOTO',
+  REPORT: 'REPORT',
+  DOCUMENT: 'DOCUMENT'
+};
+
+exports.WaitlistStatus = exports.$Enums.WaitlistStatus = {
+  WAITING: 'WAITING',
+  NOTIFIED: 'NOTIFIED',
+  BOOKED: 'BOOKED',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED'
+};
+
+exports.RecallStatus = exports.$Enums.RecallStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  BOOKED: 'BOOKED',
+  DISMISSED: 'DISMISSED'
+};
+
+exports.NotificationChannel = exports.$Enums.NotificationChannel = {
+  WHATSAPP: 'WHATSAPP',
+  EMAIL: 'EMAIL',
+  SMS: 'SMS'
+};
+
+exports.NotificationDeliveryStatus = exports.$Enums.NotificationDeliveryStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED'
+};
+
+exports.FeedbackSource = exports.$Enums.FeedbackSource = {
+  WEBSITE: 'WEBSITE',
+  GOOGLE: 'GOOGLE',
+  VERIFIED_PATIENT: 'VERIFIED_PATIENT'
 };
 
 exports.TreatmentStatus = exports.$Enums.TreatmentStatus = {
@@ -336,8 +652,21 @@ exports.Prisma.ModelName = {
   PatientTreatment: 'PatientTreatment',
   PlanChangeLog: 'PlanChangeLog',
   Payment: 'Payment',
+  Expense: 'Expense',
+  DailyClosing: 'DailyClosing',
+  LabOrder: 'LabOrder',
+  ConsentForm: 'ConsentForm',
+  PatientFile: 'PatientFile',
+  BeforeAfterPhoto: 'BeforeAfterPhoto',
+  Prescription: 'Prescription',
+  WaitlistEntry: 'WaitlistEntry',
+  RecallReminder: 'RecallReminder',
+  NotificationLog: 'NotificationLog',
+  Feedback: 'Feedback',
   Inventory: 'Inventory',
-  Doctor: 'Doctor'
+  Doctor: 'Doctor',
+  AuditLog: 'AuditLog',
+  LoginAttempt: 'LoginAttempt'
 };
 /**
  * Create the Client
@@ -350,7 +679,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/media/loadex/DATA1/root/Jalil/dental-appointment-booking/frontend/src/generated/client",
+      "value": "/media/loadex/DATA1/root/Jalil/dental-appointment-booking/backend/src/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -368,7 +697,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/media/loadex/DATA1/root/Jalil/dental-appointment-booking/frontend/prisma/schema.prisma",
+    "sourceFilePath": "/media/loadex/DATA1/root/Jalil/dental-appointment-booking/backend/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -391,13 +720,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../src/generated/client\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ngenerator frontendClient {\n  provider      = \"prisma-client-js\"\n  output        = \"../../frontend/node_modules/.prisma/client\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// ─── Enums ───────────────────────────────────────────────\n\nenum Role {\n  ADMIN\n  STAFF\n  PATIENT\n}\n\nenum ApptStatus {\n  SCHEDULED\n  RESCHEDULED\n  COMPLETED\n  CANCELLED\n  Not_Visited\n}\n\nenum BookingSource {\n  WEBSITE\n  WALK_IN\n  WHATSAPP_BOT\n}\n\n// ─── Models ──────────────────────────────────────────────\n\nmodel User {\n  id          String   @id @default(uuid())\n  email       String?  @unique\n  phone       String?  @unique // Primary ID for n8n bot\n  password    String?\n  name        String\n  role        Role     @default(PATIENT)\n  patientCode Int?     @unique // Short memorable ID (1000, 1001...)\n  noShowCount Int      @default(0) // Track how many times they didn't show up\n  createdAt   DateTime @default(now())\n\n  // Patient Details\n  dateOfBirth   DateTime?\n  gender        String?\n  address       String?\n  medicalAlerts String? // Critical health info e.g. \"Diabetic, Allergic to Penicillin\"\n\n  // Staff Details\n  // specialized fields removed for single-doctor model\n\n  // Google Calendar integration (Admin only)\n  googleCalendarToken        String?\n  googleCalendarRefreshToken String?\n  googleCalendarConnected    Boolean @default(false)\n\n  // Password reset\n  resetToken       String?\n  resetTokenExpiry DateTime?\n\n  appointments      Appointment[]\n  patientTreatments PatientTreatment[]\n  planChangeLogs    PlanChangeLog[]\n}\n\nmodel Appointment {\n  id        String     @id @default(uuid())\n  startTime DateTime\n  endTime   DateTime\n  status    ApptStatus @default(SCHEDULED)\n  notes     String? // Booking notes from patient/receptionist\n\n  patientId String\n  patient   User   @relation(fields: [patientId], references: [id])\n\n  treatmentId String\n  treatment   Treatment @relation(fields: [treatmentId], references: [id])\n\n  doctorId String?\n  doctor   Doctor? @relation(fields: [doctorId], references: [id])\n\n  googleEventId String?       @unique\n  bookedBy      BookingSource @default(WEBSITE)\n\n  clinicalNotes ClinicalNote[]\n\n  amountPaid   Int?      @default(0)\n  price        Int       @default(0)\n  discount     Int       @default(0) // Discretionary discount in PKR\n  createdAt    DateTime  @default(now())\n  checkoutTime DateTime?\n\n  // Guest Booking Details\n  guestName  String?\n  guestPhone String?\n  guestEmail String?\n  guestDob   DateTime?\n\n  // Treatment Plan Relation\n  patientTreatmentId String?\n  patientTreatment   PatientTreatment? @relation(fields: [patientTreatmentId], references: [id])\n  sessionNumber      Int?\n  sessionLabel       String?\n  plannedFee         Int? // Expected installment for this session (NOT a billing charge)\n\n  payments Payment[]\n\n  @@index([patientTreatmentId])\n  @@index([doctorId])\n  @@index([startTime])\n}\n\nmodel ClinicalNote {\n  id            String      @id @default(uuid())\n  appointmentId String\n  appointment   Appointment @relation(fields: [appointmentId], references: [id])\n\n  diagnosis      String? // What the doctor found\n  treatmentDone  String // What procedure was performed\n  prescription   String? // Medications prescribed\n  remarks        String? // Follow-up instructions, observations\n  odontogramData Json? // 32-tooth dental chart state\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Treatment {\n  id              String  @id @default(uuid())\n  name            String\n  durationMin     Int\n  price           Int\n  discountedPrice Int?\n  description     String?\n  instructions    String? // For n8n WhatsApp messages\n  isActive        Boolean @default(true)\n  imageUrl        String?\n  category        String  @default(\"General\") // Cosmetic, Restorative, General, Consultations\n  isMultiSession  Boolean @default(false)\n  defaultSessions Int     @default(1)\n\n  appointments      Appointment[]\n  patientTreatments PatientTreatment[]\n}\n\nmodel SystemSettings {\n  id                String   @id @default(\"settings\")\n  clinicName        String   @default(\"Elite Dental & Aesthetic Centre\")\n  clinicAddress     String   @default(\"Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad\")\n  landlinePhone     String   @default(\"051-2340093\")\n  mobilePhone       String   @default(\"0303-5080011\")\n  whatsappNumber    String   @default(\"+92 314 5475528\")\n  clinicEmail       String   @default(\"info@elitedental.com\")\n  pmdcRegNumber     String   @default(\"14820-D\")\n  receiptFooter     String   @default(\"Thank you for trusting Elite Dental & Aesthetic Centre. Valid for clinical record & tax submission.\")\n  workDayStart      String   @default(\"12:00\")\n  workDayEnd        String   @default(\"20:00\")\n  slotDurationMin   Int      @default(30)\n  weeklyWorkingDays String   @default(\"Monday,Tuesday,Wednesday,Thursday,Friday,Saturday\")\n  updatedAt         DateTime @default(now()) @updatedAt\n}\n\nmodel ClinicHoliday {\n  id        String   @id @default(uuid())\n  title     String\n  startDate DateTime\n  endDate   DateTime\n  reason    String?\n  showOnWeb Boolean  @default(true)\n  isActive  Boolean  @default(true)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// ─── Billing & Treatment Plans ───────────────────────────\n\nenum PaymentMethod {\n  CASH\n  CARD\n  ONLINE\n}\n\nenum TreatmentStatus {\n  ONGOING\n  COMPLETED\n  FULLY_PAID\n}\n\nenum ClinicalStatus {\n  IN_PROGRESS\n  COMPLETED\n  DISCONTINUED\n}\n\nenum FinancialStatus {\n  UNPAID\n  PARTIALLY_PAID\n  FULLY_PAID\n}\n\nmodel PatientTreatment {\n  id          String    @id @default(uuid())\n  patientId   String\n  patient     User      @relation(fields: [patientId], references: [id])\n  treatmentId String\n  treatment   Treatment @relation(fields: [treatmentId], references: [id])\n\n  totalCost     Int // Total agreed price (e.g., 100,000 for braces)\n  totalSessions Int @default(1)\n\n  // Lifecycle enums\n  clinicalStatus  ClinicalStatus  @default(IN_PROGRESS)\n  financialStatus FinancialStatus @default(UNPAID)\n\n  // Legacy status column retained during transition\n  status TreatmentStatus @default(ONGOING)\n\n  startDate DateTime @default(now())\n  updatedAt DateTime @default(now()) @updatedAt\n\n  appointments Appointment[]\n  payments     Payment[]\n  changeLogs   PlanChangeLog[]\n\n  @@index([patientId])\n  @@index([clinicalStatus])\n}\n\nmodel PlanChangeLog {\n  id                 String           @id @default(uuid())\n  patientTreatmentId String\n  patientTreatment   PatientTreatment @relation(fields: [patientTreatmentId], references: [id], onDelete: Cascade)\n  changedByUserId    String?\n  changedByUser      User?            @relation(fields: [changedByUserId], references: [id])\n  field              String // \"totalCost\" | \"totalSessions\" | \"clinicalStatus\" | \"plannedFee\"\n  oldValue           String\n  newValue           String\n  createdAt          DateTime         @default(now())\n\n  @@index([patientTreatmentId])\n}\n\nmodel Payment {\n  id     String        @id @default(uuid())\n  amount Int\n  method PaymentMethod @default(CASH)\n  date   DateTime      @default(now())\n  notes  String?\n\n  patientTreatmentId String\n  patientTreatment   PatientTreatment @relation(fields: [patientTreatmentId], references: [id])\n\n  appointmentId String?\n  appointment   Appointment? @relation(fields: [appointmentId], references: [id])\n}\n\n// ─── Inventory ───────────────────────────────────────────\n\nmodel Inventory {\n  id           String   @id @default(uuid())\n  itemName     String\n  quantity     Int      @default(0)\n  minThreshold Int      @default(5)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n\n// ─── Clinical Staff & Doctors ────────────────────────────\n\nmodel Doctor {\n  id                String        @id @default(uuid())\n  name              String\n  role              String // e.g. \"Chief Dental Surgeon & Head of Implantology\"\n  pmdcReg           String // e.g. \"14820-D\"\n  qualifications    String // e.g. \"BDS, RDS, FCPS\"\n  experience        String // e.g. \"12+ Years\"\n  specialty         String // e.g. \"Implantology, Cosmetic Dentistry\"\n  operatory         String // e.g. \"Chair 1 · Surgical Suite A\"\n  schedule          String // e.g. \"Mon – Sat: 12:00 PM – 8:00 PM\"\n  consultationFee   Int           @default(2000)\n  patientsThisMonth Int           @default(0)\n  image             String?       @default(\"/dr_sheriyaar.webp\")\n  isLead            Boolean       @default(false)\n  isActive          Boolean       @default(true)\n  appointments      Appointment[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "11dff6b256067e5695fe78e78a7868dee62366234b366532c500feaeeef1043e",
+  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../src/generated/client\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ngenerator frontendClient {\n  provider      = \"prisma-client-js\"\n  output        = \"../../frontend/node_modules/.prisma/client\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// ─── Enums ───────────────────────────────────────────────\n\nenum Role {\n  ADMIN\n  STAFF\n  PATIENT\n}\n\nenum ApptStatus {\n  SCHEDULED\n  RESCHEDULED\n  ARRIVED\n  IN_PROGRESS\n  COMPLETED\n  CANCELLED\n  Not_Visited\n}\n\nenum BookingSource {\n  WEBSITE\n  WALK_IN\n  WHATSAPP_BOT\n}\n\n// ─── Models ──────────────────────────────────────────────\n\nmodel User {\n  id                 String    @id @default(uuid())\n  email              String?   @unique\n  phone              String?   @unique // Primary ID for n8n bot\n  password           String?\n  name               String\n  role               Role      @default(PATIENT)\n  patientCode        Int?      @unique // Short memorable ID (1000, 1001...)\n  noShowCount        Int       @default(0) // Track how many times they didn't show up\n  isActive           Boolean   @default(true)\n  deletedAt          DateTime?\n  tokenVersion       Int       @default(0)\n  mustChangePassword Boolean   @default(false)\n  recallOptOut       Boolean   @default(false)\n  createdAt          DateTime  @default(now())\n\n  // Patient Details\n  dateOfBirth   DateTime?\n  gender        String?\n  address       String?\n  medicalAlerts String? // Critical health info e.g. \"Diabetic, Allergic to Penicillin\"\n  allergies     Json? // Structured allergy strings e.g. [\"Penicillin\", \"Ibuprofen\"]\n  medications   Json? // Structured current medication strings\n\n  // Staff Details\n  // specialized fields removed for single-doctor model\n\n  // Google Calendar integration (Admin only)\n  googleCalendarToken        String?\n  googleCalendarRefreshToken String?\n  googleCalendarConnected    Boolean @default(false)\n\n  // Password reset\n  resetToken       String?\n  resetTokenExpiry DateTime?\n\n  appointments             Appointment[]\n  patientTreatments        PatientTreatment[]\n  planChangeLogs           PlanChangeLog[]\n  auditLogs                AuditLog[]\n  expensesRecorded         Expense[]\n  dailyClosings            DailyClosing[]     @relation(\"ClosingClosedBy\")\n  submittedClosings        DailyClosing[]     @relation(\"ClosingSubmittedBy\")\n  approvedClosings         DailyClosing[]     @relation(\"ClosingApprovedBy\")\n  reopenedClosings         DailyClosing[]     @relation(\"ClosingReopenedBy\")\n  recordedPayments         Payment[]          @relation(\"RecordedPayments\")\n  labOrders                LabOrder[]\n  consentForms             ConsentForm[]      @relation(\"PatientConsents\")\n  consentsWitnessed        ConsentForm[]      @relation(\"ConsentAuthor\")\n  patientFiles             PatientFile[]      @relation(\"PatientOwnedFiles\")\n  uploadedFiles            PatientFile[]      @relation(\"FileUploader\")\n  beforeAfterPhotos        BeforeAfterPhoto[] @relation(\"PatientBeforeAfter\")\n  createdBeforeAfterPhotos BeforeAfterPhoto[] @relation(\"BeforeAfterAuthor\")\n  prescriptions            Prescription[]     @relation(\"PatientPrescriptions\")\n  prescriptionsIssued      Prescription[]     @relation(\"PrescriptionAuthor\")\n  waitlistEntries          WaitlistEntry[]\n  recallReminders          RecallReminder[]\n  notificationLogs         NotificationLog[]\n  feedbacks                Feedback[]\n\n  @@index([phone])\n  @@index([role, isActive])\n}\n\nmodel Appointment {\n  id        String     @id @default(uuid())\n  startTime DateTime\n  endTime   DateTime\n  status    ApptStatus @default(SCHEDULED)\n  notes     String? // Booking notes from patient/receptionist\n\n  patientId String\n  patient   User   @relation(fields: [patientId], references: [id])\n\n  treatmentId String\n  treatment   Treatment @relation(fields: [treatmentId], references: [id])\n\n  doctorId String?\n  doctor   Doctor? @relation(fields: [doctorId], references: [id])\n\n  googleEventId String?       @unique\n  bookedBy      BookingSource @default(WEBSITE)\n\n  clinicalNotes ClinicalNote[]\n\n  amountPaid   Int?      @default(0)\n  price        Int       @default(0)\n  discount     Int       @default(0) // Discretionary discount in PKR\n  isEmergency  Boolean   @default(false)\n  createdAt    DateTime  @default(now())\n  updatedAt    DateTime  @default(now()) @updatedAt\n  checkoutTime DateTime?\n\n  // Guest Booking Details\n  guestName  String?\n  guestPhone String?\n  guestEmail String?\n  guestDob   DateTime?\n\n  // Treatment Plan Relation\n  patientTreatmentId String?\n  patientTreatment   PatientTreatment? @relation(fields: [patientTreatmentId], references: [id])\n  sessionNumber      Int?\n  sessionLabel       String?\n  plannedFee         Int? // Expected installment for this session (NOT a billing charge)\n\n  payments         Payment[]\n  labOrders        LabOrder[]\n  consentForms     ConsentForm[]\n  patientFiles     PatientFile[]\n  prescriptions    Prescription[]\n  notificationLogs NotificationLog[]\n  feedbacks        Feedback[]\n\n  @@index([patientTreatmentId])\n  @@index([doctorId])\n  @@index([startTime])\n  @@index([startTime, status])\n}\n\nmodel ClinicalNote {\n  id            String      @id @default(uuid())\n  appointmentId String\n  appointment   Appointment @relation(fields: [appointmentId], references: [id])\n\n  diagnosis      String? // What the doctor found\n  treatmentDone  String // What procedure was performed\n  prescription   String? // Medications prescribed\n  remarks        String? // Follow-up instructions, observations\n  odontogramData Json? // 32-tooth dental chart state\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Treatment {\n  id              String    @id @default(uuid())\n  name            String\n  durationMin     Int\n  price           Int\n  discountedPrice Int?\n  description     String?\n  instructions    String? // For n8n WhatsApp messages\n  isActive        Boolean   @default(true)\n  showOnWeb       Boolean   @default(true)\n  deletedAt       DateTime?\n  imageUrl        String?\n  category        String    @default(\"General\") // Cosmetic, Restorative, General, Consultations\n  isMultiSession  Boolean   @default(false)\n  defaultSessions Int       @default(1)\n\n  appointments      Appointment[]\n  patientTreatments PatientTreatment[]\n  beforeAfterPhotos BeforeAfterPhoto[]\n  waitlistEntries   WaitlistEntry[]\n  recallReminders   RecallReminder[]\n\n  @@index([isActive, showOnWeb])\n}\n\nmodel SystemSettings {\n  id                      String   @id @default(\"settings\")\n  clinicName              String   @default(\"Elite Dental & Aesthetic Centre\")\n  clinicAddress           String   @default(\"Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad\")\n  landlinePhone           String   @default(\"051-2340093\")\n  mobilePhone             String   @default(\"0303-5080011\")\n  whatsappNumber          String   @default(\"+92 314 5475528\")\n  clinicEmail             String   @default(\"info@elitedental.com\")\n  pmdcRegNumber           String   @default(\"14820-D\")\n  receiptFooter           String   @default(\"Thank you for trusting Elite Dental & Aesthetic Centre. Valid for clinical record & tax submission.\")\n  workDayStart            String   @default(\"12:00\")\n  workDayEnd              String   @default(\"20:00\")\n  breakStart              String?\n  breakEnd                String?\n  slotDurationMin         Int      @default(30)\n  bufferMin               Int      @default(0)\n  advanceNoticeMin        Int      @default(60)\n  maxBookingDaysAhead     Int      @default(60)\n  cancellationCutoffHours Int      @default(12)\n  weeklyWorkingDays       String   @default(\"Monday,Tuesday,Wednesday,Thursday,Friday,Saturday\")\n  messageTemplates        Json?\n  publicContent           Json?\n  updatedAt               DateTime @default(now()) @updatedAt\n}\n\nmodel ClinicHoliday {\n  id        String   @id @default(uuid())\n  title     String\n  startDate DateTime\n  endDate   DateTime\n  reason    String?\n  showOnWeb Boolean  @default(true)\n  isActive  Boolean  @default(true)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// ─── Billing & Treatment Plans ───────────────────────────\n\nenum PaymentMethod {\n  CASH\n  CARD\n  ONLINE\n  BANK_TRANSFER\n  JAZZCASH\n  EASYPAISA\n}\n\nenum PaymentType {\n  PAYMENT\n  REFUND\n}\n\nenum ExpenseCategory {\n  RENT\n  SUPPLIES\n  LAB_FEES\n  UTILITIES\n  SALARY\n  MAINTENANCE\n  EQUIPMENT\n  MARKETING\n  OTHER\n}\n\nenum ClosingStatus {\n  SUBMITTED\n  APPROVED\n  REOPENED\n}\n\nenum LabOrderStatus {\n  SENT\n  IN_PROGRESS\n  RECEIVED\n  DELIVERED\n  CANCELLED\n}\n\nenum PatientFileType {\n  XRAY\n  PHOTO\n  REPORT\n  DOCUMENT\n}\n\nenum WaitlistStatus {\n  WAITING\n  NOTIFIED\n  BOOKED\n  CANCELLED\n  EXPIRED\n}\n\nenum RecallStatus {\n  PENDING\n  SENT\n  BOOKED\n  DISMISSED\n}\n\nenum NotificationChannel {\n  WHATSAPP\n  EMAIL\n  SMS\n}\n\nenum NotificationDeliveryStatus {\n  PENDING\n  SENT\n  FAILED\n  SKIPPED\n}\n\nenum FeedbackSource {\n  WEBSITE\n  GOOGLE\n  VERIFIED_PATIENT\n}\n\nenum TreatmentStatus {\n  ONGOING\n  COMPLETED\n  FULLY_PAID\n}\n\nenum ClinicalStatus {\n  IN_PROGRESS\n  COMPLETED\n  DISCONTINUED\n}\n\nenum FinancialStatus {\n  UNPAID\n  PARTIALLY_PAID\n  FULLY_PAID\n}\n\nmodel PatientTreatment {\n  id          String    @id @default(uuid())\n  patientId   String\n  patient     User      @relation(fields: [patientId], references: [id])\n  treatmentId String\n  treatment   Treatment @relation(fields: [treatmentId], references: [id])\n\n  totalCost     Int // Total agreed price (e.g., 100,000 for braces)\n  totalSessions Int @default(1)\n\n  // Lifecycle enums\n  clinicalStatus  ClinicalStatus  @default(IN_PROGRESS)\n  financialStatus FinancialStatus @default(UNPAID)\n\n  // Legacy status column retained during transition\n  status TreatmentStatus @default(ONGOING)\n\n  startDate DateTime @default(now())\n  updatedAt DateTime @default(now()) @updatedAt\n\n  appointments Appointment[]\n  payments     Payment[]\n  changeLogs   PlanChangeLog[]\n\n  @@index([patientId])\n  @@index([clinicalStatus])\n}\n\nmodel PlanChangeLog {\n  id                 String           @id @default(uuid())\n  patientTreatmentId String\n  patientTreatment   PatientTreatment @relation(fields: [patientTreatmentId], references: [id], onDelete: Cascade)\n  changedByUserId    String?\n  changedByUser      User?            @relation(fields: [changedByUserId], references: [id])\n  field              String // \"totalCost\" | \"totalSessions\" | \"clinicalStatus\" | \"plannedFee\"\n  oldValue           String\n  newValue           String\n  createdAt          DateTime         @default(now())\n\n  @@index([patientTreatmentId])\n}\n\nmodel Payment {\n  id                String        @id @default(uuid())\n  amount            Int\n  type              PaymentType   @default(PAYMENT)\n  method            PaymentMethod @default(CASH)\n  date              DateTime      @default(now())\n  notes             String?\n  refundedPaymentId String?\n  refundedPayment   Payment?      @relation(\"PaymentRefunds\", fields: [refundedPaymentId], references: [id], onDelete: SetNull)\n  refunds           Payment[]     @relation(\"PaymentRefunds\")\n  recordedById      String?\n  recordedBy        User?         @relation(\"RecordedPayments\", fields: [recordedById], references: [id], onDelete: SetNull)\n\n  patientTreatmentId String\n  patientTreatment   PatientTreatment @relation(fields: [patientTreatmentId], references: [id])\n\n  appointmentId String?\n  appointment   Appointment? @relation(fields: [appointmentId], references: [id])\n\n  @@index([date])\n  @@index([type, date])\n  @@index([patientTreatmentId])\n  @@index([appointmentId])\n  @@index([refundedPaymentId])\n}\n\nmodel Expense {\n  id            String          @id @default(uuid())\n  title         String\n  category      ExpenseCategory @default(SUPPLIES)\n  amount        Int\n  method        PaymentMethod   @default(CASH)\n  expenseDate   DateTime        @default(now())\n  vendor        String?\n  notes         String?\n  receiptFileId String?\n  deletedAt     DateTime?\n  recordedById  String?\n  recordedBy    User?           @relation(fields: [recordedById], references: [id], onDelete: SetNull)\n  createdAt     DateTime        @default(now())\n  updatedAt     DateTime        @updatedAt\n\n  @@index([expenseDate])\n  @@index([category])\n  @@index([deletedAt])\n}\n\nmodel DailyClosing {\n  id                    String        @id @default(uuid())\n  closingDate           DateTime      @unique\n  openingCash           Int           @default(0)\n  openingNote           String?\n  cashCollected         Int           @default(0)\n  cardCollected         Int           @default(0)\n  onlineCollected       Int           @default(0)\n  bankTransferCollected Int           @default(0)\n  jazzcashCollected     Int           @default(0)\n  easypaisaCollected    Int           @default(0)\n  refundsTotal          Int           @default(0)\n  cashRefundsTotal      Int           @default(0)\n  expensesTotal         Int           @default(0)\n  cashExpensesTotal     Int           @default(0)\n  expectedCash          Int           @default(0)\n  actualCash            Int           @default(0)\n  variance              Int           @default(0)\n  status                ClosingStatus @default(SUBMITTED)\n  notes                 String?\n  submittedById         String?\n  submittedBy           User?         @relation(\"ClosingSubmittedBy\", fields: [submittedById], references: [id], onDelete: SetNull)\n  submittedAt           DateTime      @default(now())\n  approvedById          String?\n  approvedBy            User?         @relation(\"ClosingApprovedBy\", fields: [approvedById], references: [id], onDelete: SetNull)\n  approvedAt            DateTime?\n  reopenedById          String?\n  reopenedBy            User?         @relation(\"ClosingReopenedBy\", fields: [reopenedById], references: [id], onDelete: SetNull)\n  reopenedAt            DateTime?\n  reopenReason          String?\n  closedById            String?\n  closedBy              User?         @relation(\"ClosingClosedBy\", fields: [closedById], references: [id], onDelete: SetNull)\n  closedAt              DateTime      @default(now())\n\n  @@index([closingDate])\n  @@index([status])\n}\n\nmodel LabOrder {\n  id            String         @id @default(uuid())\n  patientId     String\n  patient       User           @relation(fields: [patientId], references: [id])\n  appointmentId String?\n  appointment   Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: SetNull)\n  labName       String\n  workType      String\n  toothNumbers  String?\n  shade         String?\n  cost          Int            @default(0)\n  status        LabOrderStatus @default(SENT)\n  sentDate      DateTime       @default(now())\n  expectedDate  DateTime?\n  receivedDate  DateTime?\n  deliveredDate DateTime?\n  notes         String?\n  createdAt     DateTime       @default(now())\n  updatedAt     DateTime       @updatedAt\n\n  @@index([patientId])\n  @@index([status])\n  @@index([expectedDate])\n}\n\nmodel ConsentForm {\n  id             String        @id @default(uuid())\n  patientId      String\n  patient        User          @relation(\"PatientConsents\", fields: [patientId], references: [id])\n  appointmentId  String?\n  appointment    Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)\n  title          String\n  procedureName  String?\n  content        String\n  version        Int           @default(1)\n  supersededById String?\n  supersededBy   ConsentForm?  @relation(\"ConsentSupersede\", fields: [supersededById], references: [id], onDelete: SetNull)\n  supersedes     ConsentForm[] @relation(\"ConsentSupersede\")\n  signatureData  String?\n  signedByName   String\n  signedAt       DateTime      @default(now())\n  witnessName    String?\n  createdById    String?\n  createdBy      User?         @relation(\"ConsentAuthor\", fields: [createdById], references: [id], onDelete: SetNull)\n  createdAt      DateTime      @default(now())\n\n  @@index([patientId])\n  @@index([appointmentId])\n}\n\nmodel PatientFile {\n  id               String          @id @default(uuid())\n  patientId        String\n  patient          User            @relation(\"PatientOwnedFiles\", fields: [patientId], references: [id])\n  appointmentId    String?\n  appointment      Appointment?    @relation(fields: [appointmentId], references: [id], onDelete: SetNull)\n  fileType         PatientFileType @default(DOCUMENT)\n  title            String\n  storagePath      String\n  mimeType         String\n  sizeBytes        Int\n  notes            String?\n  hasConsent       Boolean         @default(false)\n  visibleToPatient Boolean         @default(false)\n  uploadedById     String?\n  uploadedBy       User?           @relation(\"FileUploader\", fields: [uploadedById], references: [id], onDelete: SetNull)\n  deletedAt        DateTime?\n  createdAt        DateTime        @default(now())\n\n  @@index([patientId])\n  @@index([fileType])\n}\n\nmodel BeforeAfterPhoto {\n  id              String     @id @default(uuid())\n  patientId       String\n  patient         User       @relation(\"PatientBeforeAfter\", fields: [patientId], references: [id])\n  treatmentId     String?\n  treatment       Treatment? @relation(fields: [treatmentId], references: [id], onDelete: SetNull)\n  title           String\n  beforeImagePath String\n  afterImagePath  String\n  beforeFileId    String?\n  afterFileId     String?\n  notes           String?\n  hasConsent      Boolean    @default(false)\n  showOnWeb       Boolean    @default(false)\n  takenAt         DateTime   @default(now())\n  createdById     String?\n  createdBy       User?      @relation(\"BeforeAfterAuthor\", fields: [createdById], references: [id], onDelete: SetNull)\n  createdAt       DateTime   @default(now())\n\n  @@index([patientId])\n  @@index([treatmentId])\n  @@index([hasConsent, showOnWeb])\n}\n\nmodel Prescription {\n  id              String       @id @default(uuid())\n  patientId       String\n  patient         User         @relation(\"PatientPrescriptions\", fields: [patientId], references: [id])\n  appointmentId   String?\n  appointment     Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)\n  prescribedById  String?\n  prescribedBy    User?        @relation(\"PrescriptionAuthor\", fields: [prescribedById], references: [id], onDelete: SetNull)\n  doctorName      String\n  doctorPmdc      String?\n  entries         Json\n  allergyWarnings Json?\n  notes           String?\n  createdAt       DateTime     @default(now())\n\n  @@index([patientId])\n  @@index([appointmentId])\n}\n\nmodel WaitlistEntry {\n  id                String         @id @default(uuid())\n  patientId         String?\n  patient           User?          @relation(fields: [patientId], references: [id], onDelete: SetNull)\n  patientName       String\n  patientPhone      String\n  treatmentId       String?\n  treatment         Treatment?     @relation(fields: [treatmentId], references: [id], onDelete: SetNull)\n  preferredDate     DateTime\n  preferredTimeSlot String?\n  notes             String?\n  status            WaitlistStatus @default(WAITING)\n  notifiedAt        DateTime?\n  createdAt         DateTime       @default(now())\n  updatedAt         DateTime       @updatedAt\n\n  @@index([status, preferredDate])\n  @@index([patientPhone])\n}\n\nmodel RecallReminder {\n  id             String       @id @default(uuid())\n  patientId      String\n  patient        User         @relation(fields: [patientId], references: [id])\n  treatmentId    String?\n  treatment      Treatment?   @relation(fields: [treatmentId], references: [id], onDelete: SetNull)\n  dueDate        DateTime\n  intervalMonths Int          @default(6)\n  status         RecallStatus @default(PENDING)\n  sentAt         DateTime?\n  notes          String?\n  createdAt      DateTime     @default(now())\n  updatedAt      DateTime     @updatedAt\n\n  @@index([status, dueDate])\n  @@index([patientId])\n}\n\nmodel NotificationLog {\n  id               String                     @id @default(uuid())\n  patientId        String?\n  patient          User?                      @relation(fields: [patientId], references: [id], onDelete: SetNull)\n  appointmentId    String?\n  appointment      Appointment?               @relation(fields: [appointmentId], references: [id], onDelete: SetNull)\n  channel          NotificationChannel\n  recipient        String\n  templateKey      String\n  messagePreview   String?\n  status           NotificationDeliveryStatus @default(PENDING)\n  providerResponse String?\n  errorMessage     String?\n  sentAt           DateTime?\n  createdAt        DateTime                   @default(now())\n\n  @@index([status, createdAt])\n  @@index([patientId])\n  @@index([appointmentId])\n}\n\nmodel Feedback {\n  id             String         @id @default(uuid())\n  appointmentId  String?\n  appointment    Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: SetNull)\n  patientId      String?\n  patient        User?          @relation(fields: [patientId], references: [id], onDelete: SetNull)\n  patientName    String\n  patientEmail   String?\n  treatmentName  String?\n  rating         Int\n  comment        String\n  source         FeedbackSource @default(VERIFIED_PATIENT)\n  isPublished    Boolean        @default(true)\n  clinicResponse String?\n  respondedAt    DateTime?\n  createdAt      DateTime       @default(now())\n  updatedAt      DateTime       @updatedAt\n\n  @@index([isPublished, createdAt])\n  @@index([appointmentId])\n}\n\n// ─── Inventory ───────────────────────────────────────────\n\nmodel Inventory {\n  id           String   @id @default(uuid())\n  itemName     String\n  quantity     Int      @default(0)\n  minThreshold Int      @default(5)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n\n// ─── Clinical Staff & Doctors ────────────────────────────\n\nmodel Doctor {\n  id                String        @id @default(uuid())\n  name              String\n  role              String // e.g. \"Chief Dental Surgeon & Head of Implantology\"\n  pmdcReg           String // e.g. \"14820-D\"\n  qualifications    String // e.g. \"BDS, RDS, FCPS\"\n  experience        String // e.g. \"12+ Years\"\n  specialty         String // e.g. \"Implantology, Cosmetic Dentistry\"\n  operatory         String // e.g. \"Chair 1 · Surgical Suite A\"\n  schedule          String // e.g. \"Mon – Sat: 12:00 PM – 8:00 PM\"\n  consultationFee   Int           @default(2000)\n  patientsThisMonth Int           @default(0)\n  image             String?       @default(\"/dr_sheriyaar.webp\")\n  isLead            Boolean       @default(false)\n  isActive          Boolean       @default(true)\n  unavailableFrom   DateTime?\n  unavailableTo     DateTime?\n  unavailableReason String?\n  appointments      Appointment[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// ─── Security & Audit Governance ─────────────────────────\n\nmodel AuditLog {\n  id        String   @id @default(uuid())\n  userId    String?\n  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)\n  action    String\n  entity    String\n  entityId  String?\n  details   Json?\n  ipAddress String?\n  createdAt DateTime @default(now())\n\n  @@index([userId])\n  @@index([entity, entityId])\n  @@index([action])\n  @@index([createdAt])\n}\n\nmodel LoginAttempt {\n  id           String    @id @default(uuid())\n  identifier   String    @unique\n  failedCount  Int       @default(0)\n  lastFailedAt DateTime  @default(now())\n  lockedUntil  DateTime?\n  updatedAt    DateTime  @updatedAt\n}\n",
+  "inlineSchemaHash": "cac336c8c4bba9ff9405102b9eaf454cb704f8bbef6fb3a639a233385b9fce7f",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"patientCode\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"noShowCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"dateOfBirth\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"gender\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"medicalAlerts\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"googleCalendarToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"googleCalendarRefreshToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"googleCalendarConnected\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"resetToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"resetTokenExpiry\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToUser\"},{\"name\":\"patientTreatments\",\"kind\":\"object\",\"type\":\"PatientTreatment\",\"relationName\":\"PatientTreatmentToUser\"},{\"name\":\"planChangeLogs\",\"kind\":\"object\",\"type\":\"PlanChangeLog\",\"relationName\":\"PlanChangeLogToUser\"}],\"dbName\":null},\"Appointment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ApptStatus\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AppointmentToUser\"},{\"name\":\"treatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatment\",\"kind\":\"object\",\"type\":\"Treatment\",\"relationName\":\"AppointmentToTreatment\"},{\"name\":\"doctorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"AppointmentToDoctor\"},{\"name\":\"googleEventId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bookedBy\",\"kind\":\"enum\",\"type\":\"BookingSource\"},{\"name\":\"clinicalNotes\",\"kind\":\"object\",\"type\":\"ClinicalNote\",\"relationName\":\"AppointmentToClinicalNote\"},{\"name\":\"amountPaid\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"price\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"discount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"checkoutTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"guestName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"guestPhone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"guestEmail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"guestDob\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"patientTreatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientTreatment\",\"kind\":\"object\",\"type\":\"PatientTreatment\",\"relationName\":\"AppointmentToPatientTreatment\"},{\"name\":\"sessionNumber\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"sessionLabel\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"plannedFee\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"payments\",\"kind\":\"object\",\"type\":\"Payment\",\"relationName\":\"AppointmentToPayment\"}],\"dbName\":null},\"ClinicalNote\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToClinicalNote\"},{\"name\":\"diagnosis\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatmentDone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"prescription\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"remarks\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"odontogramData\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Treatment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"durationMin\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"price\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"discountedPrice\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"instructions\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"imageUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"category\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isMultiSession\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"defaultSessions\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToTreatment\"},{\"name\":\"patientTreatments\",\"kind\":\"object\",\"type\":\"PatientTreatment\",\"relationName\":\"PatientTreatmentToTreatment\"}],\"dbName\":null},\"SystemSettings\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clinicName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clinicAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"landlinePhone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"mobilePhone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"whatsappNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clinicEmail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pmdcRegNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"receiptFooter\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workDayStart\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workDayEnd\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"slotDurationMin\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"weeklyWorkingDays\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ClinicHoliday\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"reason\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"showOnWeb\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"PatientTreatment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PatientTreatmentToUser\"},{\"name\":\"treatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatment\",\"kind\":\"object\",\"type\":\"Treatment\",\"relationName\":\"PatientTreatmentToTreatment\"},{\"name\":\"totalCost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"totalSessions\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"clinicalStatus\",\"kind\":\"enum\",\"type\":\"ClinicalStatus\"},{\"name\":\"financialStatus\",\"kind\":\"enum\",\"type\":\"FinancialStatus\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"TreatmentStatus\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToPatientTreatment\"},{\"name\":\"payments\",\"kind\":\"object\",\"type\":\"Payment\",\"relationName\":\"PatientTreatmentToPayment\"},{\"name\":\"changeLogs\",\"kind\":\"object\",\"type\":\"PlanChangeLog\",\"relationName\":\"PatientTreatmentToPlanChangeLog\"}],\"dbName\":null},\"PlanChangeLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientTreatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientTreatment\",\"kind\":\"object\",\"type\":\"PatientTreatment\",\"relationName\":\"PatientTreatmentToPlanChangeLog\"},{\"name\":\"changedByUserId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"changedByUser\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PlanChangeLogToUser\"},{\"name\":\"field\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"oldValue\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"newValue\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Payment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"method\",\"kind\":\"enum\",\"type\":\"PaymentMethod\"},{\"name\":\"date\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientTreatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientTreatment\",\"kind\":\"object\",\"type\":\"PatientTreatment\",\"relationName\":\"PatientTreatmentToPayment\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToPayment\"}],\"dbName\":null},\"Inventory\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"itemName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"quantity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"minThreshold\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Doctor\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pmdcReg\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"qualifications\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"experience\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"specialty\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"operatory\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"schedule\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"consultationFee\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"patientsThisMonth\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"image\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isLead\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToDoctor\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"patientCode\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"noShowCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"tokenVersion\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"mustChangePassword\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"recallOptOut\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"dateOfBirth\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"gender\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"medicalAlerts\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"allergies\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"medications\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"googleCalendarToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"googleCalendarRefreshToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"googleCalendarConnected\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"resetToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"resetTokenExpiry\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToUser\"},{\"name\":\"patientTreatments\",\"kind\":\"object\",\"type\":\"PatientTreatment\",\"relationName\":\"PatientTreatmentToUser\"},{\"name\":\"planChangeLogs\",\"kind\":\"object\",\"type\":\"PlanChangeLog\",\"relationName\":\"PlanChangeLogToUser\"},{\"name\":\"auditLogs\",\"kind\":\"object\",\"type\":\"AuditLog\",\"relationName\":\"AuditLogToUser\"},{\"name\":\"expensesRecorded\",\"kind\":\"object\",\"type\":\"Expense\",\"relationName\":\"ExpenseToUser\"},{\"name\":\"dailyClosings\",\"kind\":\"object\",\"type\":\"DailyClosing\",\"relationName\":\"ClosingClosedBy\"},{\"name\":\"submittedClosings\",\"kind\":\"object\",\"type\":\"DailyClosing\",\"relationName\":\"ClosingSubmittedBy\"},{\"name\":\"approvedClosings\",\"kind\":\"object\",\"type\":\"DailyClosing\",\"relationName\":\"ClosingApprovedBy\"},{\"name\":\"reopenedClosings\",\"kind\":\"object\",\"type\":\"DailyClosing\",\"relationName\":\"ClosingReopenedBy\"},{\"name\":\"recordedPayments\",\"kind\":\"object\",\"type\":\"Payment\",\"relationName\":\"RecordedPayments\"},{\"name\":\"labOrders\",\"kind\":\"object\",\"type\":\"LabOrder\",\"relationName\":\"LabOrderToUser\"},{\"name\":\"consentForms\",\"kind\":\"object\",\"type\":\"ConsentForm\",\"relationName\":\"PatientConsents\"},{\"name\":\"consentsWitnessed\",\"kind\":\"object\",\"type\":\"ConsentForm\",\"relationName\":\"ConsentAuthor\"},{\"name\":\"patientFiles\",\"kind\":\"object\",\"type\":\"PatientFile\",\"relationName\":\"PatientOwnedFiles\"},{\"name\":\"uploadedFiles\",\"kind\":\"object\",\"type\":\"PatientFile\",\"relationName\":\"FileUploader\"},{\"name\":\"beforeAfterPhotos\",\"kind\":\"object\",\"type\":\"BeforeAfterPhoto\",\"relationName\":\"PatientBeforeAfter\"},{\"name\":\"createdBeforeAfterPhotos\",\"kind\":\"object\",\"type\":\"BeforeAfterPhoto\",\"relationName\":\"BeforeAfterAuthor\"},{\"name\":\"prescriptions\",\"kind\":\"object\",\"type\":\"Prescription\",\"relationName\":\"PatientPrescriptions\"},{\"name\":\"prescriptionsIssued\",\"kind\":\"object\",\"type\":\"Prescription\",\"relationName\":\"PrescriptionAuthor\"},{\"name\":\"waitlistEntries\",\"kind\":\"object\",\"type\":\"WaitlistEntry\",\"relationName\":\"UserToWaitlistEntry\"},{\"name\":\"recallReminders\",\"kind\":\"object\",\"type\":\"RecallReminder\",\"relationName\":\"RecallReminderToUser\"},{\"name\":\"notificationLogs\",\"kind\":\"object\",\"type\":\"NotificationLog\",\"relationName\":\"NotificationLogToUser\"},{\"name\":\"feedbacks\",\"kind\":\"object\",\"type\":\"Feedback\",\"relationName\":\"FeedbackToUser\"}],\"dbName\":null},\"Appointment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ApptStatus\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AppointmentToUser\"},{\"name\":\"treatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatment\",\"kind\":\"object\",\"type\":\"Treatment\",\"relationName\":\"AppointmentToTreatment\"},{\"name\":\"doctorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"AppointmentToDoctor\"},{\"name\":\"googleEventId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bookedBy\",\"kind\":\"enum\",\"type\":\"BookingSource\"},{\"name\":\"clinicalNotes\",\"kind\":\"object\",\"type\":\"ClinicalNote\",\"relationName\":\"AppointmentToClinicalNote\"},{\"name\":\"amountPaid\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"price\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"discount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"isEmergency\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"checkoutTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"guestName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"guestPhone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"guestEmail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"guestDob\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"patientTreatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientTreatment\",\"kind\":\"object\",\"type\":\"PatientTreatment\",\"relationName\":\"AppointmentToPatientTreatment\"},{\"name\":\"sessionNumber\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"sessionLabel\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"plannedFee\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"payments\",\"kind\":\"object\",\"type\":\"Payment\",\"relationName\":\"AppointmentToPayment\"},{\"name\":\"labOrders\",\"kind\":\"object\",\"type\":\"LabOrder\",\"relationName\":\"AppointmentToLabOrder\"},{\"name\":\"consentForms\",\"kind\":\"object\",\"type\":\"ConsentForm\",\"relationName\":\"AppointmentToConsentForm\"},{\"name\":\"patientFiles\",\"kind\":\"object\",\"type\":\"PatientFile\",\"relationName\":\"AppointmentToPatientFile\"},{\"name\":\"prescriptions\",\"kind\":\"object\",\"type\":\"Prescription\",\"relationName\":\"AppointmentToPrescription\"},{\"name\":\"notificationLogs\",\"kind\":\"object\",\"type\":\"NotificationLog\",\"relationName\":\"AppointmentToNotificationLog\"},{\"name\":\"feedbacks\",\"kind\":\"object\",\"type\":\"Feedback\",\"relationName\":\"AppointmentToFeedback\"}],\"dbName\":null},\"ClinicalNote\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToClinicalNote\"},{\"name\":\"diagnosis\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatmentDone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"prescription\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"remarks\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"odontogramData\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Treatment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"durationMin\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"price\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"discountedPrice\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"instructions\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"showOnWeb\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"imageUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"category\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isMultiSession\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"defaultSessions\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToTreatment\"},{\"name\":\"patientTreatments\",\"kind\":\"object\",\"type\":\"PatientTreatment\",\"relationName\":\"PatientTreatmentToTreatment\"},{\"name\":\"beforeAfterPhotos\",\"kind\":\"object\",\"type\":\"BeforeAfterPhoto\",\"relationName\":\"BeforeAfterPhotoToTreatment\"},{\"name\":\"waitlistEntries\",\"kind\":\"object\",\"type\":\"WaitlistEntry\",\"relationName\":\"TreatmentToWaitlistEntry\"},{\"name\":\"recallReminders\",\"kind\":\"object\",\"type\":\"RecallReminder\",\"relationName\":\"RecallReminderToTreatment\"}],\"dbName\":null},\"SystemSettings\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clinicName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clinicAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"landlinePhone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"mobilePhone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"whatsappNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clinicEmail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pmdcRegNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"receiptFooter\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workDayStart\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workDayEnd\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"breakStart\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"breakEnd\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"slotDurationMin\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"bufferMin\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"advanceNoticeMin\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"maxBookingDaysAhead\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"cancellationCutoffHours\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"weeklyWorkingDays\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"messageTemplates\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"publicContent\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ClinicHoliday\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"reason\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"showOnWeb\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"PatientTreatment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PatientTreatmentToUser\"},{\"name\":\"treatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatment\",\"kind\":\"object\",\"type\":\"Treatment\",\"relationName\":\"PatientTreatmentToTreatment\"},{\"name\":\"totalCost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"totalSessions\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"clinicalStatus\",\"kind\":\"enum\",\"type\":\"ClinicalStatus\"},{\"name\":\"financialStatus\",\"kind\":\"enum\",\"type\":\"FinancialStatus\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"TreatmentStatus\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToPatientTreatment\"},{\"name\":\"payments\",\"kind\":\"object\",\"type\":\"Payment\",\"relationName\":\"PatientTreatmentToPayment\"},{\"name\":\"changeLogs\",\"kind\":\"object\",\"type\":\"PlanChangeLog\",\"relationName\":\"PatientTreatmentToPlanChangeLog\"}],\"dbName\":null},\"PlanChangeLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientTreatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientTreatment\",\"kind\":\"object\",\"type\":\"PatientTreatment\",\"relationName\":\"PatientTreatmentToPlanChangeLog\"},{\"name\":\"changedByUserId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"changedByUser\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PlanChangeLogToUser\"},{\"name\":\"field\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"oldValue\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"newValue\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Payment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"PaymentType\"},{\"name\":\"method\",\"kind\":\"enum\",\"type\":\"PaymentMethod\"},{\"name\":\"date\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"refundedPaymentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"refundedPayment\",\"kind\":\"object\",\"type\":\"Payment\",\"relationName\":\"PaymentRefunds\"},{\"name\":\"refunds\",\"kind\":\"object\",\"type\":\"Payment\",\"relationName\":\"PaymentRefunds\"},{\"name\":\"recordedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"recordedBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"RecordedPayments\"},{\"name\":\"patientTreatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientTreatment\",\"kind\":\"object\",\"type\":\"PatientTreatment\",\"relationName\":\"PatientTreatmentToPayment\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToPayment\"}],\"dbName\":null},\"Expense\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"category\",\"kind\":\"enum\",\"type\":\"ExpenseCategory\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"method\",\"kind\":\"enum\",\"type\":\"PaymentMethod\"},{\"name\":\"expenseDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"vendor\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"receiptFileId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"recordedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"recordedBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ExpenseToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"DailyClosing\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"closingDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"openingCash\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"openingNote\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"cashCollected\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"cardCollected\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"onlineCollected\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"bankTransferCollected\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"jazzcashCollected\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"easypaisaCollected\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"refundsTotal\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"cashRefundsTotal\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"expensesTotal\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"cashExpensesTotal\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"expectedCash\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"actualCash\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"variance\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ClosingStatus\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"submittedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"submittedBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ClosingSubmittedBy\"},{\"name\":\"submittedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"approvedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"approvedBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ClosingApprovedBy\"},{\"name\":\"approvedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"reopenedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"reopenedBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ClosingReopenedBy\"},{\"name\":\"reopenedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"reopenReason\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"closedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"closedBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ClosingClosedBy\"},{\"name\":\"closedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"LabOrder\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"LabOrderToUser\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToLabOrder\"},{\"name\":\"labName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"toothNumbers\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"shade\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"cost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"LabOrderStatus\"},{\"name\":\"sentDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"expectedDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"receivedDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"deliveredDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ConsentForm\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PatientConsents\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToConsentForm\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"procedureName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"version\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"supersededById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"supersededBy\",\"kind\":\"object\",\"type\":\"ConsentForm\",\"relationName\":\"ConsentSupersede\"},{\"name\":\"supersedes\",\"kind\":\"object\",\"type\":\"ConsentForm\",\"relationName\":\"ConsentSupersede\"},{\"name\":\"signatureData\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"signedByName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"signedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"witnessName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ConsentAuthor\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"PatientFile\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PatientOwnedFiles\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToPatientFile\"},{\"name\":\"fileType\",\"kind\":\"enum\",\"type\":\"PatientFileType\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"storagePath\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"mimeType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sizeBytes\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"hasConsent\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"visibleToPatient\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"uploadedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uploadedBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"FileUploader\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"BeforeAfterPhoto\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PatientBeforeAfter\"},{\"name\":\"treatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatment\",\"kind\":\"object\",\"type\":\"Treatment\",\"relationName\":\"BeforeAfterPhotoToTreatment\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"beforeImagePath\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"afterImagePath\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"beforeFileId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"afterFileId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"hasConsent\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"showOnWeb\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"takenAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"BeforeAfterAuthor\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Prescription\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PatientPrescriptions\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToPrescription\"},{\"name\":\"prescribedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"prescribedBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PrescriptionAuthor\"},{\"name\":\"doctorName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctorPmdc\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"entries\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"allergyWarnings\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"WaitlistEntry\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToWaitlistEntry\"},{\"name\":\"patientName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientPhone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatment\",\"kind\":\"object\",\"type\":\"Treatment\",\"relationName\":\"TreatmentToWaitlistEntry\"},{\"name\":\"preferredDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"preferredTimeSlot\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"WaitlistStatus\"},{\"name\":\"notifiedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"RecallReminder\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"RecallReminderToUser\"},{\"name\":\"treatmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatment\",\"kind\":\"object\",\"type\":\"Treatment\",\"relationName\":\"RecallReminderToTreatment\"},{\"name\":\"dueDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"intervalMonths\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"RecallStatus\"},{\"name\":\"sentAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"NotificationLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"NotificationLogToUser\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToNotificationLog\"},{\"name\":\"channel\",\"kind\":\"enum\",\"type\":\"NotificationChannel\"},{\"name\":\"recipient\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"templateKey\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"messagePreview\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"NotificationDeliveryStatus\"},{\"name\":\"providerResponse\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"errorMessage\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sentAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Feedback\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToFeedback\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"FeedbackToUser\"},{\"name\":\"patientName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientEmail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"treatmentName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rating\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"comment\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source\",\"kind\":\"enum\",\"type\":\"FeedbackSource\"},{\"name\":\"isPublished\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"clinicResponse\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"respondedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Inventory\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"itemName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"quantity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"minThreshold\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Doctor\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pmdcReg\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"qualifications\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"experience\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"specialty\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"operatory\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"schedule\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"consultationFee\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"patientsThisMonth\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"image\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isLead\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"unavailableFrom\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"unavailableTo\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"unavailableReason\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToDoctor\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"AuditLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AuditLogToUser\"},{\"name\":\"action\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"entity\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"entityId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"details\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"ipAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"LoginAttempt\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"identifier\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"failedCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"lastFailedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"lockedUntil\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

@@ -1,16 +1,15 @@
 import prisma from "@/lib/prisma";
-import TreatmentManager from "@/components/admin/TreatmentManager";
+import { requireRole } from "@/lib/auth/permissions";
+import ServicesView from "@/features/services/ServicesView";
 
 export default async function AdminServicesPage() {
+    await requireRole(["ADMIN"], { callbackUrl: "/admin/services" });
+
     const treatments = await prisma.treatment.findMany({
+        where: { deletedAt: null },
         orderBy: { name: "asc" },
-        include: { _count: { select: { appointments: true } } },
+        include: { _count: { select: { appointments: true, patientTreatments: true } } },
     });
 
-    // Serialize for client component
-    const serialized = treatments.map((t) => ({
-        ...t,
-    }));
-
-    return <TreatmentManager initialTreatments={serialized} />;
+    return <ServicesView initialServices={treatments} />;
 }

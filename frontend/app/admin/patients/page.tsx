@@ -1,9 +1,12 @@
 import prisma from "@/lib/prisma";
+import { requireRole } from "@/lib/auth/permissions";
 import PatientsTable from "./PatientsTable";
 
 export default async function AdminPatientsPage() {
+    await requireRole(["ADMIN"], { callbackUrl: "/admin/patients" });
+
     const patients = await prisma.user.findMany({
-        where: { role: "PATIENT" },
+        where: { role: "PATIENT", deletedAt: null },
         include: {
             appointments: {
                 select: {

@@ -12,6 +12,8 @@ import {
     decrypt,
 } from '../lib/auth';
 import { sendPasswordResetEmail, sendAccountSetupEmail } from '../lib/email';
+import { logAudit } from '../lib/audit';
+import { checkLoginLockout, recordLoginFailure, clearLoginFailures } from '../lib/loginLockout';
 import { extractToken, requireAuth } from '../middleware/auth.middleware';
 import { syncUpcomingAppointmentsToGoogleCalendar } from '../lib/googleCalendar';
 
@@ -41,6 +43,27 @@ router.post('/login', async (req: Request, res: Response) => {
 
         const { email, password } = parseResult.data;
         const normalizedEmail = email.toLowerCase().trim();
+        const clientIp =
+            (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ||
+            req.ip ||
+            'unknown';
+
+        const lockout = await checkLoginLockout(normalizedEmail, clientIp);
+        if (lockout.locked) {
+            const retryMin = Math.max(1, Math.ceil((lockout.retryAfterSeconds || 60) / 60));
+            res.setHeader('Retry-After', String(lockout.retryAfterSeconds || 60));
+            await logAudit({
+                userId: null,
+                action: 'LOGIN_LOCKED',
+                entity: 'Auth',
+                details: { email: normalizedEmail, retryAfterSeconds: lockout.retryAfterSeconds },
+                ipAddress: clientIp,
+            });
+            return res.status(429).json({
+                error: `Too many failed login attempts. Try again in ${retryMin} minute(s).`,
+            });
+        }
+
         const user = await prisma.user.findFirst({
             where: {
                 OR: [
@@ -52,13 +75,44 @@ router.post('/login', async (req: Request, res: Response) => {
         });
 
         if (!user || !user.password) {
+            const failState = await recordLoginFailure(normalizedEmail, clientIp);
+            await logAudit({
+                userId: user?.id || null,
+                action: 'LOGIN_FAILED',
+                entity: 'Auth',
+                details: { email: normalizedEmail, reason: 'USER_NOT_FOUND_OR_NO_PASSWORD', lockedNow: failState.locked },
+                ipAddress: clientIp,
+            });
+            if (failState.locked) {
+                res.setHeader('Retry-After', String(failState.retryAfterSeconds || 60));
+                return res.status(429).json({
+                    error: 'Too many failed login attempts. Account temporarily locked for 15 minutes.',
+                });
+            }
             return res.status(401).json({ error: 'Invalid email or password' });
         }
 
         const isValid = await verifyPassword(password, user.password);
         if (!isValid) {
+            const failState = await recordLoginFailure(normalizedEmail, clientIp);
+            await logAudit({
+                userId: user.id,
+                action: 'LOGIN_FAILED',
+                entity: 'Auth',
+                entityId: user.id,
+                details: { email: normalizedEmail, reason: 'INVALID_PASSWORD', lockedNow: failState.locked },
+                ipAddress: clientIp,
+            });
+            if (failState.locked) {
+                res.setHeader('Retry-After', String(failState.retryAfterSeconds || 60));
+                return res.status(429).json({
+                    error: 'Too many failed login attempts. Account temporarily locked for 15 minutes.',
+                });
+            }
             return res.status(401).json({ error: 'Invalid email or password' });
         }
+
+        await clearLoginFailures(normalizedEmail);
 
         if (user.role === 'PATIENT') {
             return res.status(403).json({
@@ -67,15 +121,31 @@ router.post('/login', async (req: Request, res: Response) => {
             });
         }
 
+        if (!user.isActive || user.deletedAt) {
+            await logAudit({
+                userId: user.id,
+                action: 'LOGIN_BLOCKED_INACTIVE',
+                entity: 'Auth',
+                entityId: user.id,
+                ipAddress: clientIp,
+            });
+            return res.status(403).json({
+                error: 'Your account has been deactivated. Contact the clinic administrator.',
+                code: 'ACCOUNT_DEACTIVATED',
+            });
+        }
+
         const accessToken = await signAccessToken({
             id: user.id,
             email: user.email,
             name: user.name,
             role: user.role,
+            tokenVersion: user.tokenVersion,
         });
 
         const refreshToken = await signRefreshToken({
             id: user.id,
+            tokenVersion: user.tokenVersion,
         });
 
         const isProduction = process.env.NODE_ENV === 'production';
@@ -103,6 +173,7 @@ router.post('/login', async (req: Request, res: Response) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                mustChangePassword: user.mustChangePassword,
             },
             token: accessToken,
         });
@@ -145,6 +216,69 @@ router.post('/logout', (_req: Request, res: Response) => {
 // GET /api/auth/me
 router.get('/me', requireAuth, (req: Request, res: Response) => {
     return res.json({ user: req.user });
+});
+
+// POST /api/auth/change-password (required: ADMIN or STAFF)
+router.post('/change-password', requireAuth, async (req: Request, res: Response) => {
+    try {
+        const schema = z.object({
+            currentPassword: z.string().min(1),
+            newPassword: z.string().min(8, 'New password must be at least 8 characters').max(100),
+        });
+        const parsed = schema.safeParse(req.body);
+        if (!parsed.success) {
+            return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid password payload' });
+        }
+
+        const dbUser = await prisma.user.findUnique({ where: { id: req.user!.id } });
+        if (!dbUser || !dbUser.password || !dbUser.isActive || dbUser.deletedAt) {
+            return res.status(401).json({ error: 'Account is not active' });
+        }
+
+        const matches = await verifyPassword(parsed.data.currentPassword, dbUser.password);
+        if (!matches) {
+            return res.status(400).json({ error: 'Current/temporary password is incorrect' });
+        }
+
+        const hashed = await hashPassword(parsed.data.newPassword);
+        const updated = await prisma.user.update({
+            where: { id: dbUser.id },
+            data: {
+                password: hashed,
+                mustChangePassword: false,
+                tokenVersion: { increment: 1 },
+            },
+            select: { id: true, email: true, name: true, role: true, tokenVersion: true },
+        });
+
+        const freshToken = await signAccessToken({
+            id: updated.id,
+            email: updated.email,
+            name: updated.name,
+            role: updated.role,
+            tokenVersion: updated.tokenVersion,
+        });
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie('session', freshToken, {
+            expires: new Date(Date.now() + 60 * 60 * 1000),
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            path: '/',
+        });
+
+        await logAudit({
+            userId: updated.id,
+            action: 'PASSWORD_CHANGED',
+            entity: 'Auth',
+            entityId: updated.id,
+            ipAddress: (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip,
+        });
+
+        return res.json({ success: true, role: updated.role });
+    } catch {
+        return res.status(500).json({ error: 'Failed to update password' });
+    }
 });
 
 // POST /api/auth/forgot-password

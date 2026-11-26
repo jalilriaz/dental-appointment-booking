@@ -84,7 +84,7 @@ export function formatPrecautionsMessage(params: {
     precautions: string[];
     doctorName?: string;
 }): string {
-    const doctor = params.doctorName || "Dr. Shehryar Akhtar";
+    const doctor = params.doctorName || "our dental specialist";
     const bullets = params.precautions.map(p => `• ${p}`).join("\n");
 
     return `🦷 *Elite Dental Centre — Post-Treatment Care*

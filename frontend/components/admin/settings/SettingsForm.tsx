@@ -115,20 +115,20 @@ export default function SettingsForm({
     const [uploadingImage, setUploadingImage] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Doctor State
+    // Doctor State (hydrated from DB via initialDoctor)
     const [doctorData, setDoctorData] = useState<DoctorSettingsData>({
-        id: initialDoctor?.id || "doc-shehryar",
-        name: initialDoctor?.name || "Dr. Shehryar Akhtar",
-        role: initialDoctor?.role || "Dental Surgeon & Orthodontist",
-        pmdcReg: initialDoctor?.pmdcReg || "14820-D (Active)",
-        qualifications: initialDoctor?.qualifications || "BDS | MDS Orthodontist (Speciality Registrar) | Certification in Restorative Dentistry",
-        experience: initialDoctor?.experience || "12+ Years",
-        specialty: initialDoctor?.specialty || "Orthodontics, Clear Aligners, Guided Implants, Cosmetic Makeovers",
-        operatory: initialDoctor?.operatory || "Chair 1 · Surgical Suite A",
+        id: initialDoctor?.id || "",
+        name: initialDoctor?.name || "Attending Dentist",
+        role: initialDoctor?.role || "Dental Surgeon",
+        pmdcReg: initialDoctor?.pmdcReg || "",
+        qualifications: initialDoctor?.qualifications || "BDS",
+        experience: initialDoctor?.experience || "",
+        specialty: initialDoctor?.specialty || "General & Restorative Dentistry",
+        operatory: initialDoctor?.operatory || "Main Operatory",
         schedule: initialDoctor?.schedule || "Mon – Sat: 12:00 PM – 8:00 PM",
         consultationFee: initialDoctor?.consultationFee ?? 2000,
         isActive: initialDoctor?.isActive !== false,
-        image: initialDoctor?.image || "/dr_sheriyaar.webp",
+        image: initialDoctor?.image || "",
     });
 
     // Form Data State
@@ -141,7 +141,7 @@ export default function SettingsForm({
         mobilePhone: initialSettings?.mobilePhone || "0303-5080011",
         whatsappNumber: initialSettings?.whatsappNumber || "+92 314 5475528",
         clinicEmail: initialSettings?.clinicEmail || "info@elitedental.com",
-        pmdcRegNumber: initialSettings?.pmdcRegNumber || "14820-D",
+        pmdcRegNumber: initialSettings?.pmdcRegNumber || "",
         receiptFooter:
             initialSettings?.receiptFooter ||
             "Thank you for trusting Elite Dental & Aesthetic Centre. Valid for clinical record & tax submission.",
@@ -259,7 +259,7 @@ export default function SettingsForm({
             }
 
             toast.success("Profile Photo Updated", {
-                description: "Dr. Shehryar's photo has been uploaded and saved.",
+                description: "Doctor profile photo has been uploaded and saved.",
             });
             router.refresh();
         } catch (err: any) {
@@ -385,7 +385,7 @@ export default function SettingsForm({
             router.refresh();
             toast.success("All Settings Saved", {
                 description:
-                    "Clinic profile, Dr. Shehryar Akhtar's credentials, and operational schedule updated successfully.",
+                    "Clinic profile, doctor credentials, and operational schedule updated successfully.",
             });
         } catch (error: any) {
             console.error(error);
@@ -674,7 +674,7 @@ export default function SettingsForm({
                                 name="pmdcRegNumber"
                                 value={formData.pmdcRegNumber}
                                 onChange={handleChange}
-                                placeholder="14820-D"
+                                placeholder="PMDC Registration #"
                                 className="rounded-xl border-slate-200 text-xs h-10"
                             />
                         </div>
@@ -707,15 +707,21 @@ export default function SettingsForm({
                                 <div
                                     className="relative group cursor-pointer shrink-0"
                                     onClick={() => fileInputRef.current?.click()}
-                                    title="Click to upload / change Dr. Shehryar's photo"
+                                    title="Click to upload / change doctor profile photo"
                                 >
                                     <div className="relative size-16 sm:size-20 rounded-2xl overflow-hidden ring-2 ring-teal-500/40 bg-slate-100 shadow-sm transition-all group-hover:ring-teal-600 group-hover:shadow-md">
-                                        <Image
-                                            src={doctorData.image || "/dr_sheriyaar.webp"}
-                                            alt={doctorData.name}
-                                            fill
-                                            className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
-                                        />
+                                        {doctorData.image ? (
+                                            <Image
+                                                src={doctorData.image}
+                                                alt={doctorData.name}
+                                                fill
+                                                className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                                            />
+                                        ) : (
+                                            <div className="size-full bg-teal-600 text-white font-bold text-lg flex items-center justify-center">
+                                                {doctorData.name.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
                                         {/* Hover Overlay */}
                                         <div className="absolute inset-0 bg-slate-950/45 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
                                             <CameraAltOutlined sx={{ fontSize: 20 }} />
@@ -744,7 +750,7 @@ export default function SettingsForm({
                                         </span>
                                     </div>
                                     <p className="text-xs text-slate-500 font-medium mt-0.5">
-                                        Manage Dr. Shehryar Akhtar&apos;s PMDC credentials, qualifications, fees, and duty status.
+                                        Manage practitioner PMDC credentials, qualifications, fees, and duty status.
                                     </p>
                                     <div className="flex items-center gap-2 mt-1.5">
                                         <button
@@ -803,7 +809,7 @@ export default function SettingsForm({
                                     name="image"
                                     value={doctorData.image || ""}
                                     onChange={handleDoctorChange}
-                                    placeholder="/dr_sheriyaar.webp or /uploads/treatments/..."
+                                    placeholder="/uploads/profile-photo.webp"
                                     className="rounded-xl border-slate-200 text-xs h-10 font-mono"
                                 />
                             </div>
@@ -820,7 +826,7 @@ export default function SettingsForm({
                                         value={doctorData.name}
                                         onChange={handleDoctorChange}
                                         required
-                                        placeholder="Dr. Shehryar Akhtar"
+                                        placeholder="Enter practitioner full name"
                                         className="rounded-xl border-slate-200 text-xs h-10 font-bold"
                                     />
                                 </div>
@@ -853,7 +859,7 @@ export default function SettingsForm({
                                         value={doctorData.pmdcReg}
                                         onChange={handleDoctorChange}
                                         required
-                                        placeholder="14820-D (Active)"
+                                        placeholder="Enter PMDC registration number"
                                         className="rounded-xl border-slate-200 text-xs h-10 font-mono font-bold"
                                     />
                                 </div>
@@ -914,7 +920,7 @@ export default function SettingsForm({
                                         name="operatory"
                                         value={doctorData.operatory}
                                         onChange={handleDoctorChange}
-                                        placeholder="Chair 1 · Surgical Suite A"
+                                        placeholder="Main Operatory · Suite A"
                                         className="rounded-xl border-slate-200 text-xs h-10"
                                     />
                                 </div>
@@ -1271,7 +1277,7 @@ export default function SettingsForm({
                                 Google Calendar Cloud Integration
                             </h2>
                             <p className="text-xs text-slate-500 font-medium">
-                                Two-way synchronization for Dr. Shehryar Akhtar. Appointments sync directly to Google Calendar in real time.
+                                Two-way synchronization for the clinic schedule. Appointments sync directly to Google Calendar in real time.
                             </p>
                         </div>
                     </div>

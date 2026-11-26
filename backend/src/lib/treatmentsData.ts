@@ -257,7 +257,7 @@ export const ALL_TREATMENTS: TreatmentSeedItem[] = [
     maxPrice: 2000,
     durationMin: 30,
     description:
-      "Comprehensive oral examination, digital intraoral inspection, and personalized treatment plan with Dr. Sheriyaar. Consultation fee waived if procedure is initiated.",
+      "Comprehensive oral examination, digital intraoral inspection, and personalized treatment plan with our attending dentist. Consultation fee waived if procedure is initiated.",
     instructions: "Please arrive 10 minutes early. Bring any previous dental X-rays if available.",
     imageUrl: null,
     isMultiSession: false,

@@ -2,6 +2,13 @@ import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { botAuthMiddleware } from '../lib/auth-bot';
 import { createAppointment } from '../lib/bookingService';
+import { checkDoctorAvailability } from '../lib/doctorAvailability';
+import {
+    exceedsMaxBookingHorizon,
+    isOverlappingBreak,
+    violatesAdvanceNotice,
+    violatesCancellationCutoff,
+} from '../lib/bookingRules';
 import { deleteCalendarEvent, updateCalendarEvent } from '../lib/googleCalendar';
 import { normalizePhone } from '../lib/phone';
 import { formatTime, formatDate } from '../lib/utils';
@@ -21,24 +28,25 @@ router.use(botAuthMiddleware);
  * Resolves patient-supplied service string or treatmentId to canonical Treatment record.
  */
 export async function resolveCanonicalTreatment(serviceType?: string, treatmentId?: string) {
+    const publicFilter = { isActive: true, showOnWeb: true, deletedAt: null };
     if (treatmentId) {
-        const tr = await prisma.treatment.findUnique({ where: { id: treatmentId } });
+        const tr = await prisma.treatment.findFirst({ where: { id: treatmentId, ...publicFilter } });
         if (tr) return tr;
     }
 
     if (!serviceType) {
         const consult = await prisma.treatment.findFirst({
-            where: { name: { contains: 'Consultation', mode: 'insensitive' }, isActive: true },
+            where: { name: { contains: 'Consultation', mode: 'insensitive' }, ...publicFilter },
         });
         if (consult) return consult;
-        return await prisma.treatment.findFirst({ where: { isActive: true } });
+        return await prisma.treatment.findFirst({ where: publicFilter });
     }
 
     const clean = serviceType.trim().toLowerCase();
 
     // 1. Direct contains match
     const directMatch = await prisma.treatment.findFirst({
-        where: { name: { contains: clean, mode: 'insensitive' }, isActive: true },
+        where: { name: { contains: clean, mode: 'insensitive' }, ...publicFilter },
     });
     if (directMatch) return directMatch;
 
@@ -92,17 +100,17 @@ export async function resolveCanonicalTreatment(serviceType?: string, treatmentI
 
     if (targetName) {
         const aliasMatch = await prisma.treatment.findFirst({
-            where: { name: { equals: targetName, mode: 'insensitive' }, isActive: true },
+            where: { name: { equals: targetName, mode: 'insensitive' }, ...publicFilter },
         });
         if (aliasMatch) return aliasMatch;
     }
 
     const defaultConsult = await prisma.treatment.findFirst({
-        where: { name: { contains: 'Consultation', mode: 'insensitive' }, isActive: true },
+        where: { name: { contains: 'Consultation', mode: 'insensitive' }, ...publicFilter },
     });
     if (defaultConsult) return defaultConsult;
 
-    return await prisma.treatment.findFirst({ where: { isActive: true } });
+    return await prisma.treatment.findFirst({ where: publicFilter });
 }
 
 // POST /api/bot/check-availability
@@ -147,12 +155,43 @@ router.post('/check-availability', async (req: Request, res: Response) => {
             });
         }
 
+        const docCheck = await checkDoctorAvailability(date);
+        if (!docCheck.available) {
+            return res.json({
+                isAvailable: false,
+                message: docCheck.reason || 'The doctor is unavailable on the requested date.',
+            });
+        }
+
+        if (exceedsMaxBookingHorizon(date, settings?.maxBookingDaysAhead ?? 60)) {
+            return res.json({
+                isAvailable: false,
+                message: `Appointments can only be booked up to ${settings?.maxBookingDaysAhead ?? 60} days ahead.`,
+            });
+        }
+
         const treatment = await resolveCanonicalTreatment(serviceType, treatmentId);
         const treatmentDuration = treatment?.durationMin || 30;
         const treatmentName = treatment?.name || 'General Consultation & Dental Checkup';
 
         const startTimeStamp = parseKarachiDateTime(date, time);
         const endTimeStamp = new Date(startTimeStamp.getTime() + treatmentDuration * 60000);
+        const [reqH, reqM] = time.split(':').map(Number);
+        const reqMin = reqH * 60 + reqM;
+
+        if (isOverlappingBreak(reqMin, reqMin + treatmentDuration, settings?.breakStart, settings?.breakEnd)) {
+            return res.json({
+                isAvailable: false,
+                message: 'That slot overlaps the clinic break window. Please choose another time.',
+            });
+        }
+
+        if (violatesAdvanceNotice(startTimeStamp, new Date(), settings?.advanceNoticeMin ?? 60)) {
+            return res.json({
+                isAvailable: false,
+                message: `Bookings require at least ${settings?.advanceNoticeMin ?? 60} minutes advance notice.`,
+            });
+        }
 
         // Check clinic working hours
         const workEnd = settings?.workDayEnd || '20:00';
@@ -167,12 +206,13 @@ router.post('/check-availability', async (req: Request, res: Response) => {
             });
         }
 
+        const bufferPadMs = (settings?.bufferMin ?? 0) * 60_000;
         const existingAppointment = await prisma.appointment.findFirst({
             where: {
                 status: { notIn: ['CANCELLED'] },
                 AND: [
-                    { startTime: { lt: endTimeStamp } },
-                    { endTime: { gt: startTimeStamp } },
+                    { startTime: { lt: new Date(endTimeStamp.getTime() + bufferPadMs) } },
+                    { endTime: { gt: new Date(startTimeStamp.getTime() - bufferPadMs) } },
                 ],
             },
         });
@@ -297,6 +337,14 @@ router.patch('/cancel', async (req: Request, res: Response) => {
 
         if (!targetAppointment) {
             return res.status(404).json({ message: 'No matching appointment found to cancel.' });
+        }
+
+        const settings = await prisma.systemSettings.findUnique({ where: { id: 'settings' } });
+        const cutoffHours = settings?.cancellationCutoffHours ?? 12;
+        if (violatesCancellationCutoff(targetAppointment.startTime, new Date(), cutoffHours)) {
+            return res.status(400).json({
+                message: `Cancellations inside ${cutoffHours} hours of the visit must be handled by calling the clinic desk.`,
+            });
         }
 
         const updatedAppointment = await prisma.appointment.update({
@@ -477,7 +525,7 @@ router.get('/daily-reminders', async (_req: Request, res: Response) => {
                     treatmentName,
                     timeString,
                     dateString,
-                    message: `Salam ${patientName}, this is a reminder for your dental appointment for ${treatmentName} today at ${timeString} with Dr. Shehryar Akhtar at Elite Dental Centre. Reply CANCEL or RESCHEDULE if needed.`,
+                    message: `Salam ${patientName}, this is a reminder for your dental appointment for ${treatmentName} today at ${timeString} at Elite Dental Centre. Reply CANCEL or RESCHEDULE if needed.`,
                 };
             });
 

@@ -38,18 +38,18 @@ interface LeadDoctorProfile {
 }
 
 const DEFAULT_DOCTOR: LeadDoctorProfile = {
-  id: "doc-shehryar",
-  name: "Dr. Shehryar Akhtar",
-  role: "Dental Surgeon & Orthodontist",
-  credentials: "BDS | MDS Orthodontist / Speciality Registrar | Certification in Restorative Dentistry (PMDC Reg: 14820-D)",
-  experience: "12+ Years Clinical Practice",
-  specialty: "Orthodontics, Clear Aligners, Guided Implants, Cosmetic Makeovers",
-  operatory: "Chair 1 · Surgical Suite A",
+  id: "",
+  name: "Attending Dentist",
+  role: "Dental Surgeon",
+  credentials: "BDS",
+  experience: "Clinical Practice",
+  specialty: "General & Restorative Dentistry",
+  operatory: "Main Operatory",
   schedule: "Mon – Sat: 12:00 PM – 8:00 PM",
   consultationFee: 2000,
   phone: "+92 314 5475528",
   patientsTodayCount: 0,
-  image: "/dr_sheriyaar.webp",
+  image: "",
   isActive: true,
 };
 
@@ -80,7 +80,7 @@ export default function StaffDoctorDutyPage() {
             id: lead.id,
             name: lead.name || DEFAULT_DOCTOR.name,
             role: lead.role || DEFAULT_DOCTOR.role,
-            credentials: `${lead.qualifications || "BDS, RDS"} (PMDC: ${lead.pmdcReg || "14820-D"})`,
+            credentials: `${lead.qualifications || "BDS"}${lead.pmdcReg ? ` (PMDC: ${lead.pmdcReg})` : ""}`,
             experience: lead.experience || DEFAULT_DOCTOR.experience,
             specialty: lead.specialty || DEFAULT_DOCTOR.specialty,
             operatory: lead.operatory || DEFAULT_DOCTOR.operatory,
@@ -130,7 +130,7 @@ export default function StaffDoctorDutyPage() {
             Doctor on Duty &amp; Clinical Operatory
           </h1>
           <p className="text-xs sm:text-sm font-medium text-slate-600 mt-0.5">
-            Live duty hours, operatory suite allocation, and patient queue status for Dr. Shehryar Akhtar.
+            Live duty hours, operatory suite allocation, and patient queue status for {doctor.name}.
           </p>
         </div>
 
@@ -190,7 +190,7 @@ export default function StaffDoctorDutyPage() {
           </div>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-xl font-black text-teal-800 truncate">
-              {doctor.operatory.split("·")[0]?.trim() || "Chair 1"}
+              {doctor.operatory.split("·")[0]?.trim() || "Main Operatory"}
             </span>
           </div>
           <p className="text-[11px] font-medium text-teal-700 mt-1 flex items-center gap-1.5">
@@ -353,7 +353,7 @@ export default function StaffDoctorDutyPage() {
             className="h-10 px-5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer ml-auto gap-1.5"
           >
             <PersonAddAlt1Outlined sx={{ fontSize: 16 }} />
-            <span>Book Walk-In for Dr. Shehryar</span>
+            <span>Book Walk-In for {doctor.name}</span>
           </Button>
         </div>
       </div>

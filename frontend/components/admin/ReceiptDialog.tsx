@@ -14,11 +14,13 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import VerifiedOutlinedIcon from "@mui/icons-material/VerifiedOutlined";
 import { formatPKR, formatDate } from "@/lib/utils";
+import { getPaymentMethodLabel } from "@/lib/constants/payment-methods";
 
 export interface ReceiptPaymentItem {
     id?: string;
     date: string;
     method?: string;
+    type?: "PAYMENT" | "REFUND" | string;
     amount: number;
     notes?: string | null;
 }
@@ -73,15 +75,15 @@ export default function ReceiptDialog({
         pmdcRegNumber?: string;
         receiptFooter?: string;
     }>({});
+    const [leadDoctor, setLeadDoctor] = useState<{ name?: string; operatory?: string; pmdcReg?: string }>({});
 
     useEffect(() => {
         if (!open) return;
         fetch("/api/settings/public")
             .then((res) => (res.ok ? res.json() : null))
             .then((res) => {
-                if (res?.settings) {
-                    setClinicSettings(res.settings);
-                }
+                if (res?.settings) setClinicSettings(res.settings);
+                if (res?.doctor) setLeadDoctor(res.doctor);
             })
             .catch(() => {});
     }, [open]);
@@ -92,7 +94,9 @@ export default function ReceiptDialog({
     const displayClinicAddress = data.clinicAddress || clinicSettings.clinicAddress || "Office# 6, 1st Floor, Doctors Plaza, G-8 Markaz (next to IDC), Islamabad";
     const displayClinicPhones = data.clinicPhone || `${clinicSettings.landlinePhone || "051-2340093"}, ${clinicSettings.mobilePhone || "0303-5080011"}`;
     const displayWhatsapp = clinicSettings.whatsappNumber || "+92 314 5475528";
-    const displayPmdc = clinicSettings.pmdcRegNumber || "14820-D";
+    const displayPmdc = clinicSettings.pmdcRegNumber || leadDoctor.pmdcReg || "-";
+    const displayDoctorName = data.recordedBy || data.doctorName || leadDoctor.name || "Attending Dentist";
+    const displayOperatory = data.operatory || leadDoctor.operatory || "Main Operatory";
     const displayReceiptFooter = clinicSettings.receiptFooter || "Thank you for trusting Elite Dental & Aesthetic Centre. Valid for clinical record & tax submission.";
 
     const netTotal = Math.max(0, data.treatmentPrice - (data.discount || 0));
@@ -114,7 +118,10 @@ export default function ReceiptDialog({
 
     const cumulativePaid = typeof data.totalPaid === "number"
         ? data.totalPaid
-        : paymentsList.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+        : Math.max(0, paymentsList.reduce((sum, p) => {
+            const amt = Number(p.amount) || 0;
+            return sum + (p.type === "REFUND" ? -amt : amt);
+        }, 0));
 
     // Remaining balance is mathematically always Net Total minus Cumulative Paid
     const remainingBalance = Math.max(0, netTotal - cumulativePaid);
@@ -136,15 +143,18 @@ export default function ReceiptDialog({
         const ledgerHtml = paymentsList.length > 0 ? `
             <div class="ledger-box">
                 <div class="ledger-title">Payment History Ledger (${paymentsList.length} Payments Recorded)</div>
-                ${paymentsList.map((p) => `
+                ${paymentsList.map((p) => {
+                    const isRef = p.type === "REFUND";
+                    return `
                     <div class="ledger-row">
                         <div>
                             <strong>${formatDate(p.date)}</strong>
-                            <span style="font-size:9px; color:#64748b; margin-left:4px;">(${p.method ? p.method.toUpperCase() : "CASH"})</span>
+                            <span style="font-size:9px; color:${isRef ? "#be123c" : "#64748b"}; margin-left:4px;">(${getPaymentMethodLabel(p.method)}${isRef ? " · REFUND" : ""})</span>
                         </div>
-                        <div style="font-weight:700; color:#0f172a;">${formatPKR(p.amount)}</div>
+                        <div style="font-weight:700; color:${isRef ? "#be123c" : "#0f172a"};">${isRef ? "- " : ""}${formatPKR(p.amount)}</div>
                     </div>
-                `).join("")}
+                `;
+                }).join("")}
             </div>
         ` : "";
 
@@ -359,8 +369,8 @@ export default function ReceiptDialog({
                     </div>
                     <div>
                         <div class="info-label">Attending Doctor</div>
-                        <div class="info-val">${receiptData.recordedBy || receiptData.doctorName || "Dr. Shehryar Akhtar"}</div>
-                        <div class="info-sub">${receiptData.operatory || "Chair 1 · Surgical Suite"}</div>
+                        <div class="info-val">${displayDoctorName}</div>
+                        <div class="info-sub">${displayOperatory}</div>
                     </div>
                 </div>
 
@@ -526,8 +536,8 @@ export default function ReceiptDialog({
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attending Doctor</p>
-                                <p className="font-extrabold text-teal-900 mt-0.5">{data.recordedBy || data.doctorName || "Dr. Shehryar Akhtar"}</p>
-                                <p className="text-[10px] text-slate-500 font-semibold">{data.operatory || "Chair 1 · Surgical Suite"}</p>
+                                <p className="font-extrabold text-teal-900 mt-0.5">{displayDoctorName}</p>
+                                <p className="text-[10px] text-slate-500 font-semibold">{displayOperatory}</p>
                             </div>
                         </div>
 
@@ -571,18 +581,22 @@ export default function ReceiptDialog({
                                         Recorded Payments ({paymentsList.length})
                                     </p>
                                     <div className="space-y-1">
-                                        {paymentsList.map((p, idx) => (
+                                        {paymentsList.map((p, idx) => {
+                                            const isRef = p.type === "REFUND";
+                                            return (
                                             <div key={idx} className="flex items-center justify-between text-[11px] text-slate-700">
                                                 <span className="flex items-center gap-1.5">
-                                                    <span className="size-1.5 rounded-full bg-teal-600" />
+                                                    <span className={`size-1.5 rounded-full ${isRef ? "bg-rose-600" : "bg-teal-600"}`} />
                                                     <span className="font-medium">{formatDate(p.date)}</span>
-                                                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-700">
-                                                        {p.method ? p.method.toUpperCase() : "CASH"}
+                                                    <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${isRef ? "bg-rose-100 text-rose-700" : "bg-slate-200/80 text-slate-700"}`}>
+                                                        {getPaymentMethodLabel(p.method)}{isRef ? " · Refund" : ""}
                                                     </span>
                                                 </span>
-                                                <span className="font-black text-slate-900">{formatPKR(p.amount)}</span>
+                                                <span className={`font-black ${isRef ? "text-rose-700" : "text-slate-900"}`}>
+                                                    {isRef ? "- " : ""}{formatPKR(p.amount)}
+                                                </span>
                                             </div>
-                                        ))}
+                                        );})}
                                     </div>
                                 </div>
                             )}

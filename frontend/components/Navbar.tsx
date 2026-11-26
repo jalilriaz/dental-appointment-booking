@@ -103,7 +103,7 @@ export default function Navbar() {
             </a>
           </div>
           <div className="flex items-center gap-3 xl:gap-4 text-xs font-medium shrink-0">
-            <div className="flex items-center gap-1 text-teal-300 bg-teal-950/70 border border-teal-800/60 px-2.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
+            <div className="hidden sm:flex items-center gap-1 text-teal-300 bg-teal-950/70 border border-teal-800/60 px-2.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
               <VerifiedOutlined sx={{ fontSize: 14, color: "#2dd4bf" }} />
               <span>ISO 9001 Certified Sterilization</span>
             </div>
@@ -211,7 +211,7 @@ export default function Navbar() {
                 href={getWhatsAppBookingUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-slate-950 inline-flex items-center gap-1"
+                className="md:hidden px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-slate-950 inline-flex items-center gap-1"
               >
                 <WhatsApp sx={{ fontSize: 13, color: "#2dd4bf" }} />
                 <span>Book</span>

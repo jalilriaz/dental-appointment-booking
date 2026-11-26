@@ -59,7 +59,7 @@ export default async function ServicesPage() {
     let treatments = ALL_TREATMENTS as any;
     try {
         const dbTreatments = await prisma.treatment.findMany({
-            where: { isActive: true },
+            where: { isActive: true, showOnWeb: true, deletedAt: null },
             orderBy: { name: "asc" },
         });
         if (dbTreatments && dbTreatments.length > 0) {
